@@ -1,0 +1,13 @@
+[project]
+name = "mistral"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "argparse>=1.4.0",
+    "datauri>=1.0.0",
+    "dotenv>=0.9.9",
+    "mistralai>=1.9.3",
+    "uv>=0.8.3",
+]
