@@ -1,14 +1,33 @@
 # Next.js + Supabase Context Engineering Template
 
-This template specializes the base context engineering framework for full-stack Next.js applications with Supabase backend integration.
+This template specializes the base context engineering framework for full-stack Next.js applications with Supabase backend integration. For WHAT to build, see the PRP (Product Requirement Prompt) documents.
+
+## Core Principles
+
+**IMPORTANT: You MUST follow these principles in all code changes and PRP generations:**
+
+### KISS (Keep It Simple, Stupid)
+
+- Simplicity should be a key goal in design
+- Choose straightforward solutions over complex ones whenever possible
+- Simple solutions are easier to understand, maintain, and debug
+
+### YAGNI (You Aren't Gonna Need It)
+
+- Avoid building functionality on speculation
+- Implement features only when they are needed, not when you anticipate they might be useful in the future
+
+### Open/Closed Principle
+
+- Software entities should be open for extension but closed for modification
+- Design systems so that new functionality can be added with minimal changes to existing code
 
 ## 🔄 Project Awareness & Context
 
-- **Always read `PLANNING.md`** to understand project architecture, goals, and constraints
-- **Check `TASK.md`** before starting tasks - add new tasks with descriptions and dates
 - **Use consistent Next.js App Router patterns** as researched and documented
 - **Follow Supabase integration best practices** for auth, database, storage, and realtime
 - **Use TypeScript throughout** - Next.js, Supabase client libraries, and all components
+- **Leverage ToolPad Core components over building UI with simple MUI components** in order to promote reusability and maintenance
 
 ## 🚀 Next.js + Supabase Technology Stack
 

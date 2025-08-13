@@ -10,7 +10,7 @@ Next.js 15+ with App Router, Supabase backend (PostgreSQL database, authenticati
 
 **What specific feature should this Next.js + Supabase application implement?**
 
-A user dashboard with profile management, real-time notifications, file upload capabilities, and data visualization. The dashboard should support user authentication, personalized content, real-time updates, and responsive design across all devices.
+A user dashboard with profile management, real-time notifications, PDF and MD (markdown) file upload capabilities, file managment capabilities, PDF and MD (markdown) file   vizualiztion, and data visualization. The dashboard should support user authentication, personalized content, real-time updates, and responsive design across all devices.
 
 ---
 
@@ -24,9 +24,9 @@ A user dashboard with profile management, real-time notifications, file upload c
 - Real-time notifications using Supabase real-time subscriptions
 - Data visualization with charts and interactive components
 - File upload and management with Supabase Storage integration
-- Responsive Material-UI components with custom theming
+- ResponsiveToolpad Core and  Material-UI components with custom theming
 - Search and filtering capabilities with PostgreSQL full-text search
-- Dark/light mode theme switching
+- Dark/light mode theme switching using ToolPad Core
 - Comprehensive error handling and user feedback
 
 ---
@@ -70,13 +70,13 @@ A user dashboard with profile management, real-time notifications, file upload c
 **What UI patterns and theming should be implemented?**
 
 - Material-UI v7+ integration with Next.js App Router
+- MUI Toolpad Core integration for dashboard layout components
 - Custom theme configuration with brand colors and typography
 - AppRouterCacheProvider setup for proper server-side rendering
 - Responsive design using MUI breakpoint system
 - Component customization following Material Design principles
-- Dark/light mode implementation with theme switching
+- Dark/light mode implementation with theme switching using ToolPad Core
 - Accessibility compliance (WCAG 2.1) throughout the interface
-- MUI Toolpad Core integration for dashboard layout components
 - Form components with validation and error handling
 - Data display components (tables, cards, charts) with proper styling
 
@@ -87,11 +87,15 @@ A user dashboard with profile management, real-time notifications, file upload c
 **What working examples should be provided in the implementation?**
 
 - Complete user authentication flow (login, signup, logout, password reset)
+- User are associated with a tenant
 - Dashboard layout with navigation and user menu
 - Profile management form with image upload and validation
+- Tenant management for userswith super-administrator role
 - Real-time chat or notification system
 - Data table with sorting, filtering, and pagination
 - File upload component with drag-and-drop functionality
+- File management component for moving, renaming, deleting files
+- Files are associated with a user or a tenant
 - Chart components for data visualization
 - Search functionality with autocomplete and filters
 - Settings page with theme switching and preferences
