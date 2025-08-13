@@ -19,3 +19,7 @@ Notes:
 
 ## Application context engineering files creation
 * Use reverse interaction to ensure the template is complete
+
+* Claude hanged at the end of generating the PRP and added tool execution command at the end of the md file. 
+
+* `npm run build` and `npm run dev` hang with no error message

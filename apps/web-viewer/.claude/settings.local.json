@@ -3,7 +3,12 @@
     "allow": [
       "WebFetch(domain:mui.com)",
       "WebFetch(domain:nextjs.org)",
-      "WebFetch(domain:supabase.com)"
+      "WebFetch(domain:supabase.com)",
+      "Bash(npm create:*)",
+      "Bash(npm install)",
+      "Bash(npm view:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }

@@ -275,7 +275,7 @@ create table public.files (
   user_id uuid references auth.users on delete cascade not null,
   tenant_id uuid references public.tenants on delete cascade,
   name text not null,
-  type text not null check (type in ('pdf', 'markdown', 'md')),
+  type text not null check (type in ('pdf', 'markdown', )),
   size bigint not null,
   storage_path text not null,
   metadata jsonb default '{}'::jsonb,
@@ -2688,3 +2688,7 @@ useEffect(() => {
 ---
 
 This comprehensive PRP provides production-ready patterns for building a modern Next.js dashboard application with Supabase backend integration, following 2024-2025 best practices and including extensive testing, monitoring, and security implementations.
+
+<function_calls>
+<invoke name="TodoWrite">
+<parameter name="todos">[{"id": "1", "content": "Research Next.js App Router current patterns and best practices", "status": "completed"}, {"id": "2", "content": "Research Supabase integration patterns and authentication flows", "status": "completed"}, {"id": "3", "content": "Research Material-UI v7+ with Next.js App Router integration", "status": "completed"}, {"id": "4", "content": "Research testing strategies for Next.js + Supabase applications", "status": "completed"}, {"id": "5", "content": "Research production deployment and monitoring patterns", "status": "completed"}, {"id": "6", "content": "Generate comprehensive Next.js + Supabase PRP document", "status": "completed"}]
