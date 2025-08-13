@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:mui.com)"
+      "WebFetch(domain:mui.com)",
+      "WebFetch(domain:nextjs.org)",
+      "WebFetch(domain:supabase.com)"
     ],
     "deny": []
   }
