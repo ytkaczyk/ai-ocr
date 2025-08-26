@@ -6,9 +6,9 @@
 		{
 			"path": "apps/mistral"
 		},
-		{
-			"path": "apps/web-viewer"
-		}
+		// {
+		// 	"path": "apps/web-viewer"
+		// }
 	],
 	"settings": {}
 }
