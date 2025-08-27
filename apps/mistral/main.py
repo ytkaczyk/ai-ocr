@@ -28,18 +28,19 @@ def transform(client, src_language_codes: str, src_content: str, dest_language_c
     messages = [
         { 
             "role": "system", 
-            "content": (f"You are an expert at updating markdown text so that it is valid markdown.\n"
+            "content": (f"You are an expert programmer who excels at fixing markdown text so that it is valid markdown.\n"
                         "Important rules:\n"
                         "- When updating textthat is in markdown, you excel at preversing the markdown formatting (headings, tables) in the output text while also making sure that it is valid.\n"
                         "  For instance:\n"
                         "  - You ensure that table headers and cells are on a single line, potentially replacing '\\n' text with '<br>' to fix markdown\n"
-                        "  - You ensure that all rows in a table containing have the same number of cells. If this is not the case, you add empty cells to the row missing cells.\n"
+                        "  - You ensure that all rows in a table containing (including headers) have the same number of columns. If this is not the case, add empty columns to the row missing columns.\n"
                         "  - You ensure that headers are displayed on a separate line, especially if they are numbered and you identify a gap in the sequence because the header is at the end of an existing line.\n"
                         "- When translating markdown that contains LaTex, you do not modify the Latex commands.\n"
                         "  For instance:\n"
-                         " - '$\\square$' is preserved as is\n"
-                         " - '$\\qquad$' is preserved as is\n"
-                         " - '$\\checkmark$' is preserved as is\n"
+                        "  - '$\\square$' is preserved as is\n"
+                        "  - '$\\qquad$' is preserved as is\n"
+                        "  - '$\\checkmark$' is preserved as is\n"
+                        "  In particular, you should never replace Latex with a resulting '$$' as it is invalid LaTex.\n"
                         ) 
         },
         { 
@@ -75,13 +76,15 @@ def translate(client, src_language_codes: str, src_content: str, dest_language_c
                         "- When translating text that is in markdown, you excel at preversing the markdown formatting in the translated output text while also making sure that it is valid.\n"
                         "  For instance:\n"
                         "  - You ensure that table headers and cells are on a single line, potentially replacing '\\n' text with '<br>' to fix markdown\n"
-                        "  - You ensure that all rows containinghave the same number of cells. If this is not the case, you add empty cells to the row missing cells.\n"
+                        "  - You ensure that all rows in a table containing (including headers) have the same number of columns. If this is not the case, add empty columns to the row missing columns.\n"
                         "  - You ensure that headers are displayed on a separate line, especially if they are numbered and you identify a gap in the sequence because the header is at the end of an existing line.\n"
                         "- When translating markdown that contains LaTex, you do not modify the Latex commands.\n"
                         "  For instance:\n"
-                         " - '$\\square$' is preserved as is\n"
-                         " - '$\\qquad$' is preserved as is\n"
-                         " - '$\\checkmark$' is preserved as is\n"
+                        "  - '$\\square$' is preserved as is\n"
+                        "  - '$\\qquad$' is preserved as is\n"
+                        "  - '$\\checkmark$' is preserved as is\n"
+                        "  In particular, you should never replace Latex with a resulting '$$' as it is invalid LaTex.\n"
+                        "- When translating content that contains multiple languages, translate the entire content even if there are redundancies in the resulting text."
                         ) 
         },
         { 
@@ -160,19 +163,21 @@ def save_ocr_response_to_file(ocr_response: OCRResponse, md_file_path: str):
 
 def cleanup_markdown(md: str) -> str:
     # Replace single \n (not part of double \n) with '  \n'
-    # Negative lookbehind and lookahead to avoid replacing when there are two consecutive \n
-    tmp = md #re.sub(r'\n\$\$\n', '\n$$ $$\n', md)
+    #   Negative lookbehind and lookahead to avoid replacing when there are two consecutive \n
+    # Other rules as needed...
+    tmp = md
     tmp = re.sub(r'(?<!\n)\n(?!\n)', '  \n', tmp)
     return tmp
 
 def main():
     parser = argparse.ArgumentParser(description="OCR and translate PDF documents using Mistral.")
     parser.add_argument("--input", required=True, help="Path to the input PDF file.")
-    parser.add_argument("--source", required=True, help="Source language code.")
+    parser.add_argument("--source", required=True, help="Source language code(s). Language codes are comma-separated if multiple source languages are present.")
     parser.add_argument("--target", default="en-US", help="Target language code (default: en-US).")
-    parser.add_argument("--force_ocr", required=False, default=False, help="Force document OCR, overwritting existing raw.src OCR files if needed.")
-    parser.add_argument("--force_ocr_post_process", required=False, default=False, help="Force transforming raw.scr to src. ")
-    parser.add_argument("--force_translate", required=False, default=False, help="Force document translation, overwritting existing raw.target translation files if needed")
+    parser.add_argument("--force_ocr", action="store_true", help="Force document OCR, overwritting existing raw.src OCR files if needed.")
+    parser.add_argument("--force_ocr_post_process", action="store_true", help="Force transforming raw.scr to src.")
+    parser.add_argument("--force_translate", action="store_true", help="Force document translation, overwritting existing raw.target translation files if needed")
+    parser.add_argument("--limit_to_pages", required=False, help="Comma-separated list of pages to process (e.g., '1,3,5').")
     args = parser.parse_args()
 
     pdf_path = os.path.abspath(os.path.normpath(args.input))
@@ -181,6 +186,8 @@ def main():
     force_ocr = args.force_ocr
     force_ocr_post_process = args.force_ocr_post_process
     force_translate = args.force_translate
+    limit_to_pages_str = args.limit_to_pages
+    limit_to_pages = [int(p) for p in limit_to_pages_str.split(',')] if limit_to_pages_str else []
 
     # Create directories for the source and target files
     raw_src_language_dir : str = os.path.join(os.path.splitext(pdf_path)[0], "raw." + src_language_code)
@@ -248,6 +255,7 @@ def main():
     save_json_response(src_response, src_json_filepath)
     
     src_md_filepath = replace_extension(src_json_filepath, ".md")
+    print(f"🔁 Post processing {len(raw_src_response.pages)} scanned pages")
     for page_index in range(len(raw_src_response.pages)):
         # Only transform if the markdown is identical between the raw source and source for the page
         # and if the single page md file doesn't exist
@@ -255,10 +263,11 @@ def main():
         src_md_single_page_path = get_md_single_page_file_path(src_md_filepath, page_index)
         if(
             (
-                raw_src_response.pages[page_index].markdown == src_response.pages[page_index].markdown and
-                not os.path.exists(src_md_single_page_path)
+                (raw_src_response.pages[page_index].markdown == src_response.pages[page_index].markdown and
+                not os.path.exists(src_md_single_page_path))
+                or force_ocr_post_process
             )
-            or force_ocr_post_process
+            and (not limit_to_pages or (page_index + 1) in limit_to_pages)
         ):
             print(f"🔁 Transforming page {page_index+1}/{len(raw_src_response.pages)} (page index {page_index})")
             new_markdown = transform(client, src_language_code, raw_src_response.pages[page_index].markdown, target_language_code)
@@ -271,6 +280,7 @@ def main():
                 save_json_response(src_response, src_json_filepath)
         else:
             print(f"♻️ Skipping page {page_index+1}/{len(src_response.pages)} (page index {page_index})")
+    print("")
 
     # Save markdown and images
     save_ocr_response_to_file(src_response, src_md_filepath)
@@ -280,10 +290,14 @@ def main():
     raw_target_response = load_json_response(raw_target_json_filepath) if os.path.exists(raw_target_json_filepath) else src_response.model_copy(deep=True)
 
     target_md_filepath = replace_extension(raw_target_json_filepath, ".md") 
+    print(f"🔁 Translating {len(src_response.pages)} pages")
     for page_index in range(len(src_response.pages)):
         # Only translate if the markdown is identical between the source and target for the page
         # (optimization to prevent translating pages that have already been translated)
-        if(src_response.pages[page_index].markdown == raw_target_response.pages[page_index].markdown or force_translate):
+        if(
+            (src_response.pages[page_index].markdown == raw_target_response.pages[page_index].markdown or force_translate)
+            and (not limit_to_pages or (page_index + 1) in limit_to_pages)
+        ):
             print(f"🔁 Translating page {page_index+1}/{len(src_response.pages)} (page index {page_index})")
             translated_markdown = translate(client, src_language_code, src_response.pages[page_index].markdown, target_language_code)
             if translated_markdown is None:
@@ -295,7 +309,8 @@ def main():
                 save_json_response(raw_target_response, raw_target_json_filepath)
         else:
             print(f"♻️ Skipping page {page_index+1}/{len(src_response.pages)} (page index {page_index})")
-
+    print("")
+    
     # Save markdown and images
     save_ocr_response_to_file(raw_target_response, target_md_filepath)
 
