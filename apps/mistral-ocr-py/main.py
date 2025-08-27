@@ -2,6 +2,7 @@ import os
 import base64
 import argparse
 from mistralai import Mistral, OCRResponse, OCRImageObject
+from mistralai.extra import response_format_from_pydantic_model
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 import re
@@ -23,6 +24,12 @@ def encode_pdf(pdf_path):
     
 class TransformationOutput(BaseModel):
     text: str = Field(description="The transformed text")
+
+# BBOX Annotation response formats
+class Image(BaseModel):
+  image_type: str = Field(..., description="The type of the image.")
+  short_description: str = Field(..., description="A description in english describing the image.")
+  summary: str = Field(..., description="Summarize the image.")
 
 def transform(client, src_language_codes: str, src_content: str, dest_language_code: str) -> TransformationOutput | None:
     messages = [
@@ -232,6 +239,7 @@ def main():
                 "type": "document_url",
                 "document_url": f"data:application/pdf;base64,{base64_pdf}" 
             },
+            bbox_annotation_format=response_format_from_pydantic_model(Image),
             include_image_base64=True
             # include doc and image parsing....
         )
