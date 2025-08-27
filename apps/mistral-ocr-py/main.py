@@ -1,5 +1,6 @@
 import os
 import base64
+import sys
 import argparse
 from mistralai import Mistral, OCRResponse, OCRImageObject
 from mistralai.extra import response_format_from_pydantic_model
@@ -188,6 +189,11 @@ def main():
     args = parser.parse_args()
 
     pdf_path = os.path.abspath(os.path.normpath(args.input))
+
+    if(not os.path.exists(pdf_path)):
+        print(f"🛑  File: {pdf_path} doesn't exist.")
+        sys.exit(1)
+
     src_language_code = args.source
     target_language_code = args.target
     force_ocr = args.force_ocr
