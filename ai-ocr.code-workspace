@@ -4,11 +4,8 @@
 			"path": "."
 		},
 		{
-			"path": "apps/mistral"
-		},
-		// {
-		// 	"path": "apps/web-viewer"
-		// }
+			"path": "apps/mistral-ocr-py"
+		}
 	],
 	"settings": {}
 }
