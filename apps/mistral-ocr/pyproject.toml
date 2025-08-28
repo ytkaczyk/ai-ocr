@@ -1,5 +1,5 @@
 [project]
-name = "mistral-ocr-py"
+name = "mistral-ocr"
 version = "0.1.0"
 description = "Scan pfdf documents, post-process and translate outputs"
 readme = "README.md"
