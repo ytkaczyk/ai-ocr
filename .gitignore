@@ -1,2 +1,5 @@
 **/*/launch.json
 **/*/.env
+
+# Ignore all subdirectory with /examples/
+examples/*/

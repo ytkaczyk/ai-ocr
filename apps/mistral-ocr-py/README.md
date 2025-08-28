@@ -27,7 +27,7 @@ The output directories are organized to provide a clear and accessible structure
     - 📄 `<file_name>.raw.<source_language_code>.json`
     - 📄 `<file_name>.raw.<source_language_code>.md`
     - 📄 `<file_name>.raw.<source_language_code>_page_<page number>.md`
-    - 📄 `img-<image_number>.jpeg>`
+    - 📄 `img-<image_number>.jpeg`
   + 📂 `<source_language_code>`
     - 📄 `<file_name>.<source_language_code>.json`
     - 📄 `<file_name>.<source_language_code>.md`
@@ -100,9 +100,9 @@ To run the application, use the following command structure:
 *   `--input <pdf_file>`: **(Required)** Specifies the path to the PDF file you wish to process.
 *   `--source <language_code>`: **(Required)** Comma-separated list of language codes for the source text in the PDF (e.g., `en` for English, `fr` for French, `en,fr` for documents containing both English and French).
 *   `--target <language_code>`: **(Required)** The language code for the desired output translation (e.g., `es` for Spanish, `de` for German).
-*   `--force_ocr`: **(Optional)** Forces the OCR process to run even if raw OCR files already exist. It does not force if the flag is omitted and forces if the flag is present. 
-*   `--force_ocr_post_process`: **(Optional)** Forces the OCR post-processing step to run even if post-processed files already exist. It does not force if the flag is omitted and forces if the flag is present.
-*   `--force-translate`: **(Optional)** Forces the translation step to run even if translated files already exist. It does not force if the flag is omitted and forces if the flag is present.
+*   `--force_ocr`: **(Optional)** Forces the OCR process to run, even if raw OCR files already exist.
+*   `--force_ocr_post_process`: **(Optional)** Forces the OCR post-processing step to run, even if post-processed files already exist.
+*   `--force-translate`: **(Optional)** Forces the translation step to run, even if translated files already exist.
 *   `--limit_to_pages <page_numbers>`: **(Optional)** A comma-separated list of page numbers to process (e.g., `1,3,5`).
 
 
@@ -118,7 +118,54 @@ To run the application, use the following command structure:
   uv run main.py --input <pdf_file> --source <language_code> --target <language_code> --force_ocr_post_process --limit_to_pages 1,2
   ```
 
+## Experimenting with provided examples
+
+### AI_History_and_Future_Vietnamese documents
+
+This is an AI generated document on the history of AI in Vietnamese, including a table and a diagram. There are 4 PDF files:
+* `AI_History_and_Future_Vietnamese_Print.pdf`: PDF file generated from original Word document
+* `AI_History_and_Future_Vietnamese_Scan-300.pdf`: PDF file generated from scan at 300 DPI
+* `AI_History_and_Future_Vietnamese_Scan-600.pdf`: PDF file generated from scan at 600 DPI
+* `AI_History_and_Future_Vietnamese_Scan-1200.pdf`: PDF file generated from scan at 1200 DPI
+
+The output varies greatly based on the resolution, especially what is scanned as an image and what is scanned at text. 
+Observations:
+* The model worked best at 600 DPI where it maximized the amount of text extracted from the document and limited the images to the actual graphics. This was even better than from the printed document
+* The scan didn't complete at 1200 DPI but there is no way to know it as no errors were returned by the Mistral OCR API.  
+
+Example command:
+
+```bash
+uv run main.py --input ..\..\examples\AI_History_and_Future_Vietnamese_Print.pdf --source vi --target en-us 
+```
+
+## Kombucha documents
+
+Documents based on the article [What are the 5 benefits of Kombucha?](https://www.biovie.fr/en/blog/what-are-the-5-benefits-of-kombucha-n599).
+
+The article is available in three languages—French, Spanish, and English—for translation quality comparison. Additionally, there is a French and Spanish document with the text split into two columns. For each file, both a printed version (saved as PDF) and a simulated scanned version are provided. Word documents are also included.
+
+Observations: 
+* Images are properly extracted. It is as expected given that they contain no text and are clearly delimited. 
+* Word files are parsed as single page regardless of the number of pages in the document.
+* Preserving md formatting in multi-language documents proved to be challenging and required some extensive prompt tuning (in progress).
+
+Example command:
+```bach
+uv run main.py --input ..\..\examples\kombucha_fr_es.docx --source es,fr --target en-us 
+```
+
+Notes: 
+* I used [SafePDFKit](https://safepdfkit.com/) to create 'scanned PDF' without having to print and scan the actual word documents. 
+
 ## AI coding assistance with Cline 🤖
 
 The tool was mainly coded by hand. 
 [Cline AI for VSCode](https://cline.bot/) was used to add minor features (e.g., `limit_to_page` functionality). Cline AI is an open-source coding agent that can understand entire codebases, plan complex changes, and execute multi-step tasks.
+
+
+## Todos
+
+ - [ ] Store prompts in external files for easy customization based on source documents
+ - [ ] Improve error handling
+ - [ ] Integrate with Langfuse
