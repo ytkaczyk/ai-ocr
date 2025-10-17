@@ -1,0 +1,593 @@
+openapi: 3.1.0
+info:
+  title: OCR Translation Comparison Viewer API
+  description: |
+    REST API for loading document sets, navigating pages, and managing viewer state.
+    Implements server-side processing for PDF rendering and markdown parsing.
+  version: 1.0.0
+  contact:
+    name: AI-OCR Team
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+  - url: https://ocr-viewer.example.com/api
+    description: Production server
+
+tags:
+  - name: documents
+    description: Document set discovery and loading
+  - name: pages
+    description: Page content retrieval
+  - name: viewer
+    description: Viewer state management
+
+paths:
+  /documents:
+    get:
+      tags:
+        - documents
+      summary: List all available document sets
+      description: |
+        Scans the configured DATA_FOLDER_PATH and returns all discovered document sets.
+        Includes validation status for each document.
+      operationId: listDocuments
+      responses:
+        '200':
+          description: Successfully retrieved document list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DocumentSetSummary'
+                  totalCount:
+                    type: integer
+                    example: 12
+                  scannedAt:
+                    type: string
+                    format: date-time
+                    example: '2025-10-17T10:30:00Z'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /documents/{documentId}:
+    get:
+      tags:
+        - documents
+      summary: Get detailed document set information
+      description: |
+        Retrieves complete metadata for a specific document set including
+        available languages, page count, and validation status.
+      operationId: getDocument
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 'contract-2024'
+          description: Unique document identifier (filename without extension)
+      responses:
+        '200':
+          description: Document set details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentSet'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /documents/{documentId}/validate:
+    post:
+      tags:
+        - documents
+      summary: Validate document structure
+      description: |
+        Checks folder structure, file naming conventions, and page counts.
+        Returns validation errors if any issues found.
+      operationId: validateDocument
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Validation completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isValid:
+                    type: boolean
+                    example: true
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                    example: []
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+                    example: ['Page 47 missing in raw.en-US folder']
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /documents/{documentId}/pages/{pageNumber}/pdf:
+    get:
+      tags:
+        - pages
+      summary: Get PDF page content
+      description: |
+        Renders a specific PDF page and returns canvas data or image.
+        Supports lazy loading for performance.
+      operationId: getPdfPage
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pageNumber
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            example: 5
+        - name: scale
+          in: query
+          schema:
+            type: number
+            minimum: 0.5
+            maximum: 3.0
+            default: 1.0
+          description: Render scale factor for high-DPI displays
+      responses:
+        '200':
+          description: PDF page rendered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PDFPageContent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          description: PDF file exceeds maximum size limit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /documents/{documentId}/pages/{pageNumber}/markdown:
+    get:
+      tags:
+        - pages
+      summary: Get markdown page content
+      description: |
+        Retrieves markdown content for a specific page and language version.
+        Returns both raw markdown and metadata about referenced images.
+      operationId: getMarkdownPage
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pageNumber
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: languageCode
+          in: query
+          required: true
+          schema:
+            type: string
+            example: 'en-US'
+          description: Language code following IETF BCP 47 standard (ISO 639-1 language code and ISO 3166-1 country code separated by hyphen, e.g., en-US, es-ES, fr-CA)
+        - name: preferProcessed
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: Prefer processed over raw version if both available
+      responses:
+        '200':
+          description: Markdown content retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkdownPageContent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /documents/{documentId}/images/{languageCode}/{imagePath}:
+    get:
+      tags:
+        - pages
+      summary: Get image file referenced in markdown
+      description: |
+        Retrieves an image file from the language-specific folder.
+        Used by markdown renderer to display embedded images.
+      operationId: getImage
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: languageCode
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: imagePath
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Relative path within language folder
+      responses:
+        '200':
+          description: Image file
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /viewer/state:
+    get:
+      tags:
+        - viewer
+      summary: Get current viewer state
+      description: |
+        Retrieves the current viewer state including active document,
+        page number, and pane configuration. Can be used to restore state.
+      operationId: getViewerState
+      responses:
+        '200':
+          description: Viewer state retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewerState'
+
+    post:
+      tags:
+        - viewer
+      summary: Update viewer state
+      description: |
+        Updates viewer state (page navigation, mode switch, document change).
+        Used for state synchronization across components.
+      operationId: updateViewerState
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViewerStateUpdate'
+      responses:
+        '200':
+          description: State updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewerState'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+components:
+  schemas:
+    DocumentSetSummary:
+      type: object
+      required:
+        - id
+        - fileName
+        - pageCount
+        - hasValidStructure
+        - availableLanguages
+      properties:
+        id:
+          type: string
+          example: 'contract-2024'
+        fileName:
+          type: string
+          example: 'contract-2024'
+        pageCount:
+          type: integer
+          minimum: 1
+          example: 87
+        pdfSizeBytes:
+          type: integer
+          example: 15728640
+        hasValidStructure:
+          type: boolean
+          example: true
+        availableLanguages:
+          type: array
+          items:
+            type: string
+          example: ['en-US', 'raw.en-US', 'es-ES', 'raw.es-ES']
+        lastModified:
+          type: string
+          format: date-time
+          example: '2025-10-15T14:22:00Z'
+
+    DocumentSet:
+      allOf:
+        - $ref: '#/components/schemas/DocumentSetSummary'
+        - type: object
+          required:
+            - pdfPath
+            - folderPath
+            - languageVersions
+            - validationErrors
+          properties:
+            pdfPath:
+              type: string
+              example: '/data/contract-2024.pdf'
+            folderPath:
+              type: string
+              example: '/data/contract-2024'
+            languageVersions:
+              type: array
+              items:
+                $ref: '#/components/schemas/LanguageVersion'
+            validationErrors:
+              type: array
+              items:
+                type: string
+              example: []
+            createdAt:
+              type: string
+              format: date-time
+
+    LanguageVersion:
+      type: object
+      required:
+        - languageCode
+        - isRaw
+        - folderName
+        - pageCount
+        - isComplete
+      properties:
+        languageCode:
+          type: string
+          pattern: '^[a-z]{2}-[A-Z]{2}$'
+          example: 'en-US'
+          description: Language code following IETF BCP 47 standard (language-COUNTRY format, e.g., en-US, es-ES, fr-CA)
+        isRaw:
+          type: boolean
+          example: false
+        folderName:
+          type: string
+          example: 'en-US'
+          description: Folder name matching languageCode (e.g., en-US, raw.en-US)
+        pageCount:
+          type: integer
+          minimum: 0
+          example: 87
+        isComplete:
+          type: boolean
+          example: true
+          description: True if page count matches PDF
+        missingPages:
+          type: array
+          items:
+            type: integer
+          example: []
+
+    PDFPageContent:
+      type: object
+      required:
+        - pageNumber
+        - width
+        - height
+        - imageDataUrl
+      properties:
+        pageNumber:
+          type: integer
+          minimum: 1
+          example: 5
+        width:
+          type: number
+          example: 612
+        height:
+          type: number
+          example: 792
+        imageDataUrl:
+          type: string
+          format: uri
+          description: Base64-encoded PNG data URL
+          example: 'data:image/png;base64,iVBORw0KGgoAAAANS...'
+        textContent:
+          type: string
+          description: Extracted text (optional, for future search)
+
+    MarkdownPageContent:
+      type: object
+      required:
+        - pageNumber
+        - languageCode
+        - isRaw
+        - content
+        - hasImages
+      properties:
+        pageNumber:
+          type: integer
+          minimum: 1
+        languageCode:
+          type: string
+        isRaw:
+          type: boolean
+        content:
+          type: string
+          description: Raw markdown content
+          example: '# Page Title\n\nContent here...'
+        hasImages:
+          type: boolean
+        imageUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: API URLs for referenced images
+          example: ['/api/documents/contract-2024/images/en-US/page_5_image_1.png']
+        sizeBytes:
+          type: integer
+
+    ViewerState:
+      type: object
+      required:
+        - currentDocumentId
+        - currentPageNumber
+        - paneMode
+        - panes
+      properties:
+        currentDocumentId:
+          type: string
+          nullable: true
+          example: 'contract-2024'
+        currentPageNumber:
+          type: integer
+          minimum: 1
+          example: 5
+        paneMode:
+          type: string
+          enum: ['TWO_PANE', 'THREE_PANE']
+          example: 'TWO_PANE'
+        panes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pane'
+        isLoading:
+          type: boolean
+          example: false
+
+    Pane:
+      type: object
+      required:
+        - id
+        - type
+        - isVisible
+        - widthPercent
+      properties:
+        id:
+          type: string
+          enum: ['pdf', 'source', 'target']
+        type:
+          type: string
+          enum: ['PDF', 'MARKDOWN']
+        contentSource:
+          oneOf:
+            - type: object
+              properties:
+                type:
+                  type: string
+                  const: 'pdf'
+                pdfPath:
+                  type: string
+            - type: object
+              properties:
+                type:
+                  type: string
+                  const: 'markdown'
+                languageCode:
+                  type: string
+                isRaw:
+                  type: boolean
+        isVisible:
+          type: boolean
+        widthPercent:
+          type: integer
+          minimum: 10
+          maximum: 90
+          example: 50
+
+    ViewerStateUpdate:
+      type: object
+      properties:
+        documentId:
+          type: string
+          nullable: true
+        pageNumber:
+          type: integer
+          minimum: 1
+        paneMode:
+          type: string
+          enum: ['TWO_PANE', 'THREE_PANE']
+        paneWidths:
+          type: object
+          additionalProperties:
+            type: integer
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          example: 'DOCUMENT_NOT_FOUND'
+        message:
+          type: string
+          example: 'Document with ID "contract-2024" not found'
+        details:
+          type: object
+          additionalProperties: true
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: 'INVALID_PAGE_NUMBER'
+            message: 'Page number must be between 1 and 87'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: 'DOCUMENT_NOT_FOUND'
+            message: 'Document with ID "contract-2024" not found'
+
+    InternalServerError:
+      description: Server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: 'INTERNAL_ERROR'
+            message: 'Failed to read data folder'
+            details:
+              path: '/data'
+              reason: 'Permission denied'
+
+  securitySchemes:
+    # No authentication required for initial version
+    # Future: Add API key or OAuth2 if needed
+    {}
