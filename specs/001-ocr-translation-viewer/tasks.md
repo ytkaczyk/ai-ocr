@@ -55,33 +55,41 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 
 **Goal**: Initialize Next.js project with all dependencies, configuration, and project structure.
 
-**Duration**: ~2-4 hours
+**Duration**: ~2-4 hours  
+**Status**: ✅ **COMPLETE** (23/23 tasks)
 
 ### Tasks:
 
-- [ ] T001 Create Next.js 15 project with TypeScript in apps/web-viewer/ directory
-- [ ] T002 [P] Install core dependencies: react, next, typescript, tailwindcss, zod, zustand
-- [ ] T003 [P] Install UI dependencies: @radix-ui packages for ShadCN
-- [ ] T004 [P] Install testing dependencies: vitest, @testing-library/react, @testing-library/jest-dom, playwright
-- [ ] T005 [P] Install PDF dependencies: react-pdf, pdfjs-dist
-- [ ] T006 [P] Install markdown dependencies: react-markdown, remark-gfm
-- [ ] T007 Configure TypeScript with strict mode in tsconfig.json
-- [ ] T008 [P] Configure Tailwind CSS in tailwind.config.ts
-- [ ] T009 [P] Configure Vitest in vitest.config.ts with jsdom environment
-- [ ] T010 [P] Configure Playwright in playwright.config.ts for multi-browser testing
-- [ ] T011 [P] Configure ESLint in .eslintrc.json
-- [ ] T012 [P] Configure Prettier in .prettierrc
-- [ ] T013 Initialize ShadCN UI with `npx shadcn-ui@latest init`
-- [ ] T014 [P] Create .env.example with DATA_FOLDER_PATH and MAX_PDF_SIZE_MB variables
-- [ ] T015 [P] Create app directory structure: app/, components/, lib/, tests/
-- [ ] T016 [P] Create app/globals.css with Tailwind directives
-- [ ] T017 [P] Create app/layout.tsx root layout
-- [ ] T018 [P] Copy PDF.js worker to public/pdf.worker.js from pdfjs-dist
-- [ ] T019 [P] Create lib/types/entities.ts for TypeScript types
-- [ ] T020 [P] Create lib/types/api.ts placeholder for API types
-- [ ] T021 [P] Set up GitHub Actions workflow file .github/workflows/ci.yml
-- [ ] T022 Verify project builds with `npm run build`
-- [ ] T023 Verify tests run with `npm test`
+- [X] T001 Create Next.js 15 project with TypeScript in apps/web-viewer/ directory
+- [X] T002 [P] Install core dependencies: react, next, typescript, tailwindcss, zod, zustand
+- [X] T003 [P] Install UI dependencies: @radix-ui packages for ShadCN
+- [X] T004 [P] Install testing dependencies: vitest, @testing-library/react, @testing-library/jest-dom, playwright
+- [X] T005 [P] Install PDF dependencies: react-pdf, pdfjs-dist
+- [X] T006 [P] Install markdown dependencies: react-markdown, remark-gfm
+- [X] T007 Configure TypeScript with strict mode in tsconfig.json
+- [X] T008 [P] Configure Tailwind CSS in tailwind.config.ts (with Tailwind CSS v4 @tailwindcss/postcss plugin)
+- [X] T009 [P] Configure Vitest in vitest.config.ts with jsdom environment
+- [X] T010 [P] Configure Playwright in playwright.config.ts for multi-browser testing
+- [X] T011 [P] Configure ESLint in .eslintrc.json (migrated from 'next lint' to ESLint CLI)
+- [X] T012 [P] Configure Prettier in .prettierrc
+- [X] T013 Initialize ShadCN UI with `npx shadcn-ui@latest init` (manual setup: lib/utils.ts with cn function)
+- [X] T014 [P] Create .env.example with DATA_FOLDER_PATH and MAX_PDF_SIZE_MB variables
+- [X] T015 [P] Create app directory structure: app/, components/, lib/, tests/
+- [X] T016 [P] Create app/globals.css with Tailwind directives (@import "tailwindcss" for v4)
+- [X] T017 [P] Create app/layout.tsx root layout
+- [X] T018 [P] Copy PDF.js worker to public/pdf.worker.mjs from pdfjs-dist
+- [X] T019 [P] Create lib/types/entities.ts for TypeScript types
+- [X] T020 [P] Create lib/types/api.ts placeholder for API types
+- [X] T021 [P] Set up GitHub Actions workflow file .github/workflows/ci.yml
+- [X] T022 Verify project builds with `npm run build` ✅
+- [X] T023 Verify tests run with `npm test` ✅
+
+**Notes**:
+- Fixed deprecated swcMinify option in next.config.mjs
+- Added types/css.d.ts for CSS module type declarations
+- Added next-env.d.ts to .eslintignore
+- All 727 packages installed with 0 vulnerabilities
+- Build: ✅ SUCCESS, Lint: ✅ PASS, Tests: ✅ PASS (1/1)
 
 ---
 
