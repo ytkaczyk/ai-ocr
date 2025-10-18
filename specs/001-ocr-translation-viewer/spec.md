@@ -89,8 +89,16 @@ Users need a simple way to select from available document sets in the configured
 
 ### Functional Requirements
 
-- **FR-001**: System MUST display the original PDF content in a dedicated pane with page-accurate rendering
-- **FR-002**: System MUST display markdown content in dedicated panes with formatted text rendering
+- **FR-001**: System MUST display the original PDF content in a dedicated pane with page-accurate rendering:
+  - Render at device pixel ratio (minimum 1x, scale up to 2x for HiDPI displays)
+  - Maintain aspect ratio of original PDF pages
+  - Text must be legible at default zoom level (no blurriness or pixelation for standard fonts ≥ 10pt)
+  - Rendering accuracy verified by visual comparison: PDF content matches source document layout and text positioning
+- **FR-002**: System MUST display markdown content in dedicated panes with formatted text rendering:
+  - Support markdown elements: headings (H1-H6), paragraphs, lists (ordered/unordered/nested), emphasis (bold/italic/strikethrough), links, code blocks (inline and fenced), blockquotes, horizontal rules, tables
+  - Preserve line breaks and paragraph spacing
+  - Render inline images per FR-010
+  - Apply consistent typography (font family, size, line height) via ShadCN/Tailwind theme
 - **FR-003**: System MUST provide a pager control that allows users to navigate between pages using next/previous buttons and direct page number input
 - **FR-004**: System MUST keep all visible panes synchronized to display the same page number at all times
 - **FR-005**: System MUST support two display modes: 2-pane (PDF + OCR markdown) and 3-pane (PDF + OCR markdown + translated markdown)
@@ -107,10 +115,21 @@ Users need a simple way to select from available document sets in the configured
   - All error messages MUST be user-friendly (avoid technical jargon), include recovery actions where applicable, and be accessible (ARIA roles, semantic HTML)
 - **FR-012**: System MUST display the current page number and total page count in the pager control
 - **FR-013**: System MUST prevent navigation beyond the available page range (no negative pages, no pages beyond document length)
-- **FR-014**: System MUST handle documents with mismatched page counts gracefully, showing available content and indicating missing pages with a placeholder displaying "Page N unavailable" with a visual indicator (icon/color)
+- **FR-014**: System MUST handle documents with mismatched page counts gracefully:
+  - Show available content for pages that exist in any pane
+  - For missing pages in specific panes: Display placeholder with message "Page N unavailable" + warning icon (⚠️) + muted background color (#F3F4F6)
+  - Navigation control shows total page count based on longest document (e.g., "Page 5 of 87" even if markdown only has 50 pages)
+  - Placeholder maintains same dimensions as other panes for visual consistency
+  - User can still navigate to pages beyond some panes' content (show available panes + placeholders for missing)
+  - ARIA label on placeholder: "Content not available for this page in {pane type}"
 - **FR-015**: System MUST provide keyboard shortcuts for page navigation (Left/Right arrow keys for previous/next page, Page Up/Down for previous/next page; Up/Down arrows reserved for content scrolling)
 - **FR-016**: System MUST render markdown content with basic formatting preserved (headings, paragraphs, lists, emphasis)
-- **FR-017**: System MUST allow users to adjust the width of individual panes to focus on specific content. Pane width adjustable between 20% and 80% of viewport width, with changes persisted in URL query parameters.
+- **FR-017**: System MUST allow users to adjust the width of individual panes to focus on specific content:
+  - Pane width adjustable between 20% and 80% of viewport width via draggable divider
+  - Changes persisted in URL query parameters (e.g., `?paneWidths=40,30,30` for 3-pane mode)
+  - **Edge case handling**: When one pane reaches 20%, remaining width distributed proportionally among other panes; when one pane reaches 80%, other panes share remaining 20% (minimum 10% each in 2-pane, 6.67% each in 3-pane)
+  - Extreme ratio behavior: If width distribution would make panes unusable (< 10%), display warning tooltip "Pane too narrow - increase width for better readability" on compressed panes
+  - Divider dragging MUST be smooth (60fps), snap to minimum/maximum widths when within 2% threshold, persist changes on drag end (not during drag)
 - **FR-018**: System MUST display loading indicators for all asynchronous operations:
   - **FR-018a**: Document list scanning - Show skeleton loader or spinner while scanning data folder
   - **FR-018b**: Document loading - Show progress indicator when loading selected document (PDF + markdown files)
@@ -139,6 +158,53 @@ Users need a simple way to select from available document sets in the configured
   - **FR-025c**: Tablet/small desktop (768px - 1023px) - Vertically stacked panes, display warning banner "For best experience, use viewport ≥ 1024px", pane width adjustment disabled
   - **FR-025d**: Mobile (< 768px) - Display message "This application requires viewport ≥ 768px. Please use a desktop or tablet device" with current viewport dimensions, disable viewer functionality
   - All responsive breakpoints MUST be tested across browsers (FR-022), maintain accessibility standards, preserve keyboard navigation
+- **FR-026**: System MUST handle file system interruptions gracefully:
+  - **FR-026a**: Document load interruption - If file read fails mid-operation, display error per FR-011a, retain last successfully loaded document state, allow user to retry or select different document
+  - **FR-026b**: Page navigation interruption - If page file read fails, display error in affected pane only (other panes remain functional), show retry button, log error details for debugging
+  - **FR-026c**: Scan operation interruption - If data folder scan fails mid-operation, display partial results with warning "Scan incomplete - some documents may not be listed", provide refresh button
+  - All interruption scenarios MUST preserve application stability (no crashes), maintain user context (current page, mode, pane widths), provide clear recovery paths
+- **FR-027**: System MUST handle failed mode switches and page transitions with rollback:
+  - **FR-027a**: Failed mode switch - If mode switch fails (e.g., missing translation files for 3-pane), display error message "Cannot switch to {target mode}: {reason}", revert to previous mode, retain current page position
+  - **FR-027b**: Failed page transition - If new page content fails to load, retain current page display, show error notification (toast/banner), allow retry or navigation to different page
+  - **FR-027c**: Partial content failure - If one pane fails to load during navigation but others succeed, show successful panes + error placeholder in failed pane, navigation control reflects successful state
+  - All rollback operations MUST be atomic (all or nothing for mode switches), preserve UI consistency, log failure details for debugging
+- **FR-028**: System MUST handle browser-specific rendering variations:
+  - **FR-028a**: PDF rendering - Test with PDF.js across all browsers (FR-022), document known limitations per browser (e.g., Safari canvas performance), apply browser-specific optimizations if needed
+  - **FR-028b**: Markdown rendering - Ensure consistent typography and spacing across browsers, test with react-markdown + remark-gfm, validate CSS compatibility
+  - **FR-028c**: Layout consistency - Test responsive breakpoints (FR-025) in all browsers, ensure pane synchronization works identically, validate keyboard shortcuts (FR-015) across different key event handling
+  - Automated cross-browser tests MUST cover critical paths (document load, navigation, mode switch), visual regression testing required for UI consistency, document acceptable variations in test assertions
+- **FR-029**: System MUST handle PDFs with non-standard characteristics:
+  - **FR-029a**: Non-standard page sizes - Render landscape/portrait/custom dimensions, scale to fit pane width while maintaining aspect ratio, display page dimensions in tooltip on hover (e.g., "8.5 × 11 in")
+  - **FR-029b**: Mixed orientations - Handle PDFs with mixed portrait/landscape pages, adjust pane layout per page, synchronize pane heights to tallest visible page
+  - **FR-029c**: Mixed page sizes - Support PDFs with varying page dimensions, scale each page independently to fit pane, indicate size changes with subtle border or label
+  - **FR-029d**: High-resolution PDFs - Render efficiently at device pixel ratio, implement progressive loading (low-res placeholder → high-res), throttle rendering if memory usage exceeds 500MB (display warning)
+  - All PDF variations MUST maintain page synchronization (FR-004), preserve navigation functionality, pass visual regression tests
+- **FR-030**: System MUST handle markdown with malformed or edge case content:
+  - **FR-030a**: Malformed syntax - Invalid markdown structures (unclosed code blocks, broken tables, malformed links) render with fallback formatting, display warning icon with tooltip "Content may not display as intended"
+  - **FR-030b**: Extremely long lines - Lines exceeding 10,000 characters wrap with word-break, display horizontal scrollbar if content cannot wrap, limit line height to prevent viewport overflow
+  - **FR-030c**: Nested structures - Support deeply nested lists (up to 10 levels), blockquotes within blockquotes, tables with inline formatting, degrade gracefully if nesting exceeds limits
+  - **FR-030d**: Special characters - Properly escape HTML entities, handle Unicode (emoji, accented characters, RTL text), sanitize script tags per security requirements
+  - **FR-030e**: Empty or whitespace-only content - Display message "No content for this page" with info icon, maintain pane layout and synchronization
+  - All malformed content handling MUST prevent application crashes, maintain other panes' functionality, log parsing errors for debugging
+- **FR-031**: System MUST handle performance degradation for large documents:
+  - **FR-031a**: Documents 200-500 pages - Display warning on load "Large document detected ({N} pages). Performance may be reduced", implement aggressive prefetching (N±3 pages), monitor memory usage
+  - **FR-031b**: Documents > 500 pages - Display blocking modal "Document exceeds recommended limit of 500 pages. Loading large documents may cause performance issues. Continue anyway?", provide cancel option
+  - **FR-031c**: Performance monitoring - Track page navigation time continuously, if navigation exceeds 1 second (2× SC-002 threshold) for 3 consecutive navigations, display warning banner "Performance degraded - consider using smaller document"
+  - **FR-031d**: Graceful degradation - Disable non-essential features if memory pressure detected: reduce prefetch radius (N±1), disable smooth scrolling, reduce PDF render quality to 1x pixel ratio
+  - All performance degradation behaviors MUST be tested with 200-page, 500-page, and 1000-page fixtures, maintain core functionality (view, navigate, compare), log performance metrics for analysis
+- **FR-032**: System MUST enforce memory consumption limits:
+  - **FR-032a**: Per-document limit - Maximum 500MB total memory for PDF rendering + markdown content + images, monitor via Performance API memory methods (where available)
+  - **FR-032b**: Memory pressure detection - Check memory usage every 30 seconds, if > 400MB (80% of limit), trigger aggressive cleanup: clear non-visible page caches, reduce prefetch radius, force garbage collection
+  - **FR-032c**: Memory limit exceeded - If memory exceeds 500MB, display error "Memory limit exceeded. Please use a smaller document or close other browser tabs", disable navigation until memory drops below threshold
+  - **FR-032d**: High-resolution image handling - Compress images in markdown to maximum 2000×2000px, lazy load off-screen images, unload images for pages > 5 pages away from current
+  - Memory limits MUST be configurable via environment variable (MEMORY_LIMIT_MB, default 500), tested with high-resolution PDF fixtures, include fallback for browsers without Performance API memory support
+- **FR-033**: System MUST prevent security vulnerabilities in file system access:
+  - **FR-033a**: Path traversal prevention - Validate all file paths with `path.resolve()` + `path.startsWith(DATA_FOLDER_PATH)`, reject paths containing `..`, `~`, or absolute paths outside data folder
+  - **FR-033b**: Filename validation - Document IDs must match regex `^[a-zA-Z0-9_-]+$` (alphanumeric, dash, underscore only), reject filenames with special characters, null bytes, or excessive length (> 255 chars)
+  - **FR-033c**: Symlink handling - Reject symbolic links in data folder, validate resolved paths after symlink resolution, log security violations with sanitized error messages (no path disclosure)
+  - **FR-033d**: Input sanitization - Language codes must match IETF BCP 47 regex, page numbers must be positive integers, pane widths must be 1-100 integers, reject all other input patterns
+  - **FR-033e**: Error message safety - Security-related errors must not disclose internal paths, file structures, or system details; use generic messages with error codes (per FR-011 and OpenAPI schema)
+  - All security validations MUST have integration tests with malicious input patterns, run security audit tools (npm audit, Snyk) in CI, include path traversal attack simulation tests
 
 ### Key Entities
 
@@ -154,11 +220,17 @@ Users need a simple way to select from available document sets in the configured
 ### Measurable Outcomes
 
 - **SC-001**: Users can load a document set and begin comparing pages within 5 seconds of file selection (measured as time to Largest Contentful Paint - first interactive page, not full document scan)
+  - **Test Method**: Lighthouse CI in GitHub Actions, measure LCP for document list load + first page render, fail CI if > 5s on 3 consecutive runs
 - **SC-002**: Page navigation across all synchronized panes completes within 500 milliseconds for documents up to 100 pages
+  - **Test Method**: Playwright performance test with `page.evaluate()` timing, measure from navigation button click to all panes content visible, average of 10 page transitions
 - **SC-003**: System maintains visual synchronization across all panes with zero drift (all panes always show the same page number)
+  - **Test Method**: Automated E2E test - navigate through 50 pages, after each navigation assert all visible panes display same page number, test with rapid navigation (FR-024a) and mode switching (FR-024b)
 - **SC-004**: Users can successfully review and compare documents up to 200 pages without performance degradation
+  - **Test Method**: Performance smoke test with 200-page fixture, measure page navigation time at pages 1, 50, 100, 150, 200 - all must meet SC-002 threshold (< 500ms)
 - **SC-005**: 95% of users can switch between 2-pane and 3-pane modes without training or documentation
+  - **Test Method**: Usability study with 10 users (internal QA team), task: "Switch to view with translation", success = completes within 30 seconds without help, pass if ≥ 9/10 succeed
 - **SC-006**: System correctly handles and displays markdown formatting for 90% of common markdown elements (headings, lists, emphasis, code blocks)
+  - **Test Method**: Integration test suite with 20 markdown fixtures covering FR-002 elements, visual regression testing with Playwright screenshots, pass if 18/20 fixtures render correctly
 
 ## Constitution Check (in-spec)
 

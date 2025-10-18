@@ -167,10 +167,16 @@ The OCR Translation Comparison Viewer is a Next.js 15 web application that enabl
 
 ### IV. Security & Data Protection: **PASS**
 
-**Evidence**: 
+**Evidence**:
 - No secrets in code: .env.local gitignored, .env.example as template
 - Input validation: Zod schemas for all API inputs (document IDs, page numbers, language codes)
-- File path sanitization: `path.resolve()` with `startsWith()` checks to prevent directory traversal
+- File path sanitization: `path.resolve()` with `startsWith()` checks to prevent directory traversal (FR-033a)
+- Comprehensive security requirements (FR-033a through FR-033e):
+  - Path traversal prevention: Validate paths, reject `..` and absolute paths, startsWith(DATA_FOLDER_PATH) check
+  - Filename validation: Regex `^[a-zA-Z0-9_-]+$`, reject special chars, null bytes, excessive length
+  - Symlink handling: Reject symbolic links, validate resolved paths
+  - Input sanitization: IETF BCP 47 language codes, positive integer page numbers, 1-100 pane widths
+  - Error message safety: No internal path disclosure, generic messages with error codes
 - No user data storage: Stateless application, no authentication required (single-tenant)
 - Dependency scanning: GitHub Dependabot enabled, high/critical vulns block merge
 - Content Security Policy: Next.js headers configured to restrict script sources
@@ -178,14 +184,20 @@ The OCR Translation Comparison Viewer is a Next.js 15 web application that enabl
 **Threat Model**:
 | Threat | Mitigation |
 |--------|------------|
-| Directory traversal | Path validation, allowlist data folder only |
-| XSS in markdown | react-markdown (no dangerouslySetInnerHTML) |
+| Directory traversal | Path validation (FR-033a), allowlist data folder only, reject `..` patterns |
+| XSS in markdown | react-markdown (no dangerouslySetInnerHTML), HTML entity escaping (FR-030d) |
 | PDF exploits | PDF.js in Web Worker (sandboxed) |
-| Malicious file names | Regex validation, slug format required |
+| Malicious file names | Regex validation (FR-033b), slug format required |
+| Symlink attacks | Reject symlinks (FR-033c), validate resolved paths |
+| Input injection | Zod schema validation, regex patterns for all user inputs (FR-033d) |
 
 **Security Tests**:
-- Path traversal attempts rejected
+- Path traversal attempts rejected (FR-033a tests)
 - Invalid document IDs return 404
+- Oversized PDFs rejected with 413 error
+- Markdown with script tags sanitized (FR-030d)
+- Malicious filename patterns rejected (FR-033b tests)
+- Symlink exploitation attempts blocked (FR-033c tests)
 - Oversized PDFs rejected with 413 error
 - Markdown with script tags sanitized
 
@@ -197,29 +209,39 @@ The OCR Translation Comparison Viewer is a Next.js 15 web application that enabl
 
 ### V. Performance & Resource Efficiency: **PASS**
 
-**Evidence**: 
+**Evidence**:
 - Lazy loading: Only current page rendered, adjacent pages prefetched
 - PDF rendering: Web Worker offloads parsing from main thread
 - Code splitting: Dynamic imports for PDF/markdown renderers
 - Image optimization: Next.js `<Image>` component for markdown images
 - Memoization: `React.memo` on Pane components to prevent unnecessary re-renders
 - Caching: API routes cache document metadata (1 hour), page content (stale-while-revalidate)
+- Performance degradation handling (FR-031a through FR-031d):
+  - Large document warnings (200-500 pages), blocking modal (>500 pages)
+  - Continuous monitoring (track nav time), warning banner if performance degrades
+  - Graceful degradation: reduce prefetch, disable smooth scrolling, lower PDF quality
+- Memory management (FR-032a through FR-032d):
+  - 500MB memory limit (configurable via MEMORY_LIMIT_MB)
+  - Memory pressure detection (80% threshold triggers cleanup)
+  - High-res image compression (max 2000×2000px), lazy loading, unload distant pages
 
 **Performance Benchmarks**:
 | Metric | Target | Measurement |
 |--------|--------|-------------|
-| Initial page load (LCP) | < 2.5s | Lighthouse CI |
-| Page navigation | < 500ms | Custom Playwright test |
-| Memory usage (200 pages) | < 500MB | Chrome DevTools profiling |
+| Initial page load (LCP) | < 2.5s (SC-001) | Lighthouse CI, fail CI if > 5s on 3 runs |
+| Page navigation | < 500ms (SC-002) | Playwright timing, average of 10 transitions |
+| Memory usage (200 pages) | < 500MB (FR-032a) | Chrome DevTools profiling, Performance API |
 | Bundle size (gzipped) | < 300KB | Next.js build output |
+| Large doc (200-500 pages) | Degrade gracefully (FR-031a) | Test with fixtures, monitor nav time |
+| Large doc (>500 pages) | Display warning modal (FR-031b) | User confirmation required |
 
 **Optimization Strategies**:
-- Prefetch N-1 and N+1 pages on idle
+- Prefetch N-1 and N+1 pages on idle (N±3 for large docs per FR-031a)
 - Virtual scrolling if markdown content exceeds viewport
-- PDF scale adjusted for device pixel ratio
-- Debounced pane width adjustments
-
-**Links**:
+- PDF scale adjusted for device pixel ratio (reduce to 1x under memory pressure per FR-031d)
+- Debounced pane width adjustments (500ms per FR-024c)
+- Aggressive cleanup at 80% memory threshold (FR-032b)
+- Progressive PDF rendering for high-res documents (FR-029d)**Links**:
 - Performance tests: `tests/e2e/performance.spec.ts`
 - Benchmarks: CI pipeline reports
 
