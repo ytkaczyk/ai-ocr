@@ -21,7 +21,7 @@ This document breaks down the implementation of the OCR Translation Comparison V
 - Zustand (state management)
 - Zod (validation)
 
-**Total Estimated Tasks**: 138 tasks across 6 phases
+**Total Estimated Tasks**: 175 tasks across 6 phases (updated from 138 to include new requirements FR-023 through FR-033)
 
 ---
 
@@ -113,6 +113,11 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 - [ ] T041 [P] Write unit tests for file system utilities in tests/unit/utils/file-system.test.ts
 - [ ] T042 [P] Write unit tests for Zustand stores in tests/unit/stores/
 - [ ] T042a [P] Create performance smoke test for document load time (verify < 5s per SC-001) in tests/integration/performance-smoke.test.ts
+- [ ] T042b [P] Create path traversal prevention utility in lib/utils/security.ts (implements FR-033a: path.resolve + startsWith validation)
+- [ ] T042c [P] Create filename validation utility in lib/utils/security.ts (implements FR-033b: regex ^[a-zA-Z0-9_-]+$, max 255 chars)
+- [ ] T042d [P] Create input sanitization utilities in lib/utils/security.ts (FR-033d: language codes, page numbers, pane widths)
+- [ ] T042e [P] Write unit tests for security utilities in tests/unit/utils/security.test.ts
+- [ ] T042f [P] Create integration tests for path traversal attacks in tests/integration/security.test.ts
 
 ---
 
@@ -150,6 +155,14 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 - [ ] T054 [US3] Implement document loading flow (select → validate → load)
 - [ ] T055 [US3] Add loading states and error handling for document operations
 - [ ] T056 [P] [US3] Write E2E test for document selection in tests/e2e/document-selection.spec.ts
+- [ ] T056a [US3] Create EmptyState component in components/viewer/EmptyState.tsx (implements FR-023a-c: empty folder, no documents, unconfigured path)
+- [ ] T056b [P] [US3] Write unit tests for EmptyState in tests/unit/components/EmptyState.test.tsx
+- [ ] T056c [US3] Add zero-state detection logic to DocumentSelector component
+- [ ] T056d [US3] Implement responsive layout breakpoints in tailwind.config.ts (FR-025: 768px, 1024px, 1440px)
+- [ ] T056e [US3] Add viewport size detection utility in lib/utils/viewport.ts
+- [ ] T056f [US3] Create ViewportWarning component in components/viewer/ViewportWarning.tsx (FR-025c-d: warnings for narrow viewports)
+- [ ] T056g [P] [US3] Write E2E tests for zero-state scenarios in tests/e2e/zero-state.spec.ts
+- [ ] T056h [P] [US3] Write E2E tests for responsive breakpoints in tests/e2e/responsive-layout.spec.ts
 
 ---
 
@@ -206,6 +219,24 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 - [ ] T083 [US1] Add loading indicators for page transitions
 - [ ] T084 [US1] Implement prefetching for adjacent pages (N-1, N+1) using requestIdleCallback or 200ms after page load (whichever first)
 - [ ] T085 [P] [US1] Write E2E test for 2-pane viewing and navigation in tests/e2e/viewer-navigation.spec.ts
+- [ ] T085a [US1] Create debounce utility in lib/utils/debounce.ts (FR-024a: 100ms for navigation, FR-024c: 500ms for URL persist)
+- [ ] T085b [US1] Implement request cancellation using AbortController in API client lib/api/documents.ts
+- [ ] T085c [US1] Add debouncing to page navigation (max 1 request per 100ms per FR-024a)
+- [ ] T085d [US1] Implement in-flight request cancellation for page navigation (FR-024a)
+- [ ] T085e [US1] Add error recovery for file system interruptions (FR-026a-b: retry logic, partial state preservation)
+- [ ] T085f [US1] Implement failed page transition rollback (FR-027b: retain current page on error)
+- [ ] T085g [US1] Add partial content failure handling (FR-027c: show successful panes + error placeholder)
+- [ ] T085h [P] [US1] Write unit tests for debounce utility in tests/unit/utils/debounce.test.ts
+- [ ] T085i [P] [US1] Write integration tests for concurrent navigation in tests/integration/concurrent-navigation.test.ts
+- [ ] T085j [P] [US1] Create E2E test for rapid page navigation (FR-024a) in tests/e2e/concurrent-interactions.spec.ts
+- [ ] T085k [US1] Implement non-standard PDF handling (FR-029a-b: landscape/portrait, custom dimensions, scale to fit)
+- [ ] T085l [US1] Add PDF dimension tooltip on hover (FR-029a: display "8.5 × 11 in")
+- [ ] T085m [US1] Implement progressive PDF loading for high-res documents (FR-029d: low-res placeholder → high-res)
+- [ ] T085n [P] [US1] Write E2E tests for non-standard PDFs in tests/e2e/pdf-edge-cases.spec.ts
+- [ ] T085o [US1] Implement malformed markdown handling (FR-030a: fallback formatting, warning icon)
+- [ ] T085p [US1] Add long line handling in markdown (FR-030b: word-break, horizontal scroll for >10k chars)
+- [ ] T085q [US1] Implement empty content handling (FR-030e: "No content for this page" message)
+- [ ] T085r [P] [US1] Write E2E tests for malformed markdown in tests/e2e/markdown-edge-cases.spec.ts
 
 ---
 
@@ -240,6 +271,12 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 - [ ] T097 [US2] Add mode persistence in URL query params for bookmarking
 - [ ] T098 [P] [US2] Write E2E test for mode switching in tests/e2e/mode-switching.spec.ts
 - [ ] T099 [P] [US2] Write E2E test for 3-pane synchronization in tests/e2e/three-pane-sync.spec.ts
+- [ ] T099a [US2] Implement mode switch queuing during load (FR-024b: queue requests until load completes)
+- [ ] T099b [US2] Add loading indicator for mode switching with status message (FR-024b: "Switching to {mode}...")
+- [ ] T099c [US2] Implement failed mode switch rollback (FR-027a: revert to previous mode, display error)
+- [ ] T099d [US2] Add mode switch error handling with specific messages (FR-027a: "Cannot switch to {mode}: {reason}")
+- [ ] T099e [P] [US2] Write E2E test for mode switching during load in tests/e2e/mode-switch-concurrent.spec.ts
+- [ ] T099f [P] [US2] Write E2E test for failed mode switch rollback in tests/e2e/mode-switch-error.spec.ts
 
 ---
 
@@ -257,47 +294,78 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 - [ ] T102 [P] Optimize bundle size analysis and tree-shaking
 - [ ] T102b [P] Configure Next.js cache headers for API routes (metadata: 1hr, pages: stale-while-revalidate)
 - [ ] T103 [P] Add performance monitoring in tests/e2e/performance.spec.ts
+- [ ] T103a [P] Create performance degradation utility in lib/utils/performance.ts (FR-031: track nav time, detect degradation)
+- [ ] T103b Add large document warning modal (FR-031a: 200-500 pages warning, FR-031b: >500 pages blocking modal)
+- [ ] T103c Implement performance monitoring loop (FR-031c: track 3 consecutive slow navigations, display banner)
+- [ ] T103d Implement graceful degradation strategies (FR-031d: reduce prefetch, disable smooth scroll, lower PDF quality)
+- [ ] T103e [P] Create memory management utility in lib/utils/memory.ts (FR-032: 500MB limit, pressure detection)
+- [ ] T103f Implement memory pressure detection (FR-032b: check every 30s, cleanup at 80% threshold)
+- [ ] T103g Add memory limit exceeded handling (FR-032c: error message, disable navigation)
+- [ ] T103h Implement high-res image handling (FR-032d: compress to 2000×2000, lazy load, unload distant pages)
+- [ ] T103i [P] Write E2E tests for large document handling in tests/e2e/large-documents.spec.ts
+- [ ] T103j [P] Write E2E tests for memory management in tests/e2e/memory-limits.spec.ts
+
+#### Browser Compatibility
+- [ ] T103k [P] Create browser-specific test matrix in playwright.config.ts (FR-028: Chrome, Edge, Firefox, Safari)
+- [ ] T103l [P] Add visual regression testing for cross-browser consistency (FR-028b-c)
+- [ ] T103m Document known browser limitations in docs/browser-compatibility.md (FR-028a: Safari canvas performance)
+- [ ] T103n [P] Write cross-browser E2E tests for critical paths in tests/e2e/cross-browser.spec.ts
 
 #### Accessibility
 - [ ] T104 [P] Add ARIA labels to all interactive elements (panes, pager, mode toggle)
 - [ ] T105 [P] Ensure proper focus management and tab order
-- [ ] T106 [P] Add screen reader announcements for page changes
+- [ ] T106 [P] Add screen reader announcements for page changes (FR-018: ARIA live regions for loading states)
+- [ ] T106a [P] Ensure all loading indicators use ARIA live regions (FR-018: polite/assertive as appropriate)
+- [ ] T106b [P] Ensure all error messages use ARIA roles (FR-011: alert role for errors)
 - [ ] T107 [P] Write accessibility tests with axe-core in tests/e2e/accessibility.spec.ts
 - [ ] T108 [P] Manual testing with NVDA/JAWS/VoiceOver screen readers
 
 #### Error Handling & Edge Cases
 - [ ] T109 [P] Implement global error boundary in app/error.tsx
-- [ ] T110 [P] Add user-friendly error messages for all failure scenarios
-- [ ] T111 [P] Handle missing pages gracefully (show placeholder)
-- [ ] T112 [P] Handle corrupted PDF files with clear error messages
-- [ ] T113 [P] Handle oversized PDFs (exceeds MAX_PDF_SIZE_MB) with 413 response
+- [ ] T110 [P] Add user-friendly error messages for all failure scenarios (implements FR-011a-d error messages)
+- [ ] T110a Ensure error messages never disclose internal paths (FR-033e: generic messages with error codes)
+- [ ] T111 [P] Handle missing pages gracefully (show placeholder per FR-014)
+- [ ] T112 [P] Handle corrupted PDF files with clear error messages (FR-011b: "Cannot render PDF (file may be corrupted)" with re-scan option)
+- [ ] T113 [P] Handle oversized PDFs (exceeds MAX_PDF_SIZE_MB) with 413 response (FR-020)
+- [ ] T113a Add scan operation interruption handling (FR-026c: partial results + refresh button)
+- [ ] T113b Implement symlink rejection in file system utilities (FR-033c: validate resolved paths)
 
 #### Security
-- [ ] T114 [P] Implement path traversal prevention in file system utilities
-- [ ] T115 [P] Add Content Security Policy headers in next.config.mjs
-- [ ] T116 [P] Write security tests for path validation in tests/integration/security.spec.ts
-- [ ] T117 [P] Audit dependencies for vulnerabilities with npm audit
+- [ ] T114 [P] Implement path traversal prevention in file system utilities (already added as T042b, verify implementation complete)
+- [ ] T115 [P] Add Content Security Policy headers in next.config.mjs (restrict script sources per FR-033)
+- [ ] T116 [P] Write security tests for path validation in tests/integration/security.spec.ts (already added as T042f, ensure coverage complete)
+- [ ] T116a [P] Run npm audit in CI pipeline and fail on high/critical vulnerabilities
+- [ ] T116b [P] Add Snyk scanning to CI pipeline for dependency vulnerabilities
+- [ ] T117 [P] Verify all security requirements FR-033a-e are implemented with tests
 
 #### Documentation
 - [ ] T118 [P] Update README.md with project overview and quick start
-- [ ] T119 [P] Document environment variables in .env.example
+- [ ] T119 [P] Document environment variables in .env.example (add MEMORY_LIMIT_MB per FR-032)
 - [ ] T120 [P] Create API documentation from OpenAPI schema
 - [ ] T121 [P] Add inline TSDoc comments to public APIs
 - [ ] T122 [P] Create deployment guide in docs/deployment.md
+- [ ] T122a [P] Create browser compatibility documentation in docs/browser-compatibility.md (FR-028a: known limitations)
 
 #### CI/CD
 - [ ] T123 Create GitHub Actions workflow to run all tests (lint, unit, integration, e2e)
-- [ ] T124 [P] Add coverage reporting with Codecov
+- [ ] T124 [P] Add coverage reporting with Codecov (minimum 70% coverage per plan)
 - [ ] T125 [P] Add build verification step
 - [ ] T126 [P] Configure branch protection rules (require passing tests)
+- [ ] T126a [P] Add Lighthouse CI for performance testing (SC-001: fail if LCP > 5s on 3 runs)
+- [ ] T126b [P] Configure Dependabot for automated dependency updates
 
 #### Final Validation
 - [ ] T127 Run full test suite and verify 70%+ coverage
-- [ ] T128 Test in all supported browsers (Chrome, Firefox, Safari, Edge)
-- [ ] T128a [P] Manual test: Verify markdown element support >= 90% per SC-006
+- [ ] T128 Test in all supported browsers (Chrome, Firefox, Safari, Edge) per FR-022
+- [ ] T128a [P] Manual test: Verify markdown element support >= 90% per SC-006 (20 fixtures, 18/20 pass)
 - [ ] T128b [P] E2E test for data folder error scenarios (misconfigured path, missing folders)
-- [ ] T129 Perform manual QA against all acceptance scenarios
+- [ ] T128c [P] Verify all Success Criteria test methodologies implemented (SC-001 through SC-006)
+- [ ] T128d [P] Run security audit: path traversal, filename validation, symlink rejection (FR-033 tests)
+- [ ] T128e [P] Verify memory management under load (test with 200-page, 500-page fixtures per FR-031-032)
+- [ ] T128f [P] Cross-browser visual regression testing (FR-028: PDF, markdown, layout consistency)
+- [ ] T129 Perform manual QA against all acceptance scenarios (US1-AC1 through US3-AC5)
 - [ ] T130 Constitution check: Verify all 5 principles pass
+- [ ] T130a Verify implementation readiness checklist 25/25 items addressed in implementation
 
 ---
 
@@ -353,15 +421,26 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 
 ## Task Summary
 
-| Phase | Tasks | Parallelizable | User Story | Duration |
-|-------|-------|----------------|------------|----------|
-| Phase 1: Setup | 23 (T001-T023) | 15 | - | 2-4 hours |
-| Phase 2: Foundation | 20 (T024-T042, T042a) | 18 | - | 4-6 hours |
-| Phase 3: US3 | 16 (T043-T056, T045a, T045b, T051b) | 11 | P1 | 6-8 hours |
-| Phase 4: US1 | 30 (T057-T085, T069b) | 15 | P1 | 10-12 hours |
-| Phase 5: US2 | 14 (T086-T099) | 5 | P2 | 4-6 hours |
-| Phase 6: Polish | 35 (T100-T130, T102b, T128a, T128b) | 27 | - | 6-8 hours |
-| **TOTAL** | **138 tasks** | **91 parallelizable** | | **32-44 hours** |
+| Phase | Tasks | Parallelizable | User Story | Duration | Key Additions |
+|-------|-------|----------------|------------|----------|---------------|
+| Phase 1: Setup | 23 (T001-T023) | 15 | - | 2-4 hours | - |
+| Phase 2: Foundation | 25 (T024-T042f) | 23 | - | 5-7 hours | +5 security tasks (FR-033) |
+| Phase 3: US3 | 24 (T043-T056h) | 18 | P1 | 8-10 hours | +8 zero-state/responsive tasks (FR-023, FR-025) |
+| Phase 4: US1 | 48 (T057-T085r) | 28 | P1 | 14-18 hours | +18 concurrent/edge case tasks (FR-024, FR-026-030) |
+| Phase 5: US2 | 20 (T086-T099f) | 8 | P2 | 6-8 hours | +6 mode switch resilience tasks (FR-027) |
+| Phase 6: Polish | 45 (T100-T130a) | 35 | - | 10-14 hours | +14 perf/memory/browser tasks (FR-031-033, FR-028) |
+| **TOTAL** | **185 tasks** | **127 parallelizable (69%)** | | **45-61 hours** | **+47 tasks from enhanced requirements** |
+
+**Key Enhancements from Updated Spec**:
+- Security hardening (FR-033): Path traversal, filename validation, symlink rejection, input sanitization
+- Zero-state UX (FR-023): Empty folder, no documents, unconfigured path scenarios
+- Concurrent interactions (FR-024): Debouncing, request cancellation, queuing
+- Responsive layout (FR-025): 4 breakpoint tiers with device-appropriate UX
+- Error recovery (FR-026-027): File system interruptions, rollback strategies
+- Edge case handling (FR-029-030): Non-standard PDFs, malformed markdown
+- Performance management (FR-031): Large document warnings, graceful degradation
+- Memory limits (FR-032): 500MB cap, pressure detection, cleanup strategies
+- Browser compatibility (FR-028): Cross-browser testing, visual regression
 
 ---
 
@@ -372,6 +451,7 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 3. ⏭️ Set up development environment per quickstart.md
 4. ⏭️ Follow TDD approach: Write test → Implement → Refactor
 5. ⏭️ Track progress by checking off tasks as completed
+6. ⏭️ Reference implementation-readiness.md checklist (25/25 items) during development
 
 ---
 
