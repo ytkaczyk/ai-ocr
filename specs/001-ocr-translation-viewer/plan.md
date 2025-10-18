@@ -124,7 +124,7 @@ The OCR Translation Comparison Viewer is a Next.js 15 web application that enabl
 - ✅ Keyboard-only navigation tested
 - ✅ Focus management on pane content
 - ✅ Color contrast >= 4.5:1 (Tailwind default theme)
-- ✅ Responsive layout (min 1024px width recommended)
+- ✅ Responsive layout: Functional down to 768px (stacked panes), warning displayed < 1024px, optimal experience >= 1440px
 - ✅ Loading states for async operations
 - ✅ Error messages user-friendly (not technical)
 

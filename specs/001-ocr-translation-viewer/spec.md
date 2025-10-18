@@ -7,6 +7,8 @@
 
 ## Clarifications
 
+**Terminology Note**: Throughout this document, `<language_code>` refers to IETF BCP 47 language tags (ISO 639-1 language + ISO 3166-1 country code, e.g., `en-US`, `es-ES`, `fr-CA`). The data folder path is configured via the `DATA_FOLDER_PATH` environment variable.
+
 ### Session 2025-10-16
 
 - Q: Should file processing happen entirely in the browser (client-side) or on a backend server? → A: Server-side processing: Files are uploaded to a backend server that handles PDF rendering and markdown parsing, then streams results to the browser.
@@ -27,11 +29,11 @@ Users need to verify OCR accuracy by viewing the original PDF page side-by-side 
 
 **Acceptance Scenarios**:
 
-1. **Given** a user has opened a PDF and its OCR markdown file, **When** they view the main page, **Then** the left pane displays the PDF page and the right pane displays the corresponding markdown content
-2. **Given** both panes are displaying page 5, **When** the user clicks "Next Page" on the pager control, **Then** both panes advance to page 6 simultaneously
-3. **Given** the user is viewing page 10, **When** they use the pager to jump directly to page 3, **Then** both panes update to show page 3 content
-4. **Given** a multi-page document is loaded, **When** the user scrolls through pages using arrow keys or pager buttons, **Then** both panes remain synchronized at all times
-5. **Given** the user is on the last page, **When** they attempt to navigate forward, **Then** the system prevents navigation and indicates they are at the end
+1. **[US1-AC1]** **Given** a user has opened a PDF and its OCR markdown file, **When** they view the main page, **Then** the left pane displays the PDF page and the right pane displays the corresponding markdown content
+2. **[US1-AC2]** **Given** both panes are displaying page 5, **When** the user clicks "Next Page" on the pager control, **Then** both panes advance to page 6 simultaneously
+3. **[US1-AC3]** **Given** the user is viewing page 10, **When** they use the pager to jump directly to page 3, **Then** both panes update to show page 3 content
+4. **[US1-AC4]** **Given** a multi-page document is loaded, **When** the user scrolls through pages using arrow keys or pager buttons, **Then** both panes remain synchronized at all times
+5. **[US1-AC5]** **Given** the user is on the last page, **When** they attempt to navigate forward, **Then** the system prevents navigation and indicates they are at the end
 
 ---
 
@@ -45,10 +47,10 @@ Users need to toggle between comparing just OCR output (2 panes) and comparing b
 
 **Acceptance Scenarios**:
 
-1. **Given** a user has loaded documents including a translation file, **When** they select "3-Pane Mode" from a view toggle, **Then** the interface displays original PDF, OCR markdown, and translated markdown side-by-side
-2. **Given** the user is in 3-pane mode on page 7, **When** they switch to 2-pane mode, **Then** the system shows only PDF and OCR markdown for page 7
-3. **Given** the user is in 2-pane mode, **When** they load a document set that includes a translation file, **Then** the system offers the option to switch to 3-pane mode
-4. **Given** the user switches between modes, **When** they navigate using the pager, **Then** all visible panes remain synchronized to the same page number
+1. **[US2-AC1]** **Given** a user has loaded documents including a translation file, **When** they select "3-Pane Mode" from a view toggle, **Then** the interface displays original PDF, OCR markdown, and translated markdown side-by-side
+2. **[US2-AC2]** **Given** the user is in 3-pane mode on page 7, **When** they switch to 2-pane mode, **Then** the system shows only PDF and OCR markdown for page 7
+3. **[US2-AC3]** **Given** the user is in 2-pane mode, **When** they load a document set that includes a translation file, **Then** the system offers the option to switch to 3-pane mode
+4. **[US2-AC4]** **Given** the user switches between modes, **When** they navigate using the pager, **Then** all visible panes remain synchronized to the same page number
 
 ---
 
@@ -62,19 +64,19 @@ Users need a simple way to select from available document sets in the configured
 
 **Acceptance Scenarios**:
 
-1. **Given** the data folder contains document sets, **When** a user opens the application, **Then** the system displays a list of available documents to choose from
-2. **Given** a user selects a document from the list, **When** the system detects available language folders (raw.source, source, raw.target, target), **Then** it displays the PDF and source markdown in 2-pane mode by default
-3. **Given** a user has loaded a document with both source and target language folders, **When** they request 3-pane mode, **Then** the system displays PDF, source markdown, and target markdown side-by-side
-4. **Given** a user attempts to load a document with mismatched page counts between PDF and markdown files, **When** the system detects the mismatch, **Then** it displays a warning but allows viewing with clear indicators where content is missing
-5. **Given** a user selects a large document, **When** the loading completes, **Then** the system displays the first page within 3 seconds and enables pager navigation
+1. **[US3-AC1]** **Given** the data folder contains document sets, **When** a user opens the application, **Then** the system displays a list of available documents to choose from
+2. **[US3-AC2]** **Given** a user selects a document from the list, **When** the system detects available language folders (raw.source, source, raw.target, target), **Then** it displays the PDF and source markdown in 2-pane mode by default
+3. **[US3-AC3]** **Given** a user has loaded a document with both source and target language folders, **When** they request 3-pane mode, **Then** the system displays PDF, source markdown, and target markdown side-by-side
+4. **[US3-AC4]** **Given** a user attempts to load a document with mismatched page counts between PDF and markdown files, **When** the system detects the mismatch, **Then** it displays a warning but allows viewing with clear indicators where content is missing
+5. **[US3-AC5]** **Given** a user selects a large document, **When** the loading completes, **Then** the system displays the first page within 3 seconds and enables pager navigation
 
 ---
 
 ### Edge Cases
 
 - What happens when the PDF has 50 pages but the OCR markdown only represents 48 pages?
-- How does the system handle very large documents (500+ pages) without performance degradation?
-- What happens if the user tries to load a PDF that cannot be rendered (corrupted file)?
+- How does the system handle large documents? System MUST support 200 pages per SC-004 without performance degradation, MAY degrade gracefully beyond 200 pages, and SHOULD reject documents with more than 500 pages.
+- What happens if the user tries to load a PDF that cannot be rendered (corrupted file)? Display user-friendly error "Cannot render PDF (file may be corrupted)" with option to re-scan.
 - What happens if a PDF exceeds the configured maximum file size limit (default 50MB)?
 - How does the system behave when markdown files contain formatting that cannot be displayed in a pane (embedded images, complex tables)?
 - What happens when the user resizes the browser window with multiple panes visible?
@@ -92,7 +94,7 @@ Users need a simple way to select from available document sets in the configured
 - **FR-003**: System MUST provide a pager control that allows users to navigate between pages using next/previous buttons and direct page number input
 - **FR-004**: System MUST keep all visible panes synchronized to display the same page number at all times
 - **FR-005**: System MUST support two display modes: 2-pane (PDF + OCR markdown) and 3-pane (PDF + OCR markdown + translated markdown)
-- **FR-006**: Users MUST be able to switch between 2-pane and 3-pane modes without losing their current page position
+- **FR-006**: System MUST allow users to switch between 2-pane and 3-pane modes without losing their current page position
 - **FR-007**: System MUST scan the configured data folder and present users with a list of available document sets (PDFs with corresponding folder structures)
 - **FR-008**: System MUST read the data folder path from a .env configuration file
 - **FR-009**: System MUST load per-page markdown files following the naming convention `<file_name>.[raw.]<language_code>_page_<N>.md` synchronized with PDF page numbers
@@ -100,10 +102,10 @@ Users need a simple way to select from available document sets in the configured
 - **FR-011**: System MUST validate the folder structure and display appropriate error messages when expected files or folders are missing
 - **FR-012**: System MUST display the current page number and total page count in the pager control
 - **FR-013**: System MUST prevent navigation beyond the available page range (no negative pages, no pages beyond document length)
-- **FR-014**: System MUST handle documents with mismatched page counts gracefully, showing available content and indicating missing pages
-- **FR-015**: System MUST provide keyboard shortcuts for page navigation (arrow keys, page up/down)
+- **FR-014**: System MUST handle documents with mismatched page counts gracefully, showing available content and indicating missing pages with a placeholder displaying "Page N unavailable" with a visual indicator (icon/color)
+- **FR-015**: System MUST provide keyboard shortcuts for page navigation (Left/Right arrow keys for previous/next page, Page Up/Down for previous/next page; Up/Down arrows reserved for content scrolling)
 - **FR-016**: System MUST render markdown content with basic formatting preserved (headings, paragraphs, lists, emphasis)
-- **FR-017**: Users MUST be able to adjust the width of individual panes to focus on specific content
+- **FR-017**: System MUST allow users to adjust the width of individual panes to focus on specific content. Pane width adjustable between 20% and 80% of viewport width, with changes persisted in URL query parameters.
 - **FR-018**: System MUST display loading indicators when switching pages or loading new documents
 - **FR-019**: System MUST support language-specific folder naming conventions (raw.<language_code> for raw OCR, <language_code> for processed content)
 - **FR-020**: System MUST reject PDF files larger than a configurable maximum file size (defined in .env file, default: 50MB) and display an appropriate error message to the user
@@ -111,6 +113,8 @@ Users need a simple way to select from available document sets in the configured
 - **FR-022**: System MUST function correctly in Chrome, Edge, Firefox, and Safari (current and 1 previous major version)
 
 ### Key Entities
+
+*Note: This section provides a high-level summary. See [data-model.md](./data-model.md) for canonical entity definitions with full validation rules and relationships.*
 
 - **Document Set**: Represents a collection of files following the prescribed folder structure: `<file_name>.pdf` plus `<file_name>/` directory containing language-specific subfolders (`[raw.]<language_code>/`) with per-page markdown files and images. Attributes: file name, available languages (source/target, raw/processed), page count, current page position, display mode (2-pane or 3-pane), data folder path
 - **Page**: Represents a single page view within the document set, with content loaded from per-page markdown files (`<file_name>.[raw.]<language_code>_page_<N>.md`) and corresponding PDF page. Attributes: page number, content source (PDF/source language/target language), rendered content, associated images
@@ -121,7 +125,7 @@ Users need a simple way to select from available document sets in the configured
 
 ### Measurable Outcomes
 
-- **SC-001**: Users can load a document set and begin comparing pages within 5 seconds of file selection
+- **SC-001**: Users can load a document set and begin comparing pages within 5 seconds of file selection (measured as time to Largest Contentful Paint - first interactive page, not full document scan)
 - **SC-002**: Page navigation across all synchronized panes completes within 500 milliseconds for documents up to 100 pages
 - **SC-003**: System maintains visual synchronization across all panes with zero drift (all panes always show the same page number)
 - **SC-004**: Users can successfully review and compare documents up to 200 pages without performance degradation

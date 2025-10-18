@@ -119,8 +119,14 @@ paths:
                     items:
                       type: string
                     example: ['Page 47 missing in raw.en-US folder']
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /documents/{documentId}/pages/{pageNumber}/pdf:
     get:
@@ -540,18 +546,34 @@ components:
     Error:
       type: object
       required:
-        - error
+        - code
         - message
       properties:
-        error:
+        code:
           type: string
+          description: Machine-readable error code
+          enum:
+            - DOCUMENT_NOT_FOUND
+            - INVALID_PAGE_NUMBER
+            - INVALID_DOCUMENT_ID
+            - INVALID_LANGUAGE_CODE
+            - PDF_TOO_LARGE
+            - CORRUPTED_PDF
+            - MISSING_DATA_FOLDER
+            - INVALID_FOLDER_STRUCTURE
+            - INTERNAL_ERROR
           example: 'DOCUMENT_NOT_FOUND'
         message:
           type: string
+          description: Human-readable error message
           example: 'Document with ID "contract-2024" not found'
         details:
           type: object
+          description: Additional error context (optional)
           additionalProperties: true
+          example:
+            maxSizeMB: 50
+            actualSizeMB: 75
 
   responses:
     BadRequest:
@@ -561,8 +583,22 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            error: 'INVALID_PAGE_NUMBER'
+            code: 'INVALID_PAGE_NUMBER'
             message: 'Page number must be between 1 and 87'
+
+    PayloadTooLarge:
+      description: PDF file exceeds maximum size limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 'PDF_TOO_LARGE'
+            message: 'PDF file exceeds maximum allowed size'
+            details:
+              maxSizeMB: 50
+              actualSizeMB: 75
+              configKey: 'MAX_PDF_SIZE_MB'
 
     NotFound:
       description: Resource not found
@@ -571,7 +607,7 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            error: 'DOCUMENT_NOT_FOUND'
+            code: 'DOCUMENT_NOT_FOUND'
             message: 'Document with ID "contract-2024" not found'
 
     InternalServerError:
@@ -581,7 +617,7 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            error: 'INTERNAL_ERROR'
+            code: 'INTERNAL_ERROR'
             message: 'Failed to read data folder'
             details:
               path: '/data'

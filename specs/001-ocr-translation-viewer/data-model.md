@@ -1,10 +1,8 @@
 # Data Model: OCR Translation Comparison Viewer
 
-**Date**: 2025-10-17  
-**Feature**: 001-ocr-translation-viewer  
-**Purpose**: Define entities, relationships, and validation rules
-
-## Overview
+**Date**: 2025-10-18 (Updated with IETF BCP 47 language codes)
+**Feature**: 001-ocr-translation-viewer
+**Purpose**: Define entities, relationships, and validation rules## Overview
 
 This document defines the domain entities for the OCR Translation Comparison Viewer. All entities are derived from functional requirements in `spec.md` and support the three user stories.
 
@@ -62,9 +60,9 @@ This document defines the domain entities for the OCR Translation Comparison Vie
 
 | Attribute | Type | Required | Validation | Description |
 |-----------|------|----------|------------|-------------|
-| `languageCode` | `string` | ✅ | ISO 639-1 code (e.g., `en`, `es`, `ja`) | Language identifier |
+| `languageCode` | `string` | ✅ | IETF BCP 47 language tag (e.g., `en-US`, `es-ES`, `fr-CA`), pattern: `^[a-z]{2}-[A-Z]{2}$` | Language and locale identifier |
 | `isRaw` | `boolean` | ✅ | - | True if raw OCR output, false if processed |
-| `folderName` | `string` | ✅ | `raw.<lang>` or `<lang>` | Folder name (e.g., `raw.en`, `en`) |
+| `folderName` | `string` | ✅ | `raw.<lang-COUNTRY>` or `<lang-COUNTRY>` | Folder name (e.g., `raw.en-US`, `en-US`) |
 | `pageFiles` | `PageFile[]` | ✅ | Min length: 1 | Markdown files for each page |
 | `isComplete` | `boolean` | ✅ | - | True if page count matches PDF |
 | `missingPages` | `number[]` | ✅ | - | Page numbers with missing markdown files |
@@ -75,7 +73,7 @@ This document defines the domain entities for the OCR Translation Comparison Vie
 
 **Business Rules**:
 1. Processed version (`isRaw: false`) is preferred for display (FR-021)
-2. Folder naming convention: `raw.<languageCode>` for raw, `<languageCode>` for processed
+2. Folder naming convention: `raw.<languageCode>` for raw, `<languageCode>` for processed (following IETF BCP 47 format)
 3. Page numbering starts at 1 (not 0-indexed)
 
 ---
@@ -92,7 +90,7 @@ This document defines the domain entities for the OCR Translation Comparison Vie
 |-----------|------|----------|------------|-------------|
 | `pageNumber` | `number` | ✅ | Integer, >= 1, <= DocumentSet.pageCount | Page number (1-indexed) |
 | `filePath` | `string` | ✅ | Absolute path, exists, `.md` extension | Full path to markdown file |
-| `fileName` | `string` | ✅ | Format: `<base>.[raw.]<lang>_page_<N>.md` | File name |
+| `fileName` | `string` | ✅ | Format: `<base>.[raw.]<lang-COUNTRY>_page_<N>.md` | File name (IETF BCP 47 format) |
 | `content` | `string` | ✅ | Valid markdown | Raw markdown content |
 | `hasImages` | `boolean` | ✅ | - | Whether markdown references images |
 | `imageFiles` | `string[]` | ✅ | Relative paths within language folder | Paths to referenced images |
@@ -102,7 +100,7 @@ This document defines the domain entities for the OCR Translation Comparison Vie
 - Belongs to one `LanguageVersion`
 
 **Business Rules**:
-1. File naming: `<fileName>.[raw.]<languageCode>_page_<pageNumber>.md`
+1. File naming: `<fileName>.[raw.]<languageCode>_page_<pageNumber>.md` (following IETF BCP 47 format, e.g., `contract.en-US_page_1.md`)
 2. Images resolved relative to markdown file location
 3. Missing images do not block page display (show broken image indicator)
 
