@@ -99,14 +99,25 @@ Users need a simple way to select from available document sets in the configured
 - **FR-008**: System MUST read the data folder path from a .env configuration file
 - **FR-009**: System MUST load per-page markdown files following the naming convention `<file_name>.[raw.]<language_code>_page_<N>.md` synchronized with PDF page numbers
 - **FR-010**: System MUST render images referenced in markdown files from the same directory as the markdown file for each pane. Display placeholder with alt text for missing images.
-- **FR-011**: System MUST validate the folder structure and display appropriate error messages when expected files or folders are missing
+- **FR-011**: System MUST handle errors from all external dependencies with user-friendly messages and recovery options:
+  - **FR-011a**: File system errors - Display specific messages for: missing data folder ("Data folder not found. Check DATA_FOLDER_PATH in .env"), permission denied ("Cannot access data folder. Check file permissions"), missing document folder ("Document folder missing or invalid structure")
+  - **FR-011b**: PDF parsing errors - Display specific messages for: corrupted PDF ("Cannot render PDF (file may be corrupted)" with option to re-scan), unsupported PDF format ("PDF format not supported"), PDF rendering failure ("Failed to render PDF page N" with retry option)
+  - **FR-011c**: Markdown rendering errors - Display specific messages for: missing markdown file ("Markdown file not found for page N"), malformed markdown ("Cannot display content due to formatting errors" - show raw text as fallback), invalid image paths (placeholder with alt text per FR-010)
+  - **FR-011d**: Folder structure validation - Display specific messages for: invalid language code format (must match IETF BCP 47), missing language folders ("No language versions found for this document"), incomplete page sequence ("Missing pages detected: [list]")
+  - All error messages MUST be user-friendly (avoid technical jargon), include recovery actions where applicable, and be accessible (ARIA roles, semantic HTML)
 - **FR-012**: System MUST display the current page number and total page count in the pager control
 - **FR-013**: System MUST prevent navigation beyond the available page range (no negative pages, no pages beyond document length)
 - **FR-014**: System MUST handle documents with mismatched page counts gracefully, showing available content and indicating missing pages with a placeholder displaying "Page N unavailable" with a visual indicator (icon/color)
 - **FR-015**: System MUST provide keyboard shortcuts for page navigation (Left/Right arrow keys for previous/next page, Page Up/Down for previous/next page; Up/Down arrows reserved for content scrolling)
 - **FR-016**: System MUST render markdown content with basic formatting preserved (headings, paragraphs, lists, emphasis)
 - **FR-017**: System MUST allow users to adjust the width of individual panes to focus on specific content. Pane width adjustable between 20% and 80% of viewport width, with changes persisted in URL query parameters.
-- **FR-018**: System MUST display loading indicators when switching pages or loading new documents
+- **FR-018**: System MUST display loading indicators for all asynchronous operations:
+  - **FR-018a**: Document list scanning - Show skeleton loader or spinner while scanning data folder
+  - **FR-018b**: Document loading - Show progress indicator when loading selected document (PDF + markdown files)
+  - **FR-018c**: Page transitions - Show loading state in affected panes during page navigation (target: < 500ms per SC-002)
+  - **FR-018d**: Pane rendering - Show placeholder/skeleton for individual panes while PDF or markdown content loads
+  - **FR-018e**: Mode switching - Indicate loading state when switching between 2-pane and 3-pane modes
+  - All loading indicators MUST be accessible (ARIA live regions) and non-blocking (user can cancel/navigate away)
 - **FR-019**: System MUST support language-specific folder naming conventions (raw.<language_code> for raw OCR, <language_code> for processed content)
 - **FR-020**: System MUST reject PDF files larger than a configurable maximum file size (defined in .env file, default: 50MB) and display an appropriate error message to the user
 - **FR-021**: System MUST display processed content (`<language_code>` folders) by default when both raw and processed versions are available for a language

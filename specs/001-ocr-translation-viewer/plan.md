@@ -125,8 +125,19 @@ The OCR Translation Comparison Viewer is a Next.js 15 web application that enabl
 - ✅ Focus management on pane content
 - ✅ Color contrast >= 4.5:1 (Tailwind default theme)
 - ✅ Responsive layout: Functional down to 768px (stacked panes), warning displayed < 1024px, optimal experience >= 1440px
-- ✅ Loading states for async operations
-- ✅ Error messages user-friendly (not technical)
+- ✅ Loading states for async operations (FR-018a through FR-018e):
+  - Document list scanning with skeleton/spinner
+  - Document loading with progress indicator
+  - Page transitions with loading in affected panes (< 500ms per SC-002)
+  - Pane rendering with placeholders/skeletons
+  - Mode switching with indicators (2-pane ↔ 3-pane)
+  - All loading indicators accessible (ARIA live regions, non-blocking)
+- ✅ Error messages user-friendly (not technical) with recovery options (FR-011a through FR-011d):
+  - File system errors: Specific messages for missing folders, permissions, invalid structure
+  - PDF parsing errors: Specific messages for corrupted files, unsupported formats, rendering failures
+  - Markdown rendering errors: Specific messages for missing files, malformed content, invalid images
+  - Folder validation errors: Specific messages for invalid language codes, missing versions, incomplete pages
+  - All error messages include recovery actions and are accessible (ARIA roles, semantic HTML)
 
 **Accessibility Testing**:
 - Manual: Keyboard navigation, screen reader (NVDA/JAWS/VoiceOver)
