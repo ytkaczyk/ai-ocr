@@ -7,7 +7,11 @@
 
 ## Clarifications
 
-**Terminology Note**: Throughout this document, `<language_code>` refers to IETF BCP 47 language tags (ISO 639-1 language + ISO 3166-1 country code, e.g., `en-US`, `es-ES`, `fr-CA`). The data folder path is configured via the `DATA_FOLDER_PATH` environment variable.
+**Terminology Note**: Throughout this document:
+- `<language_code>` refers to IETF BCP 47 language tags (ISO 639-1 language + ISO 3166-1 country code, e.g., `en-US`, `es-ES`, `fr-CA`)
+- The data folder path is configured via the `DATA_FOLDER_PATH` environment variable
+- "DocumentSet" (capitalized) refers to the data entity, while "document set" (lowercase) refers to general document collections
+- "Prescribed folder structure" means the folder naming convention defined in FR-009: `<file_name>.pdf` + `<file_name>/[raw.]<language_code>/` with per-page markdown files
 
 ### Session 2025-10-16
 

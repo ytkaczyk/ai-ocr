@@ -10,6 +10,8 @@
 
 The OCR Translation Comparison Viewer is a Next.js 15 web application that enables users to compare original PDF documents with their OCR-extracted and translated markdown outputs side-by-side. The system supports both 2-pane (PDF + OCR) and 3-pane (PDF + OCR + translation) viewing modes with synchronized page navigation. Documents are pre-loaded in a configured server-side data folder; no file uploads are required. The application follows test-driven development principles with comprehensive test coverage, automated CI/CD via GitHub Actions, and strict adherence to constitution principles for code quality, accessibility, security, and performance.
 
+**Terminology**: "DocumentSet" (entity) vs "document set" (general reference). See spec.md for complete terminology glossary.
+
 **Key Technical Decisions**:
 - Next.js 15 App Router for full-stack React framework
 - ShadCN UI component library for accessible, customizable components
