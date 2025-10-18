@@ -65,7 +65,7 @@ Users need a simple way to select from available document sets in the configured
 **Acceptance Scenarios**:
 
 1. **[US3-AC1]** **Given** the data folder contains document sets, **When** a user opens the application, **Then** the system displays a list of available documents to choose from
-2. **[US3-AC2]** **Given** a user selects a document from the list, **When** the system detects available language folders (raw.source, source, raw.target, target), **Then** it displays the PDF and source markdown in 2-pane mode by default
+2. **[US3-AC2]** **Given** a user selects a document from the list, **When** the system detects available language folders (e.g., raw.en-US, en-US, raw.es-ES, es-ES), **Then** it displays the PDF and source language markdown in 2-pane mode by default
 3. **[US3-AC3]** **Given** a user has loaded a document with both source and target language folders, **When** they request 3-pane mode, **Then** the system displays PDF, source markdown, and target markdown side-by-side
 4. **[US3-AC4]** **Given** a user attempts to load a document with mismatched page counts between PDF and markdown files, **When** the system detects the mismatch, **Then** it displays a warning but allows viewing with clear indicators where content is missing
 5. **[US3-AC5]** **Given** a user selects a large document, **When** the loading completes, **Then** the system displays the first page within 3 seconds and enables pager navigation
@@ -98,7 +98,7 @@ Users need a simple way to select from available document sets in the configured
 - **FR-007**: System MUST scan the configured data folder and present users with a list of available document sets (PDFs with corresponding folder structures)
 - **FR-008**: System MUST read the data folder path from a .env configuration file
 - **FR-009**: System MUST load per-page markdown files following the naming convention `<file_name>.[raw.]<language_code>_page_<N>.md` synchronized with PDF page numbers
-- **FR-010**: System MUST render images referenced in markdown files from the same directory as the markdown file for each pane
+- **FR-010**: System MUST render images referenced in markdown files from the same directory as the markdown file for each pane. Display placeholder with alt text for missing images.
 - **FR-011**: System MUST validate the folder structure and display appropriate error messages when expected files or folders are missing
 - **FR-012**: System MUST display the current page number and total page count in the pager control
 - **FR-013**: System MUST prevent navigation beyond the available page range (no negative pages, no pages beyond document length)
