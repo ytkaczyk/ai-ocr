@@ -122,6 +122,23 @@ Users need a simple way to select from available document sets in the configured
 - **FR-020**: System MUST reject PDF files larger than a configurable maximum file size (defined in .env file, default: 50MB) and display an appropriate error message to the user
 - **FR-021**: System MUST display processed content (`<language_code>` folders) by default when both raw and processed versions are available for a language
 - **FR-022**: System MUST function correctly in Chrome, Edge, Firefox, and Safari (current and 1 previous major version)
+- **FR-023**: System MUST handle zero-state scenarios with appropriate UI feedback:
+  - **FR-023a**: Empty data folder - Display message "No documents found. Add PDF files and language folders to {DATA_FOLDER_PATH}" with instructions for folder structure
+  - **FR-023b**: No documents found - Display message "No valid document sets found. Check folder structure matches: <file>.pdf + <file>/<language_code>/" with link to documentation
+  - **FR-023c**: Data folder not configured - Display message "DATA_FOLDER_PATH not set in .env file" with setup instructions
+  - All zero-state messages MUST include actionable next steps and be accessible (ARIA live regions, semantic HTML)
+- **FR-024**: System MUST handle concurrent user interactions gracefully:
+  - **FR-024a**: Rapid page navigation - Debounce navigation requests (max 1 per 100ms), cancel in-flight requests when new navigation initiated, display latest requested page when loaded
+  - **FR-024b**: Mode switching during load - Queue mode switch requests until current document load completes, display loading indicator with "Switching to {mode}..." message
+  - **FR-024c**: Pane width adjustment during navigation - Allow pane resize without blocking navigation, apply width changes immediately to UI, persist to URL after debounce (500ms)
+  - **FR-024d**: Multiple rapid document selections - Cancel previous document load when new document selected, clear stale content immediately, show loading state for newly selected document
+  - All concurrent interactions MUST maintain UI responsiveness (no blocking operations) and data consistency (no race conditions, no stale state)
+- **FR-025**: System MUST provide responsive layout with device-appropriate UX:
+  - **FR-025a**: Optimal desktop (≥ 1440px) - Side-by-side panes with adjustable widths (FR-017), all features fully accessible
+  - **FR-025b**: Standard desktop (1024px - 1439px) - Side-by-side panes with reduced minimum width (30%), all features accessible
+  - **FR-025c**: Tablet/small desktop (768px - 1023px) - Vertically stacked panes, display warning banner "For best experience, use viewport ≥ 1024px", pane width adjustment disabled
+  - **FR-025d**: Mobile (< 768px) - Display message "This application requires viewport ≥ 768px. Please use a desktop or tablet device" with current viewport dimensions, disable viewer functionality
+  - All responsive breakpoints MUST be tested across browsers (FR-022), maintain accessibility standards, preserve keyboard navigation
 
 ### Key Entities
 

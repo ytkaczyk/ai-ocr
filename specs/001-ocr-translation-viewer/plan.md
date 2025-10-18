@@ -124,7 +124,12 @@ The OCR Translation Comparison Viewer is a Next.js 15 web application that enabl
 - ✅ Keyboard-only navigation tested
 - ✅ Focus management on pane content
 - ✅ Color contrast >= 4.5:1 (Tailwind default theme)
-- ✅ Responsive layout: Functional down to 768px (stacked panes), warning displayed < 1024px, optimal experience >= 1440px
+- ✅ Responsive layout with device-appropriate UX (FR-025a through FR-025d):
+  - Optimal desktop (≥ 1440px): Side-by-side panes with adjustable widths
+  - Standard desktop (1024px - 1439px): Side-by-side panes with reduced minimum width
+  - Tablet/small desktop (768px - 1023px): Vertically stacked panes with warning banner
+  - Mobile (< 768px): Graceful degradation with viewport requirement message
+  - All breakpoints tested across browsers, maintain accessibility and keyboard navigation
 - ✅ Loading states for async operations (FR-018a through FR-018e):
   - Document list scanning with skeleton/spinner
   - Document loading with progress indicator
@@ -138,6 +143,17 @@ The OCR Translation Comparison Viewer is a Next.js 15 web application that enabl
   - Markdown rendering errors: Specific messages for missing files, malformed content, invalid images
   - Folder validation errors: Specific messages for invalid language codes, missing versions, incomplete pages
   - All error messages include recovery actions and are accessible (ARIA roles, semantic HTML)
+- ✅ Zero-state scenarios with actionable feedback (FR-023a through FR-023c):
+  - Empty data folder: Instructions for adding documents with folder structure example
+  - No valid documents: Validation help with structure requirements and documentation link
+  - Unconfigured data folder: Setup instructions for .env file configuration
+  - All zero-state messages accessible with ARIA live regions
+- ✅ Concurrent interactions handled gracefully (FR-024a through FR-024d):
+  - Rapid page navigation: Debounced with in-flight cancellation, no blocking
+  - Mode switching during load: Queued with clear loading indicators
+  - Pane resize during navigation: Non-blocking with debounced persistence
+  - Multiple document selections: Cancellation of stale loads, immediate state clearing
+  - All interactions maintain UI responsiveness and data consistency
 
 **Accessibility Testing**:
 - Manual: Keyboard navigation, screen reader (NVDA/JAWS/VoiceOver)

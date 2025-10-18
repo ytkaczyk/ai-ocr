@@ -11,9 +11,9 @@
 
 - [x] CHK001 - Are loading state requirements defined for all asynchronous operations (document scan, page load, pane rendering)? [Gap] → **RESOLVED**: FR-018a through FR-018e now cover all async operations with accessibility requirements
 - [x] CHK002 - Are error state requirements specified for all external dependencies (file system, PDF parsing, markdown rendering)? [Completeness, Spec §FR-011] → **RESOLVED**: FR-011a through FR-011d now specify error messages and recovery options for all dependencies
-- [ ] CHK003 - Are requirements defined for zero-state scenarios (empty data folder, no documents found)? [Coverage, Gap]
-- [ ] CHK004 - Are concurrent user interaction requirements addressed (e.g., rapid page navigation, mode switching during load)? [Coverage, Gap]
-- [ ] CHK005 - Are responsive layout requirements defined for viewport sizes below 1024px? [Gap]
+- [x] CHK003 - Are requirements defined for zero-state scenarios (empty data folder, no documents found)? [Coverage, Gap] → **RESOLVED**: FR-023a through FR-023c now specify UI feedback and actionable next steps for all zero-state scenarios
+- [x] CHK004 - Are concurrent user interaction requirements addressed (e.g., rapid page navigation, mode switching during load)? [Coverage, Gap] → **RESOLVED**: FR-024a through FR-024d now specify handling for rapid navigation, mode switching, pane resizing, and document selection with debouncing and cancellation strategies
+- [x] CHK005 - Are responsive layout requirements defined for viewport sizes below 1024px? [Gap] → **RESOLVED**: FR-025a through FR-025d now define responsive behavior for all viewport sizes (≥1440px, 1024-1439px, 768-1023px, <768px) with device-appropriate UX
 
 ---
 
