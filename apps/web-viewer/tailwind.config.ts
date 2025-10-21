@@ -18,6 +18,12 @@ const config: Config = {
         "2xl": "1400px",
       },
     },
+    screens: {
+      // FR-025: Responsive layout breakpoints
+      'sm': '768px',    // Tablet: 768-1023px
+      'md': '1024px',   // Desktop: 1024-1439px
+      'lg': '1440px',   // Large Desktop: ≥1440px
+    },
     extend: {
       colors: {
         border: "hsl(var(--border))",
