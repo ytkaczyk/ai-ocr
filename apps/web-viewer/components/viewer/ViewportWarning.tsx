@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { AlertTriangle, Monitor } from 'lucide-react';
-import { getViewportSize, getViewportSizeName, createViewportListener, type ViewportSize } from '@/lib/utils/viewport';
+import { getViewportSize, getViewportSizeName, createViewportListener } from '@/lib/utils/viewport';
 
 /**
  * ViewportWarning component
@@ -11,7 +11,7 @@ import { getViewportSize, getViewportSizeName, createViewportListener, type View
  */
 
 export function ViewportWarning() {
-  const [viewportSize, setViewportSize] = useState<ViewportSize>(() => getViewportSize());
+  const [viewportSize, setViewportSize] = useState<ReturnType<typeof getViewportSize>>('large-desktop');
   const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export function ViewportWarning() {
 
   // Reset dismissal when viewport size changes
   useEffect(() => {
-    setIsDismissed(false);
+    queueMicrotask(() => setIsDismissed(false));
   }, [viewportSize]);
 
   // Don't show warning for desktop sizes

@@ -237,63 +237,63 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 ### Tasks:
 
 #### API Layer
-- [ ] T057 [P] [US1] Create GET /api/documents/[documentId]/pages/[pageNumber]/pdf/route in app/api/documents/[documentId]/pages/[pageNumber]/pdf/route.ts
-- [ ] T058 [P] [US1] Create GET /api/documents/[documentId]/pages/[pageNumber]/markdown/route in app/api/documents/[documentId]/pages/[pageNumber]/markdown/route.ts
-- [ ] T059 [P] [US1] Create GET /api/documents/[documentId]/images/[...path]/route for markdown images
+- [X] T057 [P] [US1] Create GET /api/documents/[documentId]/pages/[pageNumber]/pdf/route in app/api/documents/[documentId]/pages/[pageNumber]/pdf/route.ts
+- [X] T058 [P] [US1] Create GET /api/documents/[documentId]/pages/[pageNumber]/markdown/route in app/api/documents/[documentId]/pages/[pageNumber]/markdown/route.ts
+- [X] T059 [P] [US1] Create GET /api/documents/[documentId]/images/[...path]/route for markdown images
 - [ ] T060 [P] [US1] Write integration tests for page content API routes in tests/integration/api/pages.test.ts
 
 #### PDF Rendering
-- [ ] T061 [US1] Create PDF rendering utility in lib/utils/pdf-renderer.ts using React-PDF
-- [ ] T062 [US1] Create PdfPane component in components/viewer/PdfPane.tsx
+- [X] T061 [US1] Create PDF rendering utility in lib/utils/pdf-renderer.ts using React-PDF
+- [X] T062 [US1] Create PdfPane component in components/viewer/PdfPane.tsx
 - [ ] T063 [P] [US1] Write unit tests for PdfPane in tests/unit/components/PdfPane.test.tsx
-- [ ] T064 [US1] Implement PDF page loading with error boundaries
-- [ ] T065 [US1] Add PDF worker configuration in app/layout.tsx
+- [X] T064 [US1] Implement PDF page loading with error boundaries
+- [X] T065 [US1] Add PDF worker configuration in app/layout.tsx
 
 #### Markdown Rendering
-- [ ] T066 [US1] Create markdown parsing utility in lib/utils/markdown-parser.ts
-- [ ] T067 [US1] Create MarkdownPane component in components/viewer/MarkdownPane.tsx with react-markdown
+- [X] T066 [US1] Create markdown parsing utility in lib/utils/markdown-parser.ts
+- [X] T067 [US1] Create MarkdownPane component in components/viewer/MarkdownPane.tsx with react-markdown
 - [ ] T068 [P] [US1] Write unit tests for MarkdownPane in tests/unit/components/MarkdownPane.test.tsx
-- [ ] T069 [US1] Implement image resolution for markdown content (FR-010)
-- [ ] T069b [US1] Implement missing image placeholder with alt text fallback (FR-010)
-- [ ] T070 [US1] Add syntax highlighting for code blocks if needed (FR-002: code blocks support)
+- [X] T069 [US1] Implement image resolution for markdown content (FR-010)
+- [X] T069b [US1] Implement missing image placeholder with alt text fallback (FR-010)
+- [X] T070 [US1] Add syntax highlighting for code blocks if needed (FR-002: code blocks support)
 
 #### Navigation
-- [ ] T071 [US1] Create Pager component in components/viewer/Pager.tsx (prev/next/jump controls per FR-003)
+- [X] T071 [US1] Create Pager component in components/viewer/Pager.tsx (prev/next/jump controls per FR-003)
 - [ ] T072 [P] [US1] Write unit tests for Pager in tests/unit/components/Pager.test.tsx (FR-003, FR-012)
-- [ ] T073 [US1] Implement keyboard navigation (arrow keys, page up/down) in Pager (FR-015)
-- [ ] T074 [US1] Add page number validation and boundary checks (FR-013)
-- [ ] T075 [US1] Update useViewerStore to manage current page state (FR-012)
+- [X] T073 [US1] Implement keyboard navigation (arrow keys, page up/down) in Pager (FR-015)
+- [X] T074 [US1] Add page number validation and boundary checks (FR-013)
+- [X] T075 [US1] Update useViewerStore to manage current page state (FR-012)
 
 #### Layout & Synchronization
-- [ ] T076 [US1] Create PaneContainer component in components/viewer/PaneContainer.tsx (2-pane layout per FR-005)
-- [ ] T077 [US1] Create Viewer component in components/viewer/Viewer.tsx (main container)
-- [ ] T078 [US1] Implement pane synchronization logic (ensure both panes show same page per FR-004)
-- [ ] T079 [US1] Add pane resizing functionality (adjustable widths 20%-80%, 60fps, FR-017)
+- [X] T076 [US1] Create PaneContainer component in components/viewer/PaneContainer.tsx (2-pane layout per FR-005)
+- [X] T077 [US1] Create Viewer component in components/viewer/Viewer.tsx (main container)
+- [X] T078 [US1] Implement pane synchronization logic (ensure both panes show same page per FR-004)
+- [X] T079 [US1] Add pane resizing functionality (adjustable widths 20%-80%, 60fps, FR-017)
 - [ ] T080 [P] [US1] Write unit tests for PaneContainer in tests/unit/components/PaneContainer.test.tsx (FR-004, FR-017)
 
 #### Integration
-- [ ] T081 [US1] Integrate Viewer component into main page app/(viewer)/page.tsx
-- [ ] T082 [US1] Connect pager controls to viewer state
-- [ ] T083 [US1] Add loading indicators for page transitions
-- [ ] T084 [US1] Implement prefetching for adjacent pages (N-1, N+1) using requestIdleCallback or 200ms after page load (whichever first)
+- [X] T081 [US1] Integrate Viewer component into main page app/(viewer)/page.tsx
+- [X] T082 [US1] Connect pager controls to viewer state
+- [X] T083 [US1] Add loading indicators for page transitions
+- [X] T084 [US1] Implement prefetching for adjacent pages (N-1, N+1) using requestIdleCallback or 200ms after page load (whichever first)
 - [ ] T085 [P] [US1] Write E2E test for 2-pane viewing and navigation in tests/e2e/viewer-navigation.spec.ts
-- [ ] T085a [US1] Create debounce utility in lib/utils/debounce.ts (FR-024a: 100ms for navigation, FR-024c: 500ms for URL persist)
-- [ ] T085b [US1] Implement request cancellation using AbortController in API client lib/api/documents.ts
-- [ ] T085c [US1] Add debouncing to page navigation (max 1 request per 100ms per FR-024a)
-- [ ] T085d [US1] Implement in-flight request cancellation for page navigation (FR-024a, FR-024d: multiple rapid selections)
-- [ ] T085e [US1] Add error recovery for file system interruptions (FR-026a: doc load retry, FR-026b: page nav retry)
-- [ ] T085f [US1] Implement failed page transition rollback (FR-027b: retain current page on error)
-- [ ] T085g [US1] Add partial content failure handling (FR-027c: show successful panes + error placeholder)
+- [X] T085a [US1] Create debounce utility in lib/utils/debounce.ts (FR-024a: 100ms for navigation, FR-024c: 500ms for URL persist)
+- [X] T085b [US1] Implement request cancellation using AbortController in API client lib/api/documents.ts
+- [X] T085c [US1] Add debouncing to page navigation (max 1 request per 100ms per FR-024a)
+- [X] T085d [US1] Implement in-flight request cancellation for page navigation (FR-024a, FR-024d: multiple rapid selections)
+- [X] T085e [US1] Add error recovery for file system interruptions (FR-026a: doc load retry, FR-026b: page nav retry)
+- [X] T085f [US1] Implement failed page transition rollback (FR-027b: retain current page on error)
+- [X] T085g [US1] Add partial content failure handling (FR-027c: show successful panes + error placeholder)
 - [ ] T085h [P] [US1] Write unit tests for debounce utility in tests/unit/utils/debounce.test.ts (FR-024a, FR-024c)
 - [ ] T085i [P] [US1] Write integration tests for concurrent navigation in tests/integration/concurrent-navigation.test.ts (FR-024a-d)
 - [ ] T085j [P] [US1] Create E2E test for rapid page navigation (FR-024a) in tests/e2e/concurrent-interactions.spec.ts
-- [ ] T085k [US1] Implement non-standard PDF handling (FR-029a: page sizes, FR-029b: mixed orientations, FR-029c: mixed page sizes, scale to fit)
-- [ ] T085l [US1] Add PDF dimension tooltip on hover (FR-029a: display "8.5 × 11 in")
-- [ ] T085m [US1] Implement progressive PDF loading for high-res documents (FR-029d: low-res placeholder → high-res)
+- [X] T085k [US1] Implement non-standard PDF handling (FR-029a: page sizes, FR-029b: mixed orientations, FR-029c: mixed page sizes, scale to fit)
+- [X] T085l [US1] Add PDF dimension tooltip on hover (FR-029a: display "8.5 × 11 in")
+- [X] T085m [US1] Implement progressive PDF loading for high-res documents (FR-029d: low-res placeholder → high-res)
 - [ ] T085n [P] [US1] Write E2E tests for non-standard PDFs in tests/e2e/pdf-edge-cases.spec.ts (FR-029a-d)
-- [ ] T085o [US1] Implement malformed markdown handling (FR-030a: fallback formatting, warning icon, FR-030c: nested structures, FR-030d: special chars/Unicode/RTL)
-- [ ] T085p [US1] Add long line handling in markdown (FR-030b: word-break, horizontal scroll for >10k chars)
-- [ ] T085q [US1] Implement empty content handling (FR-030e: "No content for this page" message)
+- [X] T085o [US1] Implement malformed markdown handling (FR-030a: fallback formatting, warning icon, FR-030c: nested structures, FR-030d: special chars/Unicode/RTL)
+- [X] T085p [US1] Add long line handling in markdown (FR-030b: word-break, horizontal scroll for >10k chars)
+- [X] T085q [US1] Implement empty content handling (FR-030e: "No content for this page" message)
 - [ ] T085r [P] [US1] Write E2E tests for malformed markdown in tests/e2e/markdown-edge-cases.spec.ts (FR-030a-e)
 
 ---

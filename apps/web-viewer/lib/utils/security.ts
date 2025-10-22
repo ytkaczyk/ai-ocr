@@ -131,6 +131,22 @@ export function sanitizePaneWidth(widthPercent: string | number): number {
 }
 
 /**
+ * Validate document ID (alias for validateFilename)
+ * Document IDs follow the same naming constraints as filenames
+ * 
+ * @param documentId - The document ID to validate
+ * @returns true if valid, false otherwise
+ */
+export function validateDocumentId(documentId: string): boolean {
+  try {
+    validateFilename(documentId);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Sanitize error messages to prevent path disclosure
  * Implements FR-033e: Error message safety
  * 

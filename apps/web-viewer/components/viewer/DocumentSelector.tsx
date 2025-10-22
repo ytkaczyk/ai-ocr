@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { DocumentSet } from '@/lib/types/entities';
 import { fetchDocuments } from '@/lib/api/documents';
+import { useDocumentStore } from '@/lib/stores/useDocumentStore';
 import { DocumentCard } from './DocumentCard';
 import { EmptyState } from './EmptyState';
 import { Loader2 } from 'lucide-react';
@@ -24,6 +25,7 @@ export function DocumentSelector({ onSelect, selectedDocumentId }: DocumentSelec
   const [documents, setDocuments] = useState<DocumentSet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { setDocuments: setStoreDocuments } = useDocumentStore();
 
   useEffect(() => {
     async function loadDocuments() {
@@ -33,6 +35,8 @@ export function DocumentSelector({ onSelect, selectedDocumentId }: DocumentSelec
         
         const response = await fetchDocuments();
         setDocuments(response.documents);
+        // Also populate the store so Viewer can access documents
+        setStoreDocuments(response.documents);
       } catch (err) {
         console.error('Failed to load documents:', err);
         setError(err instanceof Error ? err.message : 'Failed to load documents');
@@ -42,7 +46,7 @@ export function DocumentSelector({ onSelect, selectedDocumentId }: DocumentSelec
     }
 
     loadDocuments();
-  }, []);
+  }, [setStoreDocuments]);
 
   // Loading state
   if (isLoading) {
