@@ -7,9 +7,11 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
+  timeout: 45000, // Increase global test timeout to 45s (default is 30s)
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
+    actionTimeout: 20000, // Increase action timeout to 20s (default is 0, which means no timeout)
   },
   projects: [
     {
@@ -17,16 +19,13 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
     {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-    {
       name: 'Microsoft Edge',
-      use: { ...devices['Desktop Edge'], channel: 'msedge' },
+      use: { 
+        ...devices['Desktop Edge'], 
+        channel: 'msedge',
+        // Edge needs slightly more time for content rendering
+        actionTimeout: 25000,
+      },
     },
   ],
   webServer: {

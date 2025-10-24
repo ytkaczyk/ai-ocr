@@ -103,23 +103,25 @@ export function PaneContainer({
   const renderPane = useCallback((pane: typeof panes[0]) => {
     if (pane.contentType === 'pdf') {
       return (
-        <PdfPane
-          key={pane.id}
-          documentId={documentId}
-          pageNumber={currentPage}
-          className="h-full"
-        />
+        <div key={pane.id} data-testid="pdf-pane" className="h-full">
+          <PdfPane
+            documentId={documentId}
+            pageNumber={currentPage}
+            className="h-full"
+          />
+        </div>
       );
     } else if (pane.contentType === 'markdown') {
       return (
-        <MarkdownPane
-          key={pane.id}
-          documentId={documentId}
-          pageNumber={currentPage}
-          languageCode={languageCode}
-          isRaw={pane.isRaw || false}
-          className="h-full"
-        />
+        <div key={pane.id} data-testid="markdown-pane" className="h-full">
+          <MarkdownPane
+            documentId={documentId}
+            pageNumber={currentPage}
+            languageCode={languageCode}
+            isRaw={pane.isRaw || false}
+            className="h-full"
+          />
+        </div>
       );
     }
     return null;
@@ -143,7 +145,7 @@ export function PaneContainer({
             <div
               className="pane relative overflow-hidden"
               style={{ width: `${pane.widthPercent}%` }} // Dynamic width from store state
-              data-pane-id={pane.id}
+              data-pane-id={pane.contentType}
             >
               {renderPane(pane)}
             </div>
@@ -151,6 +153,7 @@ export function PaneContainer({
             {/* Resizable divider */}
             {!isLastPane && (
               <div
+                data-testid="pane-divider"
                 className="divider relative w-1 cursor-col-resize bg-border hover:bg-primary transition-colors"
                 onMouseDown={(e) => handleResizeStart(e, index)}
                 role="separator"

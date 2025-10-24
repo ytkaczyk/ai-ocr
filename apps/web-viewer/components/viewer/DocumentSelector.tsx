@@ -51,7 +51,7 @@ export function DocumentSelector({ onSelect, selectedDocumentId }: DocumentSelec
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
+      <div data-testid="loading-indicator" className="flex min-h-[400px] items-center justify-center">
         <div className="text-center">
           <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
           <p className="mt-4 text-sm text-muted-foreground">Loading documents...</p>
@@ -89,7 +89,7 @@ export function DocumentSelector({ onSelect, selectedDocumentId }: DocumentSelec
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <div data-testid="document-list" className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {documents.map((document) => (
           <DocumentCard
             key={document.id}

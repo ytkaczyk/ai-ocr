@@ -42,13 +42,25 @@ test.describe('Error States (FR-023)', () => {
     // Navigate to page
     await page.goto('/');
 
-    // Wait for initial load
+    // Wait for initial load and content
     await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(1000);
 
     // Check for either success state or error state
-    const hasDocuments = await page.locator('[data-testid="document-card"]').count() > 0;
-    const hasError = await page.locator('[data-testid="error-state"]').isVisible().catch(() => false);
-    const hasEmptyState = await page.locator('[data-testid="empty-state"]').isVisible().catch(() => false);
+    const documentCards = page.locator('[data-testid="document-card"]');
+    const errorState = page.locator('[data-testid="error-state"]');
+    const emptyState = page.locator('[data-testid="empty-state"]');
+    
+    // Wait for at least one to appear
+    await Promise.race([
+      documentCards.first().waitFor({ timeout: 5000 }).catch(() => null),
+      errorState.waitFor({ timeout: 5000 }).catch(() => null),
+      emptyState.waitFor({ timeout: 5000 }).catch(() => null),
+    ]);
+
+    const hasDocuments = await documentCards.count() > 0;
+    const hasError = await errorState.isVisible().catch(() => false);
+    const hasEmptyState = await emptyState.isVisible().catch(() => false);
 
     // One of these should be true
     expect(hasDocuments || hasError || hasEmptyState).toBe(true);
@@ -109,15 +121,23 @@ test.describe('Empty State Component Rendering', () => {
 
 test.describe('Loading States', () => {
   test('shows loading indicator while fetching documents', async ({ page }) => {
-    // Start navigation but don't wait for load
-    const navigation = page.goto('/');
+    // Start navigation
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
 
-    // Wait for navigation to complete
-    await navigation;
+    // Wait for content to appear
+    const documentCards = page.locator('[data-testid="document-card"]');
+    const emptyState = page.locator('[data-testid="empty-state"]');
+    
+    // Wait for either documents or empty state
+    await Promise.race([
+      documentCards.first().waitFor({ timeout: 5000 }).catch(() => null),
+      emptyState.waitFor({ timeout: 5000 }).catch(() => null),
+    ]);
 
     // After load, either documents or empty state should be visible
-    const hasDocuments = await page.locator('[data-testid="document-card"]').count() > 0;
-    const hasEmptyState = await page.locator('[data-testid="empty-state"]').isVisible().catch(() => false);
+    const hasDocuments = await documentCards.count() > 0;
+    const hasEmptyState = await emptyState.isVisible().catch(() => false);
 
     expect(hasDocuments || hasEmptyState).toBe(true);
   });

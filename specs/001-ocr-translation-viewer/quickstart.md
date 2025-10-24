@@ -157,6 +157,14 @@ Coverage reports are generated in `./coverage/` directory.
 
 ### Run E2E Tests
 
+Before running E2E tests for the first time, install Playwright browsers:
+
+```bash
+npx playwright install
+```
+
+Then run the tests:
+
 ```bash
 npm run test:e2e
 ```

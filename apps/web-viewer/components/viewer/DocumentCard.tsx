@@ -56,6 +56,8 @@ export function DocumentCard({ document, onSelect, isSelected = false }: Documen
 
   return (
     <Card
+      data-testid="document-card"
+      data-selected={isSelected.toString()}
       className={`cursor-pointer transition-colors hover:border-primary ${
         isSelected ? 'border-primary bg-primary/5' : ''
       }`}
@@ -71,10 +73,10 @@ export function DocumentCard({ document, onSelect, isSelected = false }: Documen
       aria-pressed={isSelected}
     >
       <CardHeader>
-        <CardTitle className="text-lg">{document.fileName}</CardTitle>
-        <CardDescription>
-          {document.pageCount} {document.pageCount === 1 ? 'page' : 'pages'} •{' '}
-          {formatFileSize(document.pdfSizeBytes || 0)}
+        <CardTitle className="text-lg" data-testid="document-name">{document.fileName}</CardTitle>
+        <CardDescription data-testid="document-info">
+          <span data-testid="page-count">{document.pageCount} {document.pageCount === 1 ? 'page' : 'pages'}</span> •{' '}
+          <span data-testid="file-size">{formatFileSize(document.pdfSizeBytes || 0)}</span>
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -86,6 +88,7 @@ export function DocumentCard({ document, onSelect, isSelected = false }: Documen
             {displayLanguages.map((lang) => (
               <span
                 key={`${lang.languageCode}-${lang.isRaw}`}
+                data-testid="language-badge"
                 className="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground"
               >
                 {getLanguageDisplay(lang.languageCode, lang.isRaw)}
@@ -99,6 +102,7 @@ export function DocumentCard({ document, onSelect, isSelected = false }: Documen
           </div>
           <div className="mt-4">
             <Button
+              data-testid="select-button"
               variant={isSelected ? 'default' : 'outline'}
               size="sm"
               className="w-full"

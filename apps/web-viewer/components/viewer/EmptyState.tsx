@@ -64,14 +64,14 @@ export function EmptyState({ type, message, action }: EmptyStateProps) {
   const Icon = config.icon;
 
   return (
-    <div className="flex min-h-[400px] items-center justify-center p-8">
+    <div className="flex min-h-[400px] items-center justify-center p-8" data-testid="empty-state">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <Icon className="h-8 w-8 text-muted-foreground" />
           </div>
-          <CardTitle className="text-xl">{config.title}</CardTitle>
-          <CardDescription className="text-base">
+          <CardTitle className="text-xl" data-testid="empty-state-title">{config.title}</CardTitle>
+          <CardDescription className="text-base" data-testid="empty-state-description">
             {message || config.description}
           </CardDescription>
         </CardHeader>

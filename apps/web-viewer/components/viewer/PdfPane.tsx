@@ -133,7 +133,7 @@ export function PdfPane({
 
       {/* Error state */}
       {error && (
-        <div className="flex h-full items-center justify-center p-4">
+        <div data-testid="error-message" className="flex h-full items-center justify-center p-4">
           <div className="text-center max-w-md">
             <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
             <p className="mt-4 text-sm text-destructive font-medium">Error loading PDF</p>

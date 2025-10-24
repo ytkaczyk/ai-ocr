@@ -132,6 +132,7 @@ export function Pager({
 
   return (
     <div
+      data-testid="pager"
       className={`pager flex items-center justify-between gap-4 px-4 py-3 border-b bg-background ${className}`}
       role="navigation"
       aria-label="Page navigation"
@@ -139,6 +140,7 @@ export function Pager({
       {/* Left: Navigation buttons */}
       <div className="flex items-center gap-1">
         <Button
+          data-testid="pager-first"
           variant="ghost"
           size="icon"
           onClick={goToFirstPage}
@@ -149,6 +151,7 @@ export function Pager({
           <ChevronsLeft className="h-4 w-4" />
         </Button>
         <Button
+          data-testid="pager-prev"
           variant="ghost"
           size="icon"
           onClick={goToPreviousPage}
@@ -159,6 +162,7 @@ export function Pager({
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <Button
+          data-testid="pager-next"
           variant="ghost"
           size="icon"
           onClick={goToNextPage}
@@ -169,6 +173,7 @@ export function Pager({
           <ChevronRight className="h-4 w-4" />
         </Button>
         <Button
+          data-testid="pager-last"
           variant="ghost"
           size="icon"
           onClick={goToLastPage}
@@ -181,9 +186,12 @@ export function Pager({
       </div>
 
       {/* Center: Page number display and jump input (FR-012) */}
-      <div className="flex items-center gap-2 text-sm">
-        <span className="text-muted-foreground">Page</span>
+      <div data-testid="page-display" className="flex items-center gap-2 text-sm">
+        <span className="text-muted-foreground">Page </span>
+        <span className="font-medium">{currentPage}</span>
+        <span className="text-muted-foreground"> of {totalPages}</span>
         <input
+          data-testid="page-jump-input"
           type="number"
           value={jumpValue}
           onChange={(e) => setJumpValue(e.target.value)}
@@ -197,10 +205,9 @@ export function Pager({
           min={1}
           max={totalPages}
           disabled={disabled}
-          className="w-16 rounded border border-input bg-background px-2 py-1 text-center text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+          className="ml-2 w-16 rounded border border-input bg-background px-2 py-1 text-center text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
           aria-label="Jump to page"
         />
-        <span className="text-muted-foreground">of {totalPages}</span>
       </div>
 
       {/* Right: Keyboard shortcuts hint */}

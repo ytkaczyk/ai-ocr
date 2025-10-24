@@ -36,6 +36,58 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   // Derive loading state - we're loading if we have an active ID but no document
   const loading = !!activeDocumentId && !document;
 
+  // Initialize page from URL query parameter on mount
+  useEffect(() => {
+    if (typeof window === 'undefined' || !document) return;
+    
+    const params = new URLSearchParams(window.location.search);
+    const pageParam = params.get('page');
+    
+    if (pageParam) {
+      const pageNum = parseInt(pageParam, 10);
+      if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= document.pageCount) {
+        setCurrentPage(pageNum);
+      }
+    }
+  }, [document, setCurrentPage]);
+
+  // Update URL when page changes and handle browser back/forward
+  useEffect(() => {
+    if (typeof window === 'undefined' || !document) return;
+    
+    // Update URL to match current page
+    const updateURL = () => {
+      const url = new URL(window.location.href);
+      const currentPageParam = url.searchParams.get('page');
+      const newPageValue = currentPage.toString();
+      
+      // Only update if the page parameter is different
+      if (currentPageParam !== newPageValue) {
+        url.searchParams.set('page', newPageValue);
+        // Use replaceState to avoid creating too many history entries
+        window.history.replaceState({}, '', url.toString());
+      }
+    };
+    
+    updateURL();
+    
+    // Handle browser back/forward navigation
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const pageParam = params.get('page');
+      
+      if (pageParam) {
+        const pageNum = parseInt(pageParam, 10);
+        if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= document.pageCount) {
+          setCurrentPage(pageNum);
+        }
+      }
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [currentPage, document, setCurrentPage]);
+
   // Initialize viewer with document data
   useEffect(() => {
     if (!document) {
@@ -53,9 +105,13 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
       setTotalPages(document.pageCount);
     });
 
-    // Reset to page 1 when document changes
+    // Reset to page 1 when document changes (unless URL has a page param)
     if (currentPage > document.pageCount) {
-      setCurrentPage(1);
+      const params = new URLSearchParams(window.location.search);
+      const pageParam = params.get('page');
+      if (!pageParam) {
+        setCurrentPage(1);
+      }
     }
   }, [document, activeDocumentId, currentPage, setCurrentPage, setError, error]);
 
@@ -130,7 +186,7 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   }
 
   return (
-    <div className={`viewer flex h-full flex-col ${className}`}>
+    <div data-testid="viewer-container" className={`viewer flex h-full flex-col ${className}`}>
       {/* Pager navigation */}
       <Pager
         currentPage={currentPage}

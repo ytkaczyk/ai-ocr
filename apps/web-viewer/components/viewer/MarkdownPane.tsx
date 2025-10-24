@@ -157,7 +157,7 @@ export function MarkdownPane({
 
       {/* Error state */}
       {error && (
-        <div className="flex h-full items-center justify-center p-4">
+        <div data-testid="error-message" className="flex h-full items-center justify-center p-4">
           <div className="text-center max-w-md">
             <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
             <p className="mt-4 text-sm text-destructive font-medium">Error loading markdown</p>
@@ -176,7 +176,7 @@ export function MarkdownPane({
 
       {/* Empty content (FR-030e) */}
       {!loading && !error && content.trim().length === 0 && (
-        <div className="flex h-full items-center justify-center p-4">
+        <div data-testid="empty-message" className="flex h-full items-center justify-center p-4">
           <div className="text-center max-w-md">
             <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
             <p className="mt-4 text-sm text-muted-foreground font-medium">No content for this page</p>
@@ -209,7 +209,7 @@ export function MarkdownPane({
 
       {/* Markdown content */}
       {!loading && !error && content && (
-        <div className="markdown-content prose prose-sm max-w-none p-6">
+        <div data-testid="markdown-content" className="markdown-content prose prose-sm max-w-none p-6">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
