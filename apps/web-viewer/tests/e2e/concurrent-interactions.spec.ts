@@ -173,6 +173,7 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
   test.describe('Jump to Page with Rapid Input', () => {
     test('should handle rapid page jumps', async ({ page, browserName }) => {
       const jumpInput = page.locator('[data-testid="page-jump-input"]');
+      const pageDisplay = page.locator('[data-testid="page-display"]');
 
       // Rapidly change page numbers
       await jumpInput.click();
@@ -185,14 +186,13 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
       await jumpInput.fill('2');
       await jumpInput.press('Enter');
 
-      // Wait for final navigation - Edge needs more time to process rapid jumps
-      const waitTime = browserName === 'chromium' ? 500 : 1500;
+      // Wait for debounce to complete (100ms) + navigation time
+      // Edge needs more time to process rapid jumps
+      const waitTime = browserName === 'chromium' ? 300 : 1500;
       await page.waitForTimeout(waitTime);
 
-      // Should be on page 2 (last command)
-      const pageDisplay = page.locator('[data-testid="page-display"]');
-      
-      // Wait for page display to update to final page
+      // Should be on page 2 (last command) - debounce should ensure only the final value is processed
+      // Wait for page display to update with flexible timeout since debounce behavior can vary
       await expect(pageDisplay).toContainText('Page 2', { timeout: 10000 });
 
       // No errors

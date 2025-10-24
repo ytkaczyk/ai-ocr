@@ -1,9 +1,9 @@
 /**
  * PDF.js worker configuration
- * Configures the worker to load from CDN to avoid webpack bundling issues
+ * Configures the worker to load from local public folder
  */
 
 import { pdfjs } from 'react-pdf';
 
-// Configure PDF.js worker using CDN
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Configure PDF.js worker using local file
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
