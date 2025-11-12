@@ -128,11 +128,13 @@ export function extractImagePaths(content: string): string[] {
  * @returns Sanitized content
  */
 export function sanitizeMarkdownContent(content: string): string {
-  // react-markdown handles most sanitization by default
-  // This function is a placeholder for any additional sanitization needs
+  // Remove <section> tags that are used as metadata markers
+  // These tags wrap translated content but shouldn't be rendered
+  let sanitized = content.replace(/<section[^>]*>/g, '');
+  sanitized = sanitized.replace(/<\/section>/g, '');
   
   // Ensure proper Unicode handling (FR-030d)
-  return content.normalize('NFC');
+  return sanitized.normalize('NFC');
 }
 
 /**

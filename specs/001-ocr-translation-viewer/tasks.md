@@ -344,6 +344,23 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 - Configuration: npm test runs "vitest run" for CI, React 19 act() warnings suppressed
 - **Browser support**: chromium (100% pass), Microsoft Edge (100% pass), webkit/firefox removed due to PDF.js test environment incompatibility
 
+#### Bug Fixes (Phase 4)
+- [X] T085s [US1] Fix markdown rendering bug - HTML section tags displayed as text (FR-002) ✅
+  - **Issue**: Markdown files with `<section source_language_code="...">` tags were displaying as plain text instead of being processed
+  - **Root Cause**: HTML tags inside markdown content prevented proper parsing by react-markdown
+  - **Solution**: Strip `<section>` tags in `sanitizeMarkdownContent()` function in `lib/utils/markdown-parser.ts`
+  - **Files Modified**: `lib/utils/markdown-parser.ts` (added regex to remove section tags)
+- [X] T085t [US1] Fix markdown styling bug - No visual formatting applied (FR-002) ✅
+  - **Issue**: Markdown content rendered without any styling (headers, bold, lists appeared as plain text)
+  - **Root Cause**: `@tailwindcss/typography` plugin installed but not configured for Tailwind CSS v4
+  - **Solution 1**: Added `@plugin "@tailwindcss/typography";` directive in `app/globals.css` (Tailwind v4 syntax)
+  - **Solution 2**: Applied `prose prose-sm max-w-none` classes to markdown container in `MarkdownPane.tsx`
+  - **Files Modified**: 
+    - `app/globals.css` (added @plugin directive)
+    - `components/viewer/MarkdownPane.tsx` (restored prose classes)
+  - **Packages Removed**: `rehype-raw` (not needed after section tag stripping)
+  - **Result**: All markdown elements now properly styled (headers, bold, italic, lists, blockquotes, code blocks, tables)
+
 ---
 
 ## Phase 5: User Story 2 (P2) - Switch Between 2/3-Pane Modes

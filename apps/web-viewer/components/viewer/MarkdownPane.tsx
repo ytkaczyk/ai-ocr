@@ -248,7 +248,7 @@ export function MarkdownPane({
               },
               // Add word-break for long inline content (FR-030b)
               p: ({ children, ...props }) => (
-                <p {...props} className="break-words">
+                <p {...props} className="wrap-break-word">
                   {children}
                 </p>
               ),
@@ -256,7 +256,7 @@ export function MarkdownPane({
               code: ({ children, className, ...props }) => {
                 const isInline = !className || !className.includes('language-');
                 return isInline ? (
-                  <code {...props} className="break-words">
+                  <code {...props} className="wrap-break-word">
                     {children}
                   </code>
                 ) : (
