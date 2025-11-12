@@ -382,6 +382,16 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
     - `components/viewer/Pager.tsx` (integrated ZoomControls, reorganized toolbar layout)
   - **Layout Changes**: Reorganized toolbar with zoom controls on left, page navigation in center, keyboard hints on right
   - **Default Zoom**: PDF panes start with "Fit Page" mode for optimal initial view
+- [X] T085v [US1] Fix page navigation button order in Pager.tsx (FR-012) ✅
+  - **Issue**: Page navigation buttons were not in logical left-to-right order
+  - **Solution**: Reordered buttons to: First | Previous | Page Input | Next | Last
+  - **Files Modified**: `components/viewer/Pager.tsx` (restructured navigation button layout)
+- [X] T085w [US1] Fix document switching navigation bug - stays on previous page (FR-004) ✅
+  - **Issue**: When switching documents, viewer stayed on the same page number as the previous document instead of resetting to page 1
+  - **Root Cause**: Document change detection only checked if currentPage exceeded new document's pageCount
+  - **Solution**: Track previous document ID with useRef and reset to page 1 whenever document ID changes (unless URL has page parameter)
+  - **Files Modified**: `components/viewer/Viewer.tsx` (added previousDocumentIdRef, improved document change detection logic)
+  - **Behavior**: Now correctly navigates to page 1 when loading a new document
 
 ---
 

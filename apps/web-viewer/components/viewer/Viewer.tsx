@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useDocumentStore } from '@/lib/stores/useDocumentStore';
 import { useViewerStore } from '@/lib/stores/useViewerStore';
 import { Pager } from './Pager';
@@ -24,6 +24,7 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   const { documents, getCurrentDocument, currentDocumentId } = useDocumentStore();
   const { currentPage, setCurrentPage, setError, error } = useViewerStore();
   const [totalPages, setTotalPages] = useState(0);
+  const previousDocumentIdRef = useRef<string | null>(null);
 
   // Get document ID from props or store
   const activeDocumentId = documentId || currentDocumentId;
@@ -106,12 +107,20 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
     });
 
     // Reset to page 1 when document changes (unless URL has a page param)
-    if (currentPage > document.pageCount) {
+    const documentChanged = previousDocumentIdRef.current !== activeDocumentId;
+    
+    if (documentChanged) {
+      previousDocumentIdRef.current = activeDocumentId || null;
+      
       const params = new URLSearchParams(window.location.search);
       const pageParam = params.get('page');
+      
       if (!pageParam) {
         setCurrentPage(1);
       }
+    } else if (currentPage > document.pageCount) {
+      // Also reset if current page exceeds new document's page count
+      setCurrentPage(1);
     }
   }, [document, activeDocumentId, currentPage, setCurrentPage, setError, error]);
 
