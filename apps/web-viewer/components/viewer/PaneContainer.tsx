@@ -107,6 +107,8 @@ export function PaneContainer({
           <PdfPane
             documentId={documentId}
             pageNumber={currentPage}
+            zoomLevel={pane.zoomLevel}
+            zoomMode={pane.zoomMode}
             className="h-full"
           />
         </div>

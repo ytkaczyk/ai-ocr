@@ -5,11 +5,11 @@ import { Document, Page } from 'react-pdf';
 import type { PDFPageProxy } from 'pdfjs-dist';
 import { Loader2, AlertCircle, Info } from 'lucide-react';
 import {
-  calculatePdfScale,
   formatPdfDimensions,
   isNonStandardPdfSize,
   getPdfOrientation,
 } from '@/lib/utils/pdf-renderer';
+import type { ZoomMode } from '@/lib/schemas/viewer';
 
 // Configure PDF.js worker
 import '@/lib/utils/pdf-worker';
@@ -22,12 +22,15 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
  * PdfPane component
  * Displays a single page of a PDF document
  * Implements FR-001: PDF rendering with device pixel ratio and aspect ratio maintenance
+ * Implements FR-016: PDF zoom controls (10% increments, fit, width modes)
  * Implements FR-029: Non-standard PDF handling (page sizes, orientations, high-res)
  */
 
 interface PdfPaneProps {
   documentId: string;
   pageNumber: number;
+  zoomLevel?: number;
+  zoomMode?: ZoomMode;
   onLoadSuccess?: (pageCount: number) => void;
   onLoadError?: (error: Error) => void;
   className?: string;
@@ -36,6 +39,8 @@ interface PdfPaneProps {
 export function PdfPane({
   documentId,
   pageNumber,
+  zoomLevel = 1,
+  zoomMode = 'fit',
   onLoadSuccess,
   onLoadError,
   className = '',
@@ -102,13 +107,41 @@ export function PdfPane({
     setTimeout(() => setHighResReady(true), 100);
   }
 
-  // Calculate scale for rendering (FR-029d: progressive loading)
-  // Start with lower resolution (0.5x), then switch to full resolution
-  const baseScale = containerWidth && pageDimensions
-    ? calculatePdfScale(containerWidth, pageDimensions.width)
-    : 1;
-  
-  const scale = highResReady ? baseScale : baseScale * 0.5;
+  // Calculate scale based on zoom mode (FR-016)
+  const calculateScale = () => {
+    if (!containerWidth || !pageDimensions) {
+      return 1;
+    }
+
+    let baseScale: number;
+
+    switch (zoomMode) {
+      case 'fit': {
+        // Scale to fit entire page in container
+        const containerHeight = containerRef.current?.clientHeight || 600;
+        const widthScale = containerWidth / pageDimensions.width;
+        const heightScale = containerHeight / pageDimensions.height;
+        baseScale = Math.min(widthScale, heightScale) * 0.95; // 95% to add padding
+        break;
+      }
+      case 'width': {
+        // Scale to fit page width to container width
+        baseScale = (containerWidth / pageDimensions.width) * 0.98; // 98% to add small padding
+        break;
+      }
+      case 'percentage':
+      default: {
+        // Use manual zoom level
+        baseScale = zoomLevel;
+        break;
+      }
+    }
+
+    // Progressive loading: start with lower resolution, then switch to full
+    return highResReady ? baseScale : baseScale * 0.5;
+  };
+
+  const scale = calculateScale();
 
   // Check for non-standard dimensions
   const isNonStandard = pageDimensions
@@ -178,7 +211,6 @@ export function PdfPane({
           <div title={pageDimensions ? formatPdfDimensions(pageDimensions.width, pageDimensions.height) : undefined}>
             <Page
               pageNumber={pageNumber}
-              width={containerWidth || undefined}
               scale={scale}
               onLoadSuccess={onPageLoadSuccess}
               loading={

@@ -361,6 +361,28 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
   - **Packages Removed**: `rehype-raw` (not needed after section tag stripping)
   - **Result**: All markdown elements now properly styled (headers, bold, italic, lists, blockquotes, code blocks, tables)
 
+#### Zoom Controls (Phase 4)
+- [X] T085u [US1] Implement PDF zoom controls (FR-016) ✅
+  - **Feature**: Added zoom in/out buttons and zoom level dropdown for PDF pane
+  - **Zoom Controls**:
+    - Zoom In button: Increases zoom by 10% (up to 500%)
+    - Zoom Out button: Decreases zoom by 10% (down to 10%)
+    - Zoom Dropdown: Editable dropdown with preset values: 50%, 75%, 100%, 125%, 150%, 200%, Fit Page, Fit Width
+  - **Zoom Modes**:
+    - `percentage`: Manual zoom level (10%-500%)
+    - `fit`: Scales page to fit entirely in panel (both width and height)
+    - `width`: Scales page width to fit panel width
+  - **Files Created**:
+    - `components/viewer/ZoomControls.tsx` (zoom UI component)
+  - **Files Modified**:
+    - `lib/schemas/viewer.ts` (added ZoomMode type, zoomLevel/zoomMode to Pane)
+    - `lib/stores/useViewerStore.ts` (added setPaneZoom, zoomIn, zoomOut actions)
+    - `components/viewer/PdfPane.tsx` (added zoom props, implemented scale calculation for all zoom modes)
+    - `components/viewer/PaneContainer.tsx` (pass zoom props to PdfPane)
+    - `components/viewer/Pager.tsx` (integrated ZoomControls, reorganized toolbar layout)
+  - **Layout Changes**: Reorganized toolbar with zoom controls on left, page navigation in center, keyboard hints on right
+  - **Default Zoom**: PDF panes start with "Fit Page" mode for optimal initial view
+
 ---
 
 ## Phase 5: User Story 2 (P2) - Switch Between 2/3-Pane Modes

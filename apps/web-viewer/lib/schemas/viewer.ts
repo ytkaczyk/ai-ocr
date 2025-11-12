@@ -12,6 +12,11 @@ export const paneModeSchema = z.enum(['two-pane', 'three-pane']);
 export const contentTypeSchema = z.enum(['pdf', 'markdown']);
 
 /**
+ * Zoom mode for PDF panes
+ */
+export const zoomModeSchema = z.enum(['percentage', 'fit', 'width']);
+
+/**
  * Zod schema for Pane entity
  * Represents a single viewing pane in the viewer
  */
@@ -23,6 +28,8 @@ export const paneSchema = z.object({
   currentPage: z.number().int().positive(),
   visible: z.boolean().describe('Whether the pane is currently visible'),
   widthPercent: z.number().min(10).max(80).describe('Pane width as percentage (10-80%)'),
+  zoomLevel: z.number().min(0.1).max(5).optional().describe('Zoom level for PDF panes (0.5 = 50%, 2 = 200%)'),
+  zoomMode: zoomModeSchema.optional().describe('Zoom mode for PDF panes'),
 });
 
 /**
@@ -43,6 +50,7 @@ export const viewerStateSchema = z.object({
  */
 export type PaneMode = z.infer<typeof paneModeSchema>;
 export type ContentType = z.infer<typeof contentTypeSchema>;
+export type ZoomMode = z.infer<typeof zoomModeSchema>;
 export type Pane = z.infer<typeof paneSchema>;
 export type ViewerState = z.infer<typeof viewerStateSchema>;
 

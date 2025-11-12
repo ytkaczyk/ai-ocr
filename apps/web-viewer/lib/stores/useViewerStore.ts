@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Pane, PaneMode } from '@/lib/schemas/viewer';
+import type { Pane, PaneMode, ZoomMode } from '@/lib/schemas/viewer';
 
 /**
  * Viewer store state
@@ -20,6 +20,9 @@ interface ViewerStoreState {
   setPanes: (panes: Pane[]) => void;
   updatePane: (paneId: string, updates: Partial<Pane>) => void;
   updatePaneWidth: (paneId: string, widthPercent: number) => void;
+  setPaneZoom: (paneId: string, zoomLevel: number, zoomMode: ZoomMode) => void;
+  zoomIn: (paneId: string) => void;
+  zoomOut: (paneId: string) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
@@ -35,6 +38,8 @@ const initialPanes: Pane[] = [
     currentPage: 1,
     visible: true,
     widthPercent: 50,
+    zoomLevel: 1,
+    zoomMode: 'fit',
   },
   {
     id: 'markdown-pane',
@@ -103,6 +108,8 @@ export const useViewerStore = create<ViewerStoreState>((set, get) => ({
             currentPage: state.currentPage,
             visible: true,
             widthPercent: 50,
+            zoomLevel: 1,
+            zoomMode: 'fit',
           },
           {
             id: 'markdown-pane',
@@ -121,6 +128,8 @@ export const useViewerStore = create<ViewerStoreState>((set, get) => ({
             currentPage: state.currentPage,
             visible: true,
             widthPercent: 33.33,
+            zoomLevel: 1,
+            zoomMode: 'fit',
           },
           {
             id: 'markdown-raw-pane',
@@ -166,6 +175,42 @@ export const useViewerStore = create<ViewerStoreState>((set, get) => ({
       panes: state.panes.map((pane) =>
         pane.id === paneId ? { ...pane, widthPercent: clampedWidth } : pane
       ),
+    }));
+  },
+
+  setPaneZoom: (paneId, zoomLevel, zoomMode) => {
+    set((state) => ({
+      panes: state.panes.map((pane) =>
+        pane.id === paneId && pane.contentType === 'pdf'
+          ? { ...pane, zoomLevel, zoomMode }
+          : pane
+      ),
+    }));
+  },
+
+  zoomIn: (paneId) => {
+    set((state) => ({
+      panes: state.panes.map((pane) => {
+        if (pane.id === paneId && pane.contentType === 'pdf' && pane.zoomMode === 'percentage') {
+          const currentZoom = pane.zoomLevel ?? 1;
+          const newZoom = Math.min(5, currentZoom + 0.1); // Max 500%
+          return { ...pane, zoomLevel: newZoom };
+        }
+        return pane;
+      }),
+    }));
+  },
+
+  zoomOut: (paneId) => {
+    set((state) => ({
+      panes: state.panes.map((pane) => {
+        if (pane.id === paneId && pane.contentType === 'pdf' && pane.zoomMode === 'percentage') {
+          const currentZoom = pane.zoomLevel ?? 1;
+          const newZoom = Math.max(0.1, currentZoom - 0.1); // Min 10%
+          return { ...pane, zoomLevel: newZoom };
+        }
+        return pane;
+      }),
     }));
   },
 
