@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Document, Page } from 'react-pdf';
 import type { PDFPageProxy } from 'pdfjs-dist';
 import { Loader2, AlertCircle, Info } from 'lucide-react';
@@ -51,6 +51,7 @@ export function PdfPane({
   const [containerWidth, setContainerWidth] = useState<number>(0);
   const [pageDimensions, setPageDimensions] = useState<{ width: number; height: number } | null>(null);
   const [highResReady, setHighResReady] = useState(false);
+  const [containerHeight, setContainerHeight] = useState<number>(600);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Reset high-res state when page changes
@@ -62,17 +63,18 @@ export function PdfPane({
   // PDF URL
   const pdfUrl = `/api/documents/${documentId}/pages/${pageNumber}/pdf`;
 
-  // Update container width on resize
+  // Update container dimensions on resize
   useEffect(() => {
-    const updateWidth = () => {
+    const updateDimensions = () => {
       if (containerRef.current) {
         setContainerWidth(containerRef.current.clientWidth);
+        setContainerHeight(containerRef.current.clientHeight);
       }
     };
 
-    updateWidth();
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
   // Handle document load success
@@ -108,7 +110,7 @@ export function PdfPane({
   }
 
   // Calculate scale based on zoom mode (FR-016)
-  const calculateScale = () => {
+  const scale = useMemo(() => {
     if (!containerWidth || !pageDimensions) {
       return 1;
     }
@@ -118,7 +120,6 @@ export function PdfPane({
     switch (zoomMode) {
       case 'fit': {
         // Scale to fit entire page in container
-        const containerHeight = containerRef.current?.clientHeight || 600;
         const widthScale = containerWidth / pageDimensions.width;
         const heightScale = containerHeight / pageDimensions.height;
         baseScale = Math.min(widthScale, heightScale) * 0.95; // 95% to add padding
@@ -139,9 +140,7 @@ export function PdfPane({
 
     // Progressive loading: start with lower resolution, then switch to full
     return highResReady ? baseScale : baseScale * 0.5;
-  };
-
-  const scale = calculateScale();
+  }, [containerWidth, containerHeight, pageDimensions, zoomMode, zoomLevel, highResReady]);
 
   // Check for non-standard dimensions
   const isNonStandard = pageDimensions
