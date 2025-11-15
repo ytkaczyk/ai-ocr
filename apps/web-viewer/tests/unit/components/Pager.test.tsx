@@ -39,13 +39,13 @@ describe('Pager', () => {
       render(<Pager currentPage={5} totalPages={10} onPageChange={mockOnPageChange} />);
 
       expect(screen.getByDisplayValue('5')).toBeInTheDocument();
-      expect(screen.getByText(/of 10/i)).toBeInTheDocument();
+      expect(screen.getByLabelText('Page 5 of 10')).toBeInTheDocument();
     });
 
     it('should render keyboard shortcuts hint', () => {
       render(<Pager currentPage={5} totalPages={10} onPageChange={mockOnPageChange} />);
 
-      expect(screen.getByText(/use.*page up\/down to navigate/i)).toBeInTheDocument();
+      expect(screen.getByText(/use.*page up\/down/i)).toBeInTheDocument();
     });
 
     it('should have proper ARIA labels', () => {

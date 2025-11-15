@@ -206,7 +206,8 @@ export function Pager({
         </Button>
 
         {/* Page number display and jump input (FR-012) */}
-        <div data-testid="page-display" className="flex items-center gap-2 text-sm">
+        <div data-testid="page-display" className="flex items-center gap-2 text-sm" aria-label={`Page ${currentPage} of ${totalPages}`}>
+          <span className="sr-only">Page {currentPage} of {totalPages}</span>
           <span className="text-muted-foreground">Page</span>
           <input
             data-testid="page-jump-input"

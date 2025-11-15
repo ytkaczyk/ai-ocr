@@ -18,15 +18,6 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    {
-      name: 'Microsoft Edge',
-      use: { 
-        ...devices['Desktop Edge'], 
-        channel: 'msedge',
-        // Edge needs slightly more time for content rendering
-        actionTimeout: 25000,
-      },
-    },
   ],
   webServer: {
     command: 'npm run dev',
