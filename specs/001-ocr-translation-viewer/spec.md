@@ -107,6 +107,13 @@ Users need a simple way to select from available document sets in the configured
 - **FR-004**: System MUST keep all visible panes synchronized to display the same page number at all times
 - **FR-005**: System MUST support two display modes: 2-pane (PDF + OCR markdown) and 3-pane (PDF + OCR markdown + translated markdown)
 - **FR-006**: System MUST allow users to switch between 2-pane and 3-pane modes without losing their current page position
+- **FR-034**: System MUST allow independent language selection for each markdown pane:
+  - **FR-034a**: Language selector - Each markdown pane displays a dropdown to select from available languages (based on document's available language versions per FR-009)
+  - **FR-034b**: Raw/processed toggle - Each language selector includes toggle for raw vs processed content (when both versions exist for selected language)
+  - **FR-034c**: Selection priority - User-selected language takes precedence over default language assignments (3-pane mode defaults: source language for OCR pane, target language for translation pane)
+  - **FR-034d**: State persistence - Language selections persist in Zustand store per pane (paneId → languageCode + isRaw flag)
+  - **FR-034e**: UI feedback - Language selector displays formatted language name (e.g., "English (US)" for en-US) with Globe icon, disabled state when only one language available
+  - Language selections SHOULD persist in URL query parameters for bookmarking (optional enhancement, not required for MVP)
 - **FR-007**: System MUST scan the configured data folder and present users with a list of available document sets (PDFs with corresponding folder structures)
 - **FR-008**: System MUST read the data folder path from a .env configuration file
 - **FR-009**: System MUST load per-page markdown files following the naming convention `<file_name>.[raw.]<language_code>_page_<N>.md` synchronized with PDF page numbers

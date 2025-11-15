@@ -12,6 +12,7 @@ import {
   handleLongLines,
 } from '@/lib/utils/markdown-parser';
 import { retryFetch } from '@/lib/utils/retry';
+import { LanguageSelector } from './LanguageSelector';
 
 /**
  * MarkdownPane component
@@ -19,6 +20,7 @@ import { retryFetch } from '@/lib/utils/retry';
  * Implements FR-002: Markdown rendering with all supported elements
  * Implements FR-010: Image rendering with placeholder for missing images
  * Implements FR-030: Malformed markdown handling
+ * Implements FR-034: Per-pane language selection
  */
 
 interface MarkdownPaneProps {
@@ -26,6 +28,12 @@ interface MarkdownPaneProps {
   pageNumber: number;
   languageCode: string;
   isRaw?: boolean;
+  availableLanguages?: Array<{
+    languageCode: string;
+    isRaw: boolean;
+    label?: string;
+  }>;
+  onLanguageChange?: (languageCode: string, isRaw: boolean) => void;
   onLoadSuccess?: () => void;
   onLoadError?: (error: Error) => void;
   className?: string;
@@ -45,6 +53,8 @@ export function MarkdownPane({
   pageNumber,
   languageCode,
   isRaw = false,
+  availableLanguages = [],
+  onLanguageChange,
   onLoadSuccess,
   onLoadError,
   className = '',
@@ -144,19 +154,34 @@ export function MarkdownPane({
   }, [documentId, pageNumber, languageCode, isRaw, onLoadSuccess, onLoadError, retryTrigger]);
 
   return (
-    <div className={`markdown-pane relative h-full w-full overflow-auto ${className}`}>
-      {/* Loading state */}
-      {loading && !error && (
-        <div className="flex h-full items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
-            <p className="mt-2 text-sm text-muted-foreground">Loading markdown...</p>
-          </div>
+    <div className={`markdown-pane relative flex flex-col h-full bg-background ${className}`}>
+      {/* Language selector header (FR-034) */}
+      {availableLanguages.length > 0 && onLanguageChange && (
+        <div className="shrink-0 border-b bg-muted/30 px-4 py-2">
+          <LanguageSelector
+            availableLanguages={availableLanguages}
+            selectedLanguageCode={languageCode}
+            selectedIsRaw={isRaw}
+            onLanguageChange={onLanguageChange}
+            disabled={loading}
+          />
         </div>
       )}
 
-      {/* Error state */}
-      {error && (
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Loading state */}
+        {loading && !error && (
+          <div className="flex h-full items-center justify-center">
+            <div className="text-center">
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+              <p className="mt-2 text-sm text-muted-foreground">Loading markdown...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error state */}
+        {error && (
         <div data-testid="error-message" className="flex h-full items-center justify-center p-4">
           <div className="text-center max-w-md">
             <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
@@ -271,6 +296,7 @@ export function MarkdownPane({
           </ReactMarkdown>
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useDocumentStore } from '@/lib/stores/useDocumentStore';
 import { useViewerStore } from '@/lib/stores/useViewerStore';
 import { Pager } from './Pager';
 import { PaneContainer } from './PaneContainer';
+import { ModeToggle } from './ModeToggle';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { prefetchAdjacentPagesWithCache } from '@/lib/utils/prefetch';
 
@@ -22,9 +23,10 @@ interface ViewerProps {
 
 export function Viewer({ documentId, className = '' }: ViewerProps) {
   const { documents, getCurrentDocument, currentDocumentId } = useDocumentStore();
-  const { currentPage, setCurrentPage, setError, error } = useViewerStore();
+  const { currentPage, setCurrentPage, setError, error, paneMode } = useViewerStore();
   const [totalPages, setTotalPages] = useState(0);
   const previousDocumentIdRef = useRef<string | null>(null);
+  const previousPaneModeRef = useRef<string>(paneMode);
 
   // Get document ID from props or store
   const activeDocumentId = documentId || currentDocumentId;
@@ -52,20 +54,33 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
     }
   }, [document, setCurrentPage]);
 
-  // Update URL when page changes and handle browser back/forward
+  // Update URL when page or mode changes and handle browser back/forward
   useEffect(() => {
     if (typeof window === 'undefined' || !document) return;
     
-    // Update URL to match current page
+    // Update URL to match current page and mode
     const updateURL = () => {
       const url = new URL(window.location.href);
       const currentPageParam = url.searchParams.get('page');
+      const currentModeParam = url.searchParams.get('mode');
       const newPageValue = currentPage.toString();
+      const newModeValue = paneMode;
       
-      // Only update if the page parameter is different
+      // Only update if the parameters are different
+      let changed = false;
+      
       if (currentPageParam !== newPageValue) {
         url.searchParams.set('page', newPageValue);
-        // Use replaceState to avoid creating too many history entries
+        changed = true;
+      }
+      
+      if (currentModeParam !== newModeValue) {
+        url.searchParams.set('mode', newModeValue);
+        changed = true;
+      }
+      
+      // Use replaceState to avoid creating too many history entries
+      if (changed) {
         window.history.replaceState({}, '', url.toString());
       }
     };
@@ -87,7 +102,7 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
     
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [currentPage, document, setCurrentPage]);
+  }, [currentPage, paneMode, document, setCurrentPage]);
 
   // Initialize viewer with document data
   useEffect(() => {
@@ -142,6 +157,16 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
     );
   }, [document, currentPage]);
 
+  // Preserve page position when switching modes (T095, FR-006)
+  // This is handled by the store's setPaneMode action which maintains currentPage
+  useEffect(() => {
+    // Track mode changes without resetting page
+    if (previousPaneModeRef.current !== paneMode) {
+      previousPaneModeRef.current = paneMode;
+      // Page position is automatically preserved by store state
+    }
+  }, [paneMode]);
+
   // Handle page change
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -194,14 +219,36 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
     );
   }
 
+  // Detect available language versions for 3-pane mode (T090)
+  // FR-005: 3-pane mode requires at least 2 language versions
+  const availableLanguageCodes = document.availableLanguages.map((lang: { languageCode: string }) => lang.languageCode);
+  
+  // Build list of available languages with raw/processed info for language selector
+  const availableLanguagesForSelector = document.availableLanguages.map((lang: { languageCode: string; isRaw: boolean }) => ({
+    languageCode: lang.languageCode,
+    isRaw: lang.isRaw,
+  }));
+  
+  // For 3-pane mode, determine source and target language codes
+  // Strategy: Use raw version as source, processed version as target
+  const rawVersion = document.availableLanguages.find((lang: { isRaw: boolean }) => lang.isRaw);
+  const processedVersion = document.availableLanguages.find((lang: { isRaw: boolean }) => !lang.isRaw);
+  
+  const sourceLanguageCode = rawVersion?.languageCode || languageVersion.languageCode;
+  const targetLanguageCode = processedVersion?.languageCode || languageVersion.languageCode;
+
   return (
     <div data-testid="viewer-container" className={`viewer flex h-full flex-col ${className}`}>
-      {/* Pager navigation */}
-      <Pager
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
+      {/* Pager navigation with mode toggle */}
+      <div className="flex items-center justify-between gap-4 px-4 py-2 border-b bg-background">
+        <ModeToggle availableLanguages={availableLanguageCodes} />
+        
+        <Pager
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      </div>
 
       {/* Pane container */}
       <div className="viewer-content flex-1 overflow-hidden">
@@ -209,6 +256,9 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
           documentId={document.id}
           currentPage={currentPage}
           languageCode={languageVersion.languageCode}
+          sourceLanguageCode={sourceLanguageCode}
+          targetLanguageCode={targetLanguageCode}
+          availableLanguages={availableLanguagesForSelector}
         />
       </div>
     </div>

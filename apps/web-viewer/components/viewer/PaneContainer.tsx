@@ -27,6 +27,13 @@ interface PaneContainerProps {
   documentId: string;
   currentPage: number;
   languageCode: string;
+  sourceLanguageCode?: string;
+  targetLanguageCode?: string;
+  availableLanguages?: Array<{
+    languageCode: string;
+    isRaw: boolean;
+    label?: string;
+  }>;
   className?: string;
 }
 
@@ -34,9 +41,12 @@ export function PaneContainer({
   documentId,
   currentPage,
   languageCode,
+  sourceLanguageCode,
+  targetLanguageCode,
+  availableLanguages = [],
   className = '',
 }: PaneContainerProps) {
-  const { panes, updatePaneWidth } = useViewerStore();
+  const { panes, updatePaneWidth, setPaneLanguage } = useViewerStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const [resizing, setResizing] = useState(false);
   const [resizeStartX, setResizeStartX] = useState(0);
@@ -114,20 +124,46 @@ export function PaneContainer({
         </div>
       );
     } else if (pane.contentType === 'markdown') {
+      // Determine which language code to use based on pane configuration
+      // Priority: user-selected language > 3-pane defaults > fallback language
+      let paneLanguageCode: string;
+      const paneIsRaw = pane.isRaw || false;
+      
+      if (pane.languageCode) {
+        // User has explicitly selected a language for this pane
+        paneLanguageCode = pane.languageCode;
+      } else if (pane.isRaw && sourceLanguageCode) {
+        // For 3-pane mode raw pane, use source language as default
+        paneLanguageCode = sourceLanguageCode;
+      } else if (!pane.isRaw && targetLanguageCode) {
+        // For 3-pane mode processed pane, use target language as default
+        paneLanguageCode = targetLanguageCode;
+      } else {
+        // Fallback to default language
+        paneLanguageCode = languageCode;
+      }
+
+      // Handler for language change
+      const handleLanguageChange = (newLanguageCode: string, newIsRaw: boolean) => {
+        setPaneLanguage(pane.id, newLanguageCode, newIsRaw);
+      };
+      
       return (
         <div key={pane.id} data-testid="markdown-pane" className="h-full">
           <MarkdownPane
             documentId={documentId}
             pageNumber={currentPage}
-            languageCode={languageCode}
-            isRaw={pane.isRaw || false}
+            languageCode={paneLanguageCode}
+            isRaw={paneIsRaw}
+            availableLanguages={availableLanguages}
+            onLanguageChange={handleLanguageChange}
             className="h-full"
           />
         </div>
       );
     }
     return null;
-  }, [documentId, currentPage, languageCode]);
+  }, [documentId, currentPage, languageCode, sourceLanguageCode, targetLanguageCode, availableLanguages, setPaneLanguage]);
 
   return (
     <div

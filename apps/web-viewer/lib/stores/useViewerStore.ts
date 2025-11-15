@@ -23,6 +23,7 @@ interface ViewerStoreState {
   setPaneZoom: (paneId: string, zoomLevel: number, zoomMode: ZoomMode) => void;
   zoomIn: (paneId: string) => void;
   zoomOut: (paneId: string) => void;
+  setPaneLanguage: (paneId: string, languageCode: string, isRaw: boolean) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
@@ -211,6 +212,16 @@ export const useViewerStore = create<ViewerStoreState>((set, get) => ({
         }
         return pane;
       }),
+    }));
+  },
+
+  setPaneLanguage: (paneId, languageCode, isRaw) => {
+    set((state) => ({
+      panes: state.panes.map((pane) =>
+        pane.id === paneId && pane.contentType === 'markdown'
+          ? { ...pane, languageCode, isRaw }
+          : pane
+      ),
     }));
   },
 
