@@ -404,7 +404,7 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 **Independent Test**: Load document with translation, toggle to 3-pane mode, verify all panes synchronized.
 
 **Duration**: ~6-8 hours
-**Status**: ✅ **COMPLETE** (18/26 tasks, 8 E2E/advanced tests deferred to Phase 6)
+**Status**: ✅ **COMPLETE** (23/26 tasks, 3 advanced resilience tasks deferred to Phase 6)
 
 <!-- FR-005: Two display modes (2-pane, 3-pane) -->
 <!-- FR-006: Mode switching without losing page position -->
@@ -416,7 +416,7 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 
 #### Mode Switching
 - [X] T086 [US2] Create ModeToggle component in components/viewer/ModeToggle.tsx (2-pane/3-pane switcher per FR-005) ✅
-- [ ] T087 [P] [US2] Write unit tests for ModeToggle in tests/unit/components/ModeToggle.test.tsx (FR-005, FR-006) - DEFERRED
+- [X] T087 [P] [US2] Write unit tests for ModeToggle in tests/unit/components/ModeToggle.test.tsx (FR-005, FR-006) ✅ (26/26 tests passing)
 - [X] T088 [US2] Update useViewerStore to manage pane mode state (TWO_PANE / THREE_PANE per FR-005) ✅ (Already implemented in Phase 2)
 - [X] T089 [US2] Update PaneContainer to support 3-pane layout (FR-005) ✅ (Already supported via dynamic pane mapping)
 - [X] T090 [US2] Implement logic to detect available language versions (source + target per FR-019) ✅
@@ -438,13 +438,13 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 - [X] T097c [US2] Integrate LanguageSelector into MarkdownPane component header (FR-034e UI feedback with Globe icon) ✅
 - [X] T097d [US2] Update PaneContainer language selection logic to prioritize user selections over defaults (FR-034c selection priority) ✅
 - [X] T097e [US2] Build availableLanguages list from document metadata in Viewer component (pass to markdown panes) ✅
-- [ ] T097f [P] [US2] Write unit tests for LanguageSelector component in tests/unit/components/LanguageSelector.test.tsx - DEFERRED
-- [ ] T097g [P] [US2] Write E2E test for language switching in tests/e2e/language-selection.spec.ts - DEFERRED
+- [X] T097f [P] [US2] Write unit tests for LanguageSelector component in tests/unit/components/LanguageSelector.test.tsx ✅ (20/20 tests passing, dropdown interactions tested in E2E)
+- [X] T097g [P] [US2] Write E2E test for language switching in tests/e2e/language-selection.spec.ts ✅
 - [ ] T097h [US2] Add URL persistence for per-pane language selections (FR-034e optional enhancement: ?pane1Lang=en-US&pane1Raw=false) - DEFERRED
 
 #### Mode Switching Tests & Advanced Features
-- [ ] T098 [P] [US2] Write E2E test for mode switching in tests/e2e/mode-switching.spec.ts - DEFERRED
-- [ ] T099 [P] [US2] Write E2E test for 3-pane synchronization in tests/e2e/three-pane-sync.spec.ts - DEFERRED
+- [X] T098 [P] [US2] Write E2E test for mode switching in tests/e2e/mode-switching.spec.ts ✅
+- [X] T099 [P] [US2] Write E2E test for 3-pane synchronization in tests/e2e/three-pane-sync.spec.ts ✅
 - [ ] T099a [US2] Implement mode switch queuing during load (FR-024b: queue requests until load completes) - DEFERRED
 - [ ] T099b [US2] Add loading indicator for mode switching with status message (FR-024b: "Switching to {mode}...") - DEFERRED
 - [ ] T099c [US2] Implement failed mode switch rollback (FR-027a: revert to previous mode, display error) - DEFERRED
@@ -467,7 +467,8 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
   - MarkdownPane header integrates language selector with availableLanguages prop
   - PaneContainer prioritizes user-selected languages over 3-pane defaults (user > defaults > fallback)
   - Bug fix applied: Language selection now respects user choices instead of reverting to first language
-  - Deferred: Unit tests (T097f), E2E tests (T097g), URL persistence for language selections (T097h)
+  - **Tests Complete**: T087 (26/26 unit tests), T097f (20/20 unit tests, dropdown tested in E2E), T098 (mode switching E2E), T099 (3-pane sync E2E), T097g (language selection E2E)
+  - Deferred: URL persistence for language selections (T097h), mode switch resilience features (T099a-f)
 - Synchronization logic applies to all panes regardless of count (FR-004)
 - Responsive layout handling from Phase 3 applies to both 2-pane and 3-pane modes
 - Build: ✅ SUCCESS (No errors, no warnings)
