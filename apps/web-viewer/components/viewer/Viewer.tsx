@@ -23,7 +23,7 @@ interface ViewerProps {
 
 export function Viewer({ documentId, className = '' }: ViewerProps) {
   const { documents, getCurrentDocument, currentDocumentId } = useDocumentStore();
-  const { currentPage, setCurrentPage, setError, error, paneMode } = useViewerStore();
+  const { currentPage, setCurrentPage, setError, error, paneMode, panes } = useViewerStore();
   const [totalPages, setTotalPages] = useState(0);
   const previousDocumentIdRef = useRef<string | null>(null);
   const previousPaneModeRef = useRef<string>(paneMode);
@@ -52,13 +52,34 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
         setCurrentPage(pageNum);
       }
     }
+    
+    // Initialize per-pane language selections from URL (FR-034e, T097h)
+    const pane1Lang = params.get('pane1Lang');
+    const pane1Raw = params.get('pane1Raw') === 'true';
+    const pane2Lang = params.get('pane2Lang');
+    const pane2Raw = params.get('pane2Raw') === 'true';
+    const pane3Lang = params.get('pane3Lang');
+    const pane3Raw = params.get('pane3Raw') === 'true';
+    
+    // Apply language selections if valid
+    const { setPaneLanguage, panes } = useViewerStore.getState();
+    
+    if (pane1Lang && panes[0]?.contentType === 'markdown') {
+      setPaneLanguage(panes[0].id, pane1Lang, pane1Raw);
+    }
+    if (pane2Lang && panes[1]?.contentType === 'markdown') {
+      setPaneLanguage(panes[1].id, pane2Lang, pane2Raw);
+    }
+    if (pane3Lang && panes[2]?.contentType === 'markdown') {
+      setPaneLanguage(panes[2].id, pane3Lang, pane3Raw);
+    }
   }, [document, setCurrentPage]);
 
-  // Update URL when page or mode changes and handle browser back/forward
+  // Update URL when page, mode, or pane languages change (FR-034e, T097h)
   useEffect(() => {
     if (typeof window === 'undefined' || !document) return;
     
-    // Update URL to match current page and mode
+    // Update URL to match current page, mode, and language selections
     const updateURL = () => {
       const url = new URL(window.location.href);
       const currentPageParam = url.searchParams.get('page');
@@ -78,6 +99,30 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
         url.searchParams.set('mode', newModeValue);
         changed = true;
       }
+      
+      // Track language selections for markdown panes (T097h)
+      const markdownPanes = panes.filter(p => p.contentType === 'markdown');
+      markdownPanes.forEach((pane, idx) => {
+        const paneNum = idx + 1;
+        const langParam = `pane${paneNum}Lang`;
+        const rawParam = `pane${paneNum}Raw`;
+        
+        if (pane.languageCode) {
+          const currentLang = url.searchParams.get(langParam);
+          const currentRaw = url.searchParams.get(rawParam);
+          
+          if (currentLang !== pane.languageCode) {
+            url.searchParams.set(langParam, pane.languageCode);
+            changed = true;
+          }
+          
+          const rawValue = pane.isRaw ? 'true' : 'false';
+          if (currentRaw !== rawValue) {
+            url.searchParams.set(rawParam, rawValue);
+            changed = true;
+          }
+        }
+      });
       
       // Use replaceState to avoid creating too many history entries
       if (changed) {
@@ -102,7 +147,7 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
     
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [currentPage, paneMode, document, setCurrentPage]);
+  }, [currentPage, paneMode, panes, document, setCurrentPage]);
 
   // Initialize viewer with document data
   useEffect(() => {

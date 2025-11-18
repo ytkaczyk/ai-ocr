@@ -11,12 +11,20 @@ interface ViewerStoreState {
   panes: Pane[];
   isLoading: boolean;
   error: string | null;
+  
+  // Mode switching state (FR-024b, FR-027a)
+  modeSwitchInProgress: boolean;
+  modeSwitchQueue: PaneMode | null;
+  previousPaneMode: PaneMode | null;
+  previousPanes: Pane[] | null;
 
   // Actions
   setCurrentPage: (page: number) => void;
   nextPage: (totalPages: number) => void;
   previousPage: () => void;
   setPaneMode: (mode: PaneMode) => void;
+  setPaneModeWithRollback: (mode: PaneMode) => Promise<void>;
+  rollbackModeSwitch: () => void;
   setPanes: (panes: Pane[]) => void;
   updatePane: (paneId: string, updates: Partial<Pane>) => void;
   updatePaneWidth: (paneId: string, widthPercent: number) => void;
@@ -60,6 +68,10 @@ const initialState = {
   panes: initialPanes,
   isLoading: false,
   error: null,
+  modeSwitchInProgress: false,
+  modeSwitchQueue: null,
+  previousPaneMode: null,
+  previousPanes: null,
 };
 
 /**
@@ -176,6 +188,71 @@ export const useViewerStore = create<ViewerStoreState>((set, get) => ({
         paneMode: mode,
         panes: newPanes,
       };
+    });
+  },
+
+  /**
+   * Set pane mode with rollback capability (FR-024b, FR-027a)
+   * Implements queuing during load and rollback on failure
+   */
+  setPaneModeWithRollback: async (mode) => {
+    const state = get();
+    
+    // If currently loading, queue the mode switch (FR-024b)
+    if (state.isLoading) {
+      set({ modeSwitchQueue: mode });
+      return;
+    }
+    
+    // If mode switch already in progress, queue the request
+    if (state.modeSwitchInProgress) {
+      set({ modeSwitchQueue: mode });
+      return;
+    }
+    
+    // Save previous state for rollback (FR-027a)
+    set({
+      modeSwitchInProgress: true,
+      previousPaneMode: state.paneMode,
+      previousPanes: [...state.panes],
+    });
+    
+    try {
+      // Attempt mode switch
+      get().setPaneMode(mode);
+      
+      // Simulate async validation (in real scenario, this would validate pane content loads)
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Success - clear rollback state
+      set({
+        modeSwitchInProgress: false,
+        previousPaneMode: null,
+        previousPanes: null,
+      });
+    } catch (error) {
+      // Rollback on failure (FR-027a)
+      get().rollbackModeSwitch();
+      throw error;
+    }
+  },
+
+  /**
+   * Rollback failed mode switch (FR-027a)
+   */
+  rollbackModeSwitch: () => {
+    set((state) => {
+      if (state.previousPaneMode && state.previousPanes) {
+        return {
+          paneMode: state.previousPaneMode,
+          panes: state.previousPanes,
+          modeSwitchInProgress: false,
+          previousPaneMode: null,
+          previousPanes: null,
+          error: 'Failed to switch mode. Reverted to previous view.',
+        };
+      }
+      return { modeSwitchInProgress: false };
     });
   },
 

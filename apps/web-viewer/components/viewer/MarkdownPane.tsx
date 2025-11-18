@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -21,6 +21,7 @@ import { LanguageSelector } from './LanguageSelector';
  * Implements FR-010: Image rendering with placeholder for missing images
  * Implements FR-030: Malformed markdown handling
  * Implements FR-034: Per-pane language selection
+ * Implements T100: React.memo optimization to prevent unnecessary re-renders
  */
 
 interface MarkdownPaneProps {
@@ -48,7 +49,7 @@ interface MarkdownResponse {
   sizeBytes: number;
 }
 
-export function MarkdownPane({
+function MarkdownPaneComponent({
   documentId,
   pageNumber,
   languageCode,
@@ -300,3 +301,16 @@ export function MarkdownPane({
     </div>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders (T100)
+// Only re-render if documentId, pageNumber, languageCode, or isRaw changes
+export const MarkdownPane = memo(MarkdownPaneComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.documentId === nextProps.documentId &&
+    prevProps.pageNumber === nextProps.pageNumber &&
+    prevProps.languageCode === nextProps.languageCode &&
+    prevProps.isRaw === nextProps.isRaw
+  );
+});
+
+MarkdownPane.displayName = 'MarkdownPane';

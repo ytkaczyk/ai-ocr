@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, memo } from 'react';
 import { Document, Page } from 'react-pdf';
 import type { PDFPageProxy } from 'pdfjs-dist';
 import { Loader2, AlertCircle, Info } from 'lucide-react';
@@ -24,6 +24,7 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
  * Implements FR-001: PDF rendering with device pixel ratio and aspect ratio maintenance
  * Implements FR-016: PDF zoom controls (10% increments, fit, width modes)
  * Implements FR-029: Non-standard PDF handling (page sizes, orientations, high-res)
+ * Implements T100: React.memo optimization to prevent unnecessary re-renders
  */
 
 interface PdfPaneProps {
@@ -36,7 +37,7 @@ interface PdfPaneProps {
   className?: string;
 }
 
-export function PdfPane({
+function PdfPaneComponent({
   documentId,
   pageNumber,
   zoomLevel = 1,
@@ -233,3 +234,16 @@ export function PdfPane({
     </div>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders (T100)
+// Only re-render if documentId, pageNumber, zoomLevel, or zoomMode changes
+export const PdfPane = memo(PdfPaneComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.documentId === nextProps.documentId &&
+    prevProps.pageNumber === nextProps.pageNumber &&
+    prevProps.zoomLevel === nextProps.zoomLevel &&
+    prevProps.zoomMode === nextProps.zoomMode
+  );
+});
+
+PdfPane.displayName = 'PdfPane';
