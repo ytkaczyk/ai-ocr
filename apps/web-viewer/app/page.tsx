@@ -1,14 +1,28 @@
 'use client';
 
+import { useEffect } from 'react';
 import { DocumentSelector } from '@/components/viewer/DocumentSelector';
 import { ViewportWarning } from '@/components/viewer/ViewportWarning';
 import { Viewer } from '@/components/viewer/Viewer';
 import { Button } from '@/components/ui/button';
 import { useDocumentStore } from '@/lib/stores/useDocumentStore';
+import { useViewerStore } from '@/lib/stores/useViewerStore';
 import { ArrowLeft } from 'lucide-react';
 
 export default function Home() {
   const { currentDocumentId, setCurrentDocument } = useDocumentStore();
+  const { setPaneMode } = useViewerStore();
+
+  // Initialize mode from URL on mount (before Viewer renders)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const params = new URLSearchParams(window.location.search);
+    const modeParam = params.get('mode');
+    if (modeParam === 'two-pane' || modeParam === 'three-pane') {
+      setPaneMode(modeParam);
+    }
+  }, [setPaneMode]);
 
   const handleDocumentSelect = (documentId: string) => {
     setCurrentDocument(documentId);

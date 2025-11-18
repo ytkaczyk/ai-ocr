@@ -39,7 +39,7 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   // Derive loading state - we're loading if we have an active ID but no document
   const loading = !!activeDocumentId && !document;
 
-  // Initialize page from URL query parameter on mount
+  // Initialize page from URL query parameter when document loads
   useEffect(() => {
     if (typeof window === 'undefined' || !document) return;
     

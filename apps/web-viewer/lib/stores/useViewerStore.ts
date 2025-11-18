@@ -98,10 +98,27 @@ export const useViewerStore = create<ViewerStoreState>((set, get) => ({
   setPaneMode: (mode) => {
     set((state) => {
       // When switching modes, create appropriate pane configuration
+      // Preserve language selections from existing markdown panes
+      const existingMarkdownPanes = state.panes.filter(p => p.contentType === 'markdown');
+      const existingLanguageCode = existingMarkdownPanes[0]?.languageCode;
+      
       let newPanes: Pane[];
 
       if (mode === 'two-pane') {
         // 2-pane: PDF + Markdown
+        // Preserve language selection if it exists
+        const markdownPane: Pane = {
+          id: 'markdown-pane',
+          contentType: 'markdown',
+          currentPage: state.currentPage,
+          visible: true,
+          widthPercent: 50,
+        };
+        
+        if (existingLanguageCode) {
+          markdownPane.languageCode = existingLanguageCode;
+        }
+        
         newPanes = [
           {
             id: 'pdf-pane',
@@ -112,16 +129,34 @@ export const useViewerStore = create<ViewerStoreState>((set, get) => ({
             zoomLevel: 1,
             zoomMode: 'fit',
           },
-          {
-            id: 'markdown-pane',
-            contentType: 'markdown',
-            currentPage: state.currentPage,
-            visible: true,
-            widthPercent: 50,
-          },
+          markdownPane,
         ];
       } else {
         // 3-pane: PDF + Markdown (raw) + Markdown (processed)
+        // Preserve language selection if it exists
+        const rawPane: Pane = {
+          id: 'markdown-raw-pane',
+          contentType: 'markdown',
+          isRaw: true,
+          currentPage: state.currentPage,
+          visible: true,
+          widthPercent: 33.33,
+        };
+        
+        const processedPane: Pane = {
+          id: 'markdown-processed-pane',
+          contentType: 'markdown',
+          isRaw: false,
+          currentPage: state.currentPage,
+          visible: true,
+          widthPercent: 33.34,
+        };
+        
+        if (existingLanguageCode) {
+          rawPane.languageCode = existingLanguageCode;
+          processedPane.languageCode = existingLanguageCode;
+        }
+        
         newPanes = [
           {
             id: 'pdf-pane',
@@ -132,22 +167,8 @@ export const useViewerStore = create<ViewerStoreState>((set, get) => ({
             zoomLevel: 1,
             zoomMode: 'fit',
           },
-          {
-            id: 'markdown-raw-pane',
-            contentType: 'markdown',
-            isRaw: true,
-            currentPage: state.currentPage,
-            visible: true,
-            widthPercent: 33.33,
-          },
-          {
-            id: 'markdown-processed-pane',
-            contentType: 'markdown',
-            isRaw: false,
-            currentPage: state.currentPage,
-            visible: true,
-            widthPercent: 33.34,
-          },
+          rawPane,
+          processedPane,
         ];
       }
 

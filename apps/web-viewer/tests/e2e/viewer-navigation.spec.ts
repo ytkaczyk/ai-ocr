@@ -291,7 +291,7 @@ test.describe('2-Pane Viewer Navigation', () => {
       expect(page.url()).toContain('page=1');
 
       // Jump to page 5 using input
-      const jumpInput = page.locator('[data-testid="page-jump-input"]');
+      const jumpInput = page.locator('[data-testid="pager-input"]');
       await jumpInput.click();
       await jumpInput.fill('5');
       await jumpInput.press('Enter');
@@ -362,7 +362,7 @@ test.describe('2-Pane Viewer Navigation', () => {
 
   test.describe('Jump to Page', () => {
     test('should jump to specific page via input', async ({ page }) => {
-      const jumpInput = page.locator('[data-testid="page-jump-input"]');
+      const jumpInput = page.locator('[data-testid="pager-input"]');
       
       // Clear input and type page number
       await jumpInput.click();
@@ -377,7 +377,7 @@ test.describe('2-Pane Viewer Navigation', () => {
     });
 
     test('should validate page number in jump input', async ({ page }) => {
-      const jumpInput = page.locator('[data-testid="page-jump-input"]');
+      const jumpInput = page.locator('[data-testid="pager-input"]');
       
       // Try to jump to invalid page (0)
       await jumpInput.click();
@@ -392,7 +392,7 @@ test.describe('2-Pane Viewer Navigation', () => {
     });
 
     test('should handle out-of-range page numbers', async ({ page }) => {
-      const jumpInput = page.locator('[data-testid="page-jump-input"]');
+      const jumpInput = page.locator('[data-testid="pager-input"]');
       const pageDisplay = page.locator('[data-testid="page-display"]');
       
       // Get current page and total pages

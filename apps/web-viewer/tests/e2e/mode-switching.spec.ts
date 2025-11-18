@@ -90,9 +90,9 @@ test.describe('Mode Switching', () => {
       await page.locator('[data-testid="three-pane-button"]').click();
       await page.waitForTimeout(500);
 
-      // Check URL contains mode=3pane
+      // Check URL contains mode=three-pane
       const url = new URL(page.url());
-      expect(url.searchParams.get('mode')).toBe('3pane');
+      expect(url.searchParams.get('mode')).toBe('three-pane');
     });
   });
 
@@ -128,9 +128,9 @@ test.describe('Mode Switching', () => {
       await page.locator('[data-testid="two-pane-button"]').click();
       await page.waitForTimeout(500);
 
-      // Check URL contains mode=2pane
+      // Check URL contains mode=two-pane
       const url = new URL(page.url());
-      expect(url.searchParams.get('mode')).toBe('2pane');
+      expect(url.searchParams.get('mode')).toBe('two-pane');
     });
   });
 
@@ -149,6 +149,9 @@ test.describe('Mode Switching', () => {
       // Switch to 3-pane
       await page.locator('[data-testid="three-pane-button"]').click();
       await page.waitForTimeout(500);
+      
+      // Wait for pager to be available after mode switch
+      await page.waitForSelector('[data-testid="pager-input"]', { timeout: 10000 });
 
       // Verify still on page 3
       await expect(pageInput).toHaveValue('3');
@@ -156,6 +159,9 @@ test.describe('Mode Switching', () => {
       // Switch back to 2-pane
       await page.locator('[data-testid="two-pane-button"]').click();
       await page.waitForTimeout(500);
+      
+      // Wait for pager to be available after mode switch
+      await page.waitForSelector('[data-testid="pager-input"]', { timeout: 10000 });
 
       // Verify still on page 3
       await expect(pageInput).toHaveValue('3');
@@ -174,22 +180,25 @@ test.describe('Mode Switching', () => {
       // Switch modes multiple times
       await page.locator('[data-testid="three-pane-button"]').click();
       await page.waitForTimeout(300);
+      await page.waitForSelector('[data-testid="pager-input"]', { timeout: 10000 });
       await expect(pageInput).toHaveValue('5');
 
       await page.locator('[data-testid="two-pane-button"]').click();
       await page.waitForTimeout(300);
+      await page.waitForSelector('[data-testid="pager-input"]', { timeout: 10000 });
       await expect(pageInput).toHaveValue('5');
 
       await page.locator('[data-testid="three-pane-button"]').click();
       await page.waitForTimeout(300);
+      await page.waitForSelector('[data-testid="pager-input"]', { timeout: 10000 });
       await expect(pageInput).toHaveValue('5');
     });
   });
 
   test.describe('URL Persistence', () => {
-    test('should load in 3-pane mode when URL has mode=3pane', async ({ page }) => {
+    test('should load in 3-pane mode when URL has mode=three-pane', async ({ page }) => {
       // Navigate directly with mode parameter
-      await page.goto('/?mode=3pane');
+      await page.goto('/?mode=three-pane');
 
       // Select a document
       const firstCard = page.locator('[data-testid="document-card"]').first();
@@ -209,9 +218,9 @@ test.describe('Mode Switching', () => {
       await expect(panes).toHaveCount(3);
     });
 
-    test('should load in 2-pane mode when URL has mode=2pane', async ({ page }) => {
+    test('should load in 2-pane mode when URL has mode=two-pane', async ({ page }) => {
       // Navigate directly with mode parameter
-      await page.goto('/?mode=2pane');
+      await page.goto('/?mode=two-pane');
 
       // Select a document
       const firstCard = page.locator('[data-testid="document-card"]').first();

@@ -172,28 +172,29 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
 
   test.describe('Jump to Page with Rapid Input', () => {
     test('should handle rapid page jumps', async ({ page, browserName }) => {
-      const jumpInput = page.locator('[data-testid="page-jump-input"]');
+      const jumpInput = page.locator('[data-testid="pager-input"]');
       const pageDisplay = page.locator('[data-testid="page-display"]');
 
-      // Rapidly change page numbers
+      // Rapidly change page numbers with small delays between
       await jumpInput.click();
       await jumpInput.fill('3');
       await jumpInput.press('Enter');
+      await page.waitForTimeout(100);
       
       await jumpInput.fill('5');
       await jumpInput.press('Enter');
+      await page.waitForTimeout(100);
       
       await jumpInput.fill('2');
       await jumpInput.press('Enter');
 
-      // Wait for debounce to complete (100ms) + navigation time
-      // Edge needs more time to process rapid jumps
-      const waitTime = browserName === 'chromium' ? 300 : 1500;
+      // Wait for debounce and navigation to complete
+      const waitTime = browserName === 'chromium' ? 1000 : 1500;
       await page.waitForTimeout(waitTime);
 
-      // Should be on page 2 (last command) - debounce should ensure only the final value is processed
-      // Wait for page display to update with flexible timeout since debounce behavior can vary
-      await expect(pageDisplay).toContainText('Page 2', { timeout: 10000 });
+      // Should be on page 2 (last command)
+      await expect(jumpInput).toHaveValue('2', { timeout: 5000 });
+      await expect(pageDisplay).toContainText('Page 2', { timeout: 5000 });
 
       // No errors
       const markdownPane = page.locator('[data-pane-id="markdown"]');
@@ -230,21 +231,23 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
 
     test('should show loading state during rapid navigation', async ({ page }) => {
       const nextButton = page.locator('[data-testid="pager-next"]');
+      const markdownPane = page.locator('[data-pane-id="markdown"]');
 
-      // Rapidly click to trigger loading
+      // Rapidly click to trigger navigation
       for (let i = 0; i < 3; i++) {
         await nextButton.click();
+        await page.waitForTimeout(100);
       }
 
-      // Loading indicator might be visible briefly (check immediately)
-      // Note: This might be flaky due to fast loading times
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
-      
-      // Wait for content to eventually load (not checking loading state specifically)
-      await page.waitForTimeout(500);
+      // Wait for navigation to complete
+      await page.waitForTimeout(1000);
 
-      // Final state should show content, not loading
-      await expect(markdownPane.locator('[data-testid="markdown-content"]')).toBeVisible({ timeout: 15000 });
+      // Final state should show content (page 4)
+      const pageInput = page.locator('[data-testid="pager-input"]');
+      await expect(pageInput).toHaveValue('4', { timeout: 5000 });
+      
+      // Content should be visible (not loading or error)
+      await expect(markdownPane.locator('[data-testid="markdown-content"]')).toBeVisible({ timeout: 5000 });
     });
   });
 

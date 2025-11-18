@@ -93,7 +93,7 @@ export function LanguageSelector({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+      <Globe className="h-3.5 w-3.5 text-muted-foreground" data-testid="globe-icon" />
       <Select
         value={selectedValue}
         onValueChange={handleValueChange}

@@ -210,7 +210,7 @@ export function Pager({
           <span className="sr-only">Page {currentPage} of {totalPages}</span>
           <span className="text-muted-foreground">Page</span>
           <input
-            data-testid="page-jump-input"
+            data-testid="pager-input"
             type="number"
             value={jumpValue}
             onChange={(e) => setJumpValue(e.target.value)}

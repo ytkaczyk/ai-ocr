@@ -22,12 +22,18 @@ test.describe('3-Pane Synchronization', () => {
 
     // Wait for the viewer to load
     await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
+    
+    // Wait for pager to be visible in 2-pane mode first
+    await page.waitForSelector('[data-testid="pager-input"]', { timeout: 10000 });
 
     // Switch to 3-pane mode
     const threePaneButton = page.locator('[data-testid="three-pane-button"]');
     await threePaneButton.waitFor({ timeout: 5000 });
     await threePaneButton.click();
+    
+    // Wait for mode switch to complete and pager to be available again
     await page.waitForTimeout(1000);
+    await page.waitForSelector('[data-testid="pager-input"]', { timeout: 10000 });
 
     // Verify in 3-pane mode
     const panes = page.locator('[data-pane-id]');
@@ -212,22 +218,25 @@ test.describe('3-Pane Synchronization', () => {
 
     test('should handle alternating next/previous clicks', async ({ page }) => {
       const pageInput = page.locator('[data-testid="pager-input"]');
+      const nextButton = page.locator('[data-testid="pager-next"]');
+      const prevButton = page.locator('[data-testid="pager-prev"]');
       
-      // Alternate between next and previous
-      await page.locator('[data-testid="pager-next"]').click();
-      await page.waitForTimeout(200);
-      await page.locator('[data-testid="pager-prev"]').click();
-      await page.waitForTimeout(200);
-      await page.locator('[data-testid="pager-next"]').click();
-      await page.waitForTimeout(200);
-      await page.locator('[data-testid="pager-next"]').click();
-      await page.waitForTimeout(200);
+      // Alternate between next and previous with adequate waits
+      // Starting at page 1
+      await nextButton.click();  // → page 2
+      await page.waitForTimeout(400);
+      await prevButton.click();  // → page 1
+      await page.waitForTimeout(400);
+      await nextButton.click();  // → page 2
+      await page.waitForTimeout(400);
+      await nextButton.click();  // → page 3
+      await page.waitForTimeout(400);
 
-      // Wait for final state
+      // Wait for final state to stabilize
       await page.waitForTimeout(500);
 
-      // Should be on page 2
-      await expect(pageInput).toHaveValue('2');
+      // Should be on page 3
+      await expect(pageInput).toHaveValue('3', { timeout: 5000 });
 
       // All panes synchronized
       const panes = page.locator('[data-pane-id]');
@@ -426,6 +435,8 @@ test.describe('3-Pane Synchronization', () => {
 
     test('should handle navigation at document boundaries', async ({ page }) => {
       const pageInput = page.locator('[data-testid="pager-input"]');
+      const nextButton = page.locator('[data-testid="pager-next"]');
+      const prevButton = page.locator('[data-testid="pager-prev"]');
       
       // Go to last page
       await page.locator('[data-testid="pager-last"]').click();
@@ -433,12 +444,17 @@ test.describe('3-Pane Synchronization', () => {
 
       const lastPage = await pageInput.inputValue();
 
-      // Try to go next (should stay at last page)
-      await page.locator('[data-testid="pager-next"]').click();
-      await page.waitForTimeout(300);
-
-      // Should still be on last page
+      // Next button should be disabled at last page
+      await expect(nextButton).toBeDisabled();
       await expect(pageInput).toHaveValue(lastPage);
+
+      // Go to first page
+      await page.locator('[data-testid="pager-first"]').click();
+      await page.waitForTimeout(600);
+
+      // Prev button should be disabled at first page
+      await expect(prevButton).toBeDisabled();
+      await expect(pageInput).toHaveValue('1');
 
       // All 3 panes should still be visible
       const panes = page.locator('[data-pane-id]');
