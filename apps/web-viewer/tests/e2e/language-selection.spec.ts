@@ -450,11 +450,10 @@ test.describe('Language Selection', () => {
       // Wait for language change to complete
       await page.waitForTimeout(1500);
 
-      // Try to find pager - if it's not found, take a screenshot for debugging
+      // Try to find pager - if it's not found, skip navigation test
       try {
         await page.locator('[data-testid="pager-next"]').first().waitFor({ state: 'visible', timeout: 3000 });
-      } catch (e) {
-        console.log('Pager not found after language change - skipping navigation test');
+      } catch {
         // Just verify language persisted
         await expect(markdownPane.locator('text=/French/')).toBeVisible();
         return;

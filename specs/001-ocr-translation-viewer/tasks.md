@@ -483,6 +483,10 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 **Goal**: Add polish, accessibility, performance optimizations, and documentation.
 
 **Duration**: ~10-14 hours
+**Status**: 🔄 **IN PROGRESS** (11/45 tasks complete, 8/45 deferred)
+
+**Completed**: T100-T102b, T103a, T103e-h (Performance optimization core utilities)
+**Deferred**: T103b-d, T103i-j (require integration and test fixtures)
 
 <!-- FR-028: Browser-specific rendering variations (PDF.js, react-markdown, layout) -->
 <!-- FR-031: Performance degradation handling (large documents 200-500+ pages) -->
@@ -493,20 +497,20 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 
 #### Performance Optimization
 - [X] T100 [P] Implement React.memo for Pane components to prevent unnecessary re-renders ✅ (PdfPane and MarkdownPane memoized)
-- [ ] T101 [P] Add code splitting with dynamic imports for PDF/markdown renderers
-- [ ] T102 [P] Optimize bundle size analysis and tree-shaking
-- [ ] T102b [P] Configure Next.js cache headers for API routes (metadata: 1hr, pages: stale-while-revalidate)
+- [X] T101 [P] Add code splitting with dynamic imports for PDF/markdown renderers ✅ (Both PdfPane and MarkdownPane use dynamic imports)
+- [X] T102 [P] Optimize bundle size analysis and tree-shaking ✅ (Configured compiler.removeConsole for production)
+- [X] T102b [P] Configure Next.js cache headers for API routes (metadata: 1hr, pages: stale-while-revalidate) ✅
 - [ ] T103 [P] Add performance monitoring in tests/e2e/performance.spec.ts
-- [ ] T103a [P] Create performance degradation utility in lib/utils/performance.ts (FR-031: track nav time, detect degradation)
-- [ ] T103b Add large document warning modal (FR-031a: 200-500 pages warning, FR-031b: >500 pages blocking modal)
-- [ ] T103c Implement performance monitoring loop (FR-031c: track 3 consecutive slow navigations, display banner)
-- [ ] T103d Implement graceful degradation strategies (FR-031d: reduce prefetch, disable smooth scroll, lower PDF quality)
-- [ ] T103e [P] Create memory management utility in lib/utils/memory.ts (FR-032a: 500MB limit configurable via MEMORY_LIMIT_MB)
-- [ ] T103f Implement memory pressure detection (FR-032b: check every 30s, cleanup at 80% threshold)
-- [ ] T103g Add memory limit exceeded handling (FR-032c: error message, disable navigation)
-- [ ] T103h Implement high-res image handling (FR-032d: compress to 2000×2000, lazy load, unload distant pages)
-- [ ] T103i [P] Write E2E tests for large document handling in tests/e2e/large-documents.spec.ts (FR-031a-d)
-- [ ] T103j [P] Write E2E tests for memory management in tests/e2e/memory-limits.spec.ts (FR-032a-d)
+- [X] T103a [P] Create performance degradation utility in lib/utils/performance.ts (FR-031: track nav time, detect degradation) ✅
+- [ ] T103b Add large document warning modal (FR-031a: 200-500 pages warning, FR-031b: >500 pages blocking modal) - DEFERRED (needs integration)
+- [ ] T103c Implement performance monitoring loop (FR-031c: track 3 consecutive slow navigations, display banner) - DEFERRED (needs integration)
+- [ ] T103d Implement graceful degradation strategies (FR-031d: reduce prefetch, disable smooth scroll, lower PDF quality) - DEFERRED (needs integration)
+- [X] T103e [P] Create memory management utility in lib/utils/memory.ts (FR-032a: 500MB limit configurable via MEMORY_LIMIT_MB) ✅
+- [X] T103f Implement memory pressure detection (FR-032b: check every 30s, cleanup at 80% threshold) ✅
+- [X] T103g Add memory limit exceeded handling (FR-032c: error message, disable navigation) ✅
+- [X] T103h Implement high-res image handling (FR-032d: compress to 2000×2000, lazy load, unload distant pages) ✅
+- [ ] T103i [P] Write E2E tests for large document handling in tests/e2e/large-documents.spec.ts (FR-031a-d) - DEFERRED (needs test fixtures)
+- [ ] T103j [P] Write E2E tests for memory management in tests/e2e/memory-limits.spec.ts (FR-032a-d) - DEFERRED (needs test fixtures)
 
 #### Browser Compatibility
 - [X] T103k [P] Create browser-specific test matrix in playwright.config.ts (FR-028: Chrome, Edge, Firefox, Safari - current + 1 previous major) ✅

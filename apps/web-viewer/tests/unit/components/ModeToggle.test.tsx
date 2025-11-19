@@ -19,18 +19,25 @@ vi.mock('@/lib/stores/useViewerStore', () => ({
 vi.mock('lucide-react', () => ({
   Columns2: () => <span data-testid="columns2-icon">Columns2</span>,
   Columns3: () => <span data-testid="columns3-icon">Columns3</span>,
+  Loader2: () => <span data-testid="loader2-icon">Loader2</span>,
 }));
 
 describe('ModeToggle', () => {
-  let mockSetPaneMode: ReturnType<typeof vi.fn>;
+  let mockSetPaneModeWithRollback: ReturnType<typeof vi.fn>;
+  let mockSetError: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    mockSetPaneMode = vi.fn();
+    mockSetPaneModeWithRollback = vi.fn().mockResolvedValue(undefined);
+    mockSetError = vi.fn();
     
     // Default store state: two-pane mode
     (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       paneMode: 'two-pane',
-      setPaneMode: mockSetPaneMode,
+      setPaneModeWithRollback: mockSetPaneModeWithRollback,
+      modeSwitchInProgress: false,
+      modeSwitchQueue: null,
+      error: null,
+      setError: mockSetError,
     });
   });
 
@@ -81,7 +88,11 @@ describe('ModeToggle', () => {
     it('should highlight active mode button (three-pane)', () => {
       (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         paneMode: 'three-pane',
-        setPaneMode: mockSetPaneMode,
+        setPaneModeWithRollback: mockSetPaneModeWithRollback,
+        modeSwitchInProgress: false,
+        modeSwitchQueue: null,
+        error: null,
+        setError: mockSetError,
       });
 
       render(<ModeToggle availableLanguages={['en-US', 'es-ES']} />);
@@ -96,7 +107,11 @@ describe('ModeToggle', () => {
     it('should call setPaneMode when two-pane button clicked', () => {
       (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         paneMode: 'three-pane',
-        setPaneMode: mockSetPaneMode,
+        setPaneModeWithRollback: mockSetPaneModeWithRollback,
+        modeSwitchInProgress: false,
+        modeSwitchQueue: null,
+        error: null,
+        setError: mockSetError,
       });
 
       render(<ModeToggle availableLanguages={['en-US', 'es-ES']} />);
@@ -104,8 +119,8 @@ describe('ModeToggle', () => {
       const twoPaneButton = screen.getByTestId('two-pane-button');
       fireEvent.click(twoPaneButton);
 
-      expect(mockSetPaneMode).toHaveBeenCalledWith('two-pane');
-      expect(mockSetPaneMode).toHaveBeenCalledTimes(1);
+      expect(mockSetPaneModeWithRollback).toHaveBeenCalledWith('two-pane');
+      expect(mockSetPaneModeWithRollback).toHaveBeenCalledTimes(1);
     });
 
     it('should call setPaneMode when three-pane button clicked', () => {
@@ -114,8 +129,8 @@ describe('ModeToggle', () => {
       const threePaneButton = screen.getByTestId('three-pane-button');
       fireEvent.click(threePaneButton);
 
-      expect(mockSetPaneMode).toHaveBeenCalledWith('three-pane');
-      expect(mockSetPaneMode).toHaveBeenCalledTimes(1);
+      expect(mockSetPaneModeWithRollback).toHaveBeenCalledWith('three-pane');
+      expect(mockSetPaneModeWithRollback).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -167,7 +182,7 @@ describe('ModeToggle', () => {
       const threePaneButton = screen.getByTestId('three-pane-button');
       fireEvent.click(threePaneButton);
 
-      expect(mockSetPaneMode).not.toHaveBeenCalled();
+      expect(mockSetPaneModeWithRollback).not.toHaveBeenCalled();
     });
   });
 
@@ -226,8 +241,8 @@ describe('ModeToggle', () => {
         <ModeToggle availableLanguages={['en-US', 'es-ES']} className="custom-class" />
       );
 
-      const group = container.querySelector('[role="group"]');
-      expect(group).toHaveClass('custom-class');
+      const wrapper = container.firstChild;
+      expect(wrapper).toHaveClass('custom-class');
     });
 
     it('should maintain base classes with custom className', () => {
@@ -235,11 +250,11 @@ describe('ModeToggle', () => {
         <ModeToggle availableLanguages={['en-US', 'es-ES']} className="custom-class" />
       );
 
-      const group = container.querySelector('[role="group"]');
-      expect(group).toHaveClass('flex');
-      expect(group).toHaveClass('items-center');
-      expect(group).toHaveClass('gap-2');
-      expect(group).toHaveClass('custom-class');
+      const wrapper = container.firstChild;
+      expect(wrapper).toHaveClass('flex');
+      expect(wrapper).toHaveClass('flex-col');
+      expect(wrapper).toHaveClass('gap-2');
+      expect(wrapper).toHaveClass('custom-class');
     });
   });
 
@@ -254,7 +269,11 @@ describe('ModeToggle', () => {
     it('should allow switching back to two-pane from three-pane', () => {
       (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         paneMode: 'three-pane',
-        setPaneMode: mockSetPaneMode,
+        setPaneModeWithRollback: mockSetPaneModeWithRollback,
+        modeSwitchInProgress: false,
+        modeSwitchQueue: null,
+        error: null,
+        setError: mockSetError,
       });
 
       render(<ModeToggle availableLanguages={['en-US', 'es-ES']} />);
@@ -262,13 +281,17 @@ describe('ModeToggle', () => {
       const twoPaneButton = screen.getByTestId('two-pane-button');
       fireEvent.click(twoPaneButton);
 
-      expect(mockSetPaneMode).toHaveBeenCalledWith('two-pane');
+      expect(mockSetPaneModeWithRollback).toHaveBeenCalledWith('two-pane');
     });
 
     it('should not switch to three-pane if already in three-pane mode', () => {
       (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         paneMode: 'three-pane',
-        setPaneMode: mockSetPaneMode,
+        setPaneModeWithRollback: mockSetPaneModeWithRollback,
+        modeSwitchInProgress: false,
+        modeSwitchQueue: null,
+        error: null,
+        setError: mockSetError,
       });
 
       render(<ModeToggle availableLanguages={['en-US', 'es-ES']} />);
@@ -276,8 +299,8 @@ describe('ModeToggle', () => {
       const threePaneButton = screen.getByTestId('three-pane-button');
       fireEvent.click(threePaneButton);
 
-      // Should still call setPaneMode (idempotent operation)
-      expect(mockSetPaneMode).toHaveBeenCalledWith('three-pane');
+      // Should not call setPaneModeWithRollback when already in target mode
+      expect(mockSetPaneModeWithRollback).not.toHaveBeenCalled();
     });
   });
 });

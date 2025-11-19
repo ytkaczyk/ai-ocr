@@ -3,14 +3,23 @@
 import { useState, useRef, useEffect, useCallback, Fragment } from 'react';
 import dynamic from 'next/dynamic';
 import { useViewerStore } from '@/lib/stores/useViewerStore';
-import { MarkdownPane } from './MarkdownPane';
 
-// Dynamically import PdfPane to avoid SSR issues with react-pdf
+// Dynamically import PdfPane to avoid SSR issues with react-pdf (T101)
 const PdfPane = dynamic(() => import('./PdfPane').then((mod) => mod.PdfPane), {
   ssr: false,
   loading: () => (
     <div className="flex h-full items-center justify-center">
       <div className="text-sm text-muted-foreground">Loading PDF viewer...</div>
+    </div>
+  ),
+});
+
+// Dynamically import MarkdownPane for code splitting (T101)
+const MarkdownPane = dynamic(() => import('./MarkdownPane').then((mod) => mod.MarkdownPane), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full items-center justify-center">
+      <div className="text-sm text-muted-foreground">Loading markdown viewer...</div>
     </div>
   ),
 });
