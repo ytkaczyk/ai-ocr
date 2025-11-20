@@ -100,7 +100,7 @@ export function LanguageSelector({
         disabled={disabled}
       >
         <SelectTrigger
-          className="h-8 w-[200px] text-xs"
+          className="h-9 w-[200px] text-xs"
           aria-label="Select language version"
         >
           <SelectValue placeholder="Select language" />

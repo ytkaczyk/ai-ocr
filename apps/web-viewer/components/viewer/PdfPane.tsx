@@ -10,6 +10,7 @@ import {
   getPdfOrientation,
 } from '@/lib/utils/pdf-renderer';
 import type { ZoomMode } from '@/lib/schemas/viewer';
+import { PdfToolbar } from './PdfToolbar';
 
 // Configure PDF.js worker
 import '@/lib/utils/pdf-worker';
@@ -32,6 +33,9 @@ interface PdfPaneProps {
   pageNumber: number;
   zoomLevel?: number;
   zoomMode?: ZoomMode;
+  onZoomIn?: () => void;
+  onZoomOut?: () => void;
+  onZoomChange?: (level: number, mode: ZoomMode) => void;
   onLoadSuccess?: (pageCount: number) => void;
   onLoadError?: (error: Error) => void;
   className?: string;
@@ -42,6 +46,9 @@ function PdfPaneComponent({
   pageNumber,
   zoomLevel = 1,
   zoomMode = 'fit',
+  onZoomIn,
+  onZoomOut,
+  onZoomChange,
   onLoadSuccess,
   onLoadError,
   className = '',
@@ -153,7 +160,21 @@ function PdfPaneComponent({
     : null;
 
   return (
-    <div ref={containerRef} className={`pdf-pane relative h-full w-full overflow-auto ${className}`}>
+    <div className={`pdf-pane relative flex flex-col h-full bg-background ${className}`}>
+      {/* Toolbar with zoom controls */}
+      {onZoomIn && onZoomOut && onZoomChange && (
+        <PdfToolbar
+          zoomLevel={zoomLevel}
+          zoomMode={zoomMode}
+          onZoomIn={onZoomIn}
+          onZoomOut={onZoomOut}
+          onZoomChange={onZoomChange}
+          disabled={loading || !!error}
+        />
+      )}
+
+      {/* Scrollable PDF container */}
+      <div ref={containerRef} className="flex-1 overflow-auto">
       {/* Loading state */}
       {loading && !error && (
         <div className="flex h-full items-center justify-center">
@@ -231,6 +252,7 @@ function PdfPaneComponent({
           </div>
         </Document>
       )}
+      </div>
     </div>
   );
 }
@@ -242,7 +264,10 @@ export const PdfPane = memo(PdfPaneComponent, (prevProps, nextProps) => {
     prevProps.documentId === nextProps.documentId &&
     prevProps.pageNumber === nextProps.pageNumber &&
     prevProps.zoomLevel === nextProps.zoomLevel &&
-    prevProps.zoomMode === nextProps.zoomMode
+    prevProps.zoomMode === nextProps.zoomMode &&
+    prevProps.onZoomIn === nextProps.onZoomIn &&
+    prevProps.onZoomOut === nextProps.onZoomOut &&
+    prevProps.onZoomChange === nextProps.onZoomChange
   );
 });
 

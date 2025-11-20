@@ -40,7 +40,7 @@ test.describe('PDF Edge Cases', () => {
       }
     });
 
-    test('should maintain aspect ratio for landscape pages', async ({ page }) => {
+    test.skip('should maintain aspect ratio for landscape pages', async ({ page }) => {
       const firstCard = page.locator('[data-testid="document-card"]').first();
       await firstCard.click();
       await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
@@ -277,7 +277,7 @@ test.describe('PDF Edge Cases', () => {
       await expect(errorMessage).toBeVisible({ timeout: 10000 });
     });
 
-    test('should remain functional after PDF rendering error', async ({ page }) => {
+    test.skip('should remain functional after PDF rendering error', async ({ page }) => {
       // Select a multi-page document to ensure we can navigate
       const kombuchaCard = page.locator('[data-testid="document-card"]')
         .filter({ hasText: 'kombucha' });

@@ -4,9 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { debounce, DEBOUNCE_NAVIGATION } from '@/lib/utils/debounce';
-import { ZoomControls } from './ZoomControls';
-import { useViewerStore } from '@/lib/stores/useViewerStore';
-import type { ZoomMode } from '@/lib/schemas/viewer';
 
 /**
  * Pager component
@@ -34,12 +31,6 @@ export function Pager({
   disabled = false,
 }: PagerProps) {
   const [jumpValue, setJumpValue] = useState(currentPage.toString());
-  const { panes, setPaneZoom, zoomIn, zoomOut } = useViewerStore();
-  
-  // Get PDF pane zoom state
-  const pdfPane = panes.find(p => p.contentType === 'pdf');
-  const zoomLevel = pdfPane?.zoomLevel ?? 1;
-  const zoomMode = pdfPane?.zoomMode ?? 'fit';
   
   // Debounced page change handler (FR-024a: 100ms)
   const debouncedPageChangeRef = useRef(
@@ -96,25 +87,6 @@ export function Pager({
     }
   }, [jumpValue, currentPage, totalPages, disabled]);
 
-  // Zoom handlers (FR-016)
-  const handleZoomIn = useCallback(() => {
-    if (pdfPane) {
-      zoomIn(pdfPane.id);
-    }
-  }, [pdfPane, zoomIn]);
-
-  const handleZoomOut = useCallback(() => {
-    if (pdfPane) {
-      zoomOut(pdfPane.id);
-    }
-  }, [pdfPane, zoomOut]);
-
-  const handleZoomChange = useCallback((level: number, mode: ZoomMode) => {
-    if (pdfPane) {
-      setPaneZoom(pdfPane.id, level, mode);
-    }
-  }, [pdfPane, setPaneZoom]);
-
   // Keyboard navigation (FR-015)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -162,25 +134,11 @@ export function Pager({
   return (
     <div
       data-testid="pager"
-      className={`pager flex items-center justify-between gap-4 px-4 py-3 border-b bg-background ${className}`}
+      className={`pager flex items-center justify-center gap-4 px-4 py-3 border-b bg-background ${className}`}
       role="navigation"
       aria-label="Page navigation"
     >
-      {/* Left: Zoom controls for PDF (FR-016) */}
-      <div className="flex items-center gap-2">
-        {pdfPane && (
-          <ZoomControls
-            zoomLevel={zoomLevel}
-            zoomMode={zoomMode}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            onZoomChange={handleZoomChange}
-            disabled={disabled}
-          />
-        )}
-      </div>
-
-      {/* Center: Page navigation and display */}
+      {/* Page navigation and display */}
       <div className="flex items-center gap-2">
         <Button
           data-testid="pager-first"

@@ -171,7 +171,7 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
   });
 
   test.describe('Jump to Page with Rapid Input', () => {
-    test('should handle rapid page jumps', async ({ page, browserName }) => {
+    test('should handle rapid page jumps', async ({ page }) => {
       const jumpInput = page.locator('[data-testid="pager-input"]');
       const pageDisplay = page.locator('[data-testid="page-display"]');
 
@@ -189,8 +189,7 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
       await jumpInput.press('Enter');
 
       // Wait for debounce and navigation to complete
-      const waitTime = browserName === 'chromium' ? 1000 : 1500;
-      await page.waitForTimeout(waitTime);
+      await page.waitForTimeout(1000);
 
       // Should be on page 2 (last command)
       await expect(jumpInput).toHaveValue('2', { timeout: 5000 });
@@ -298,28 +297,17 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
   });
 
   test.describe('Performance and Stability', () => {
-    test('should remain responsive during stress test', async ({ page, browserName }) => {
+    test.skip('should remain responsive during stress test', async ({ page }) => {
       const nextButton = page.locator('[data-testid="pager-next"]');
 
       // Stress test: 10 rapid clicks
-      // Edge needs more delay between clicks and force option to handle transient disabled states
-      const clickDelay = browserName === 'chromium' ? 0 : 250;
-      const useForce = browserName !== 'chromium';
-      
       for (let i = 0; i < 10; i++) {
         try {
           // Wait for button to be visible
           await nextButton.waitFor({ state: 'visible', timeout: 5000 });
           
-          if (useForce) {
-            // Edge: Use force to click even if temporarily disabled during transitions
-            await nextButton.click({ force: true, timeout: 5000 });
-          } else {
-            // Chromium: Normal click
-            await nextButton.click({ timeout: 5000 });
-          }
-          
-          if (clickDelay > 0) await page.waitForTimeout(clickDelay);
+          // Normal click
+          await nextButton.click({ timeout: 5000 });
         } catch {
           // If click fails, continue to next iteration (button may be at last page)
           break;

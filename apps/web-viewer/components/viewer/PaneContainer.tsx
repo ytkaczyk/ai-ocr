@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, Fragment } from 'react';
 import dynamic from 'next/dynamic';
 import { useViewerStore } from '@/lib/stores/useViewerStore';
+import type { ZoomMode } from '@/lib/schemas/viewer';
 
 // Dynamically import PdfPane to avoid SSR issues with react-pdf (T101)
 const PdfPane = dynamic(() => import('./PdfPane').then((mod) => mod.PdfPane), {
@@ -55,7 +56,7 @@ export function PaneContainer({
   availableLanguages = [],
   className = '',
 }: PaneContainerProps) {
-  const { panes, updatePaneWidth, setPaneLanguage } = useViewerStore();
+  const { panes, updatePaneWidth, setPaneLanguage, setPaneZoom, zoomIn, zoomOut } = useViewerStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const [resizing, setResizing] = useState(false);
   const [resizeStartX, setResizeStartX] = useState(0);
@@ -121,6 +122,13 @@ export function PaneContainer({
   // Render pane content based on type
   const renderPane = useCallback((pane: typeof panes[0]) => {
     if (pane.contentType === 'pdf') {
+      // Zoom handlers for PDF pane
+      const handleZoomIn = () => zoomIn(pane.id);
+      const handleZoomOut = () => zoomOut(pane.id);
+      const handleZoomChange = (level: number, mode: ZoomMode) => {
+        setPaneZoom(pane.id, level, mode);
+      };
+
       return (
         <div key={pane.id} data-testid="pdf-pane" className="h-full">
           <PdfPane
@@ -128,6 +136,9 @@ export function PaneContainer({
             pageNumber={currentPage}
             zoomLevel={pane.zoomLevel}
             zoomMode={pane.zoomMode}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onZoomChange={handleZoomChange}
             className="h-full"
           />
         </div>
@@ -172,7 +183,7 @@ export function PaneContainer({
       );
     }
     return null;
-  }, [documentId, currentPage, languageCode, sourceLanguageCode, targetLanguageCode, availableLanguages, setPaneLanguage]);
+  }, [documentId, currentPage, languageCode, sourceLanguageCode, targetLanguageCode, availableLanguages, setPaneLanguage, setPaneZoom, zoomIn, zoomOut]);
 
   return (
     <div

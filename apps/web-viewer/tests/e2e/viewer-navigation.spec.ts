@@ -66,43 +66,6 @@ test.describe('2-Pane Viewer Navigation', () => {
   });
 
   test.describe('Content Loading', () => {
-    test.skip('should load PDF content in PDF pane', async ({ page }) => {
-      // Skipped: PDF.js canvas rendering not completing in test environment
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
-      
-      // PDF pane should be visible and either have content or be loading
-      await expect(pdfPane).toBeVisible();
-      
-      // Wait for PDF to start rendering (give it more time)
-      await page.waitForTimeout(3000);
-      
-      // Check for PDF canvas, iframe, or at least no error
-      const hasCanvas = await pdfPane.locator('canvas').isVisible().catch(() => false);
-      const hasIframe = await pdfPane.locator('iframe').isVisible().catch(() => false);
-      const hasError = await pdfPane.locator('[data-testid="error-message"]').isVisible().catch(() => false);
-      
-      // Should have rendering attempt (canvas/iframe) or show error, not blank pane
-      expect(hasCanvas || hasIframe || hasError).toBe(true);
-    });
-
-    test.skip('should load markdown content in markdown pane', async ({ page }) => {
-      // Skipped: Markdown rendering timing issues in test environment
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
-      
-      // Markdown pane should be visible
-      await expect(markdownPane).toBeVisible();
-      
-      // Should show content, empty message, or error - not blank
-      await page.waitForTimeout(1000);
-      
-      const hasContent = await markdownPane.locator('[data-testid="markdown-content"]').isVisible().catch(() => false);
-      const hasEmptyMessage = await markdownPane.locator('[data-testid="empty-message"]').isVisible().catch(() => false);
-      const hasError = await markdownPane.locator('[data-testid="error-message"]').isVisible().catch(() => false);
-      
-      // One of these should be visible
-      expect(hasContent || hasEmptyMessage || hasError).toBe(true);
-    });
-
     test('should display page number in pager', async ({ page }) => {
       const pageDisplay = page.locator('[data-testid="page-display"]');
       await expect(pageDisplay).toBeVisible();

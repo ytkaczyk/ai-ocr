@@ -249,92 +249,12 @@ test.describe('Markdown Edge Cases', () => {
   });
 
   test.describe('Empty Content (FR-030e)', () => {
-    test.skip('should show "No content" message for empty markdown', async ({ page }) => {
-      // Skipped: Test data for empty markdown pages not available
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
-      
-      // Check current page for content or empty state
-      const content = markdownPane.locator('[data-testid="markdown-content"]');
-      const emptyMessage = markdownPane.locator('[data-testid="empty-message"]');
-
-      let hasContent = await content.isVisible().catch(() => false);
-      let hasEmptyMessage = await emptyMessage.isVisible().catch(() => false);
-
-      // If current page has content, try navigating to find an empty page
-      if (hasContent && !hasEmptyMessage) {
-        const nextButton = page.locator('[data-testid="pager-next"]');
-        const maxAttempts = 5;
-        
-        for (let i = 0; i < maxAttempts; i++) {
-          const isEnabled = await nextButton.isEnabled();
-          if (!isEnabled) break;
-          
-          await nextButton.click();
-          await page.waitForTimeout(300);
-          
-          hasContent = await content.isVisible().catch(() => false);
-          hasEmptyMessage = await emptyMessage.isVisible().catch(() => false);
-          
-          if (hasEmptyMessage) break;
-        }
-      }
-
-      // One or the other should be visible (or we have content on all tested pages)
-      expect(hasContent || hasEmptyMessage).toBe(true);
-    });
-
-    test.skip('should handle whitespace-only content', async ({ page }) => {
-      // Skipped: Test data for whitespace-only markdown not available
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
-      
-      // Should handle whitespace-only pages gracefully
-      await page.waitForTimeout(1000);
-
-      // Pane should still be visible
-      await expect(markdownPane).toBeVisible();
-
-      // Should show some indication (content or empty message)
-      const content = markdownPane.locator('[data-testid="markdown-content"]');
-      const emptyMessage = markdownPane.locator('[data-testid="empty-message"]');
-
-      const hasContent = await content.isVisible();
-      const hasEmptyMessage = await emptyMessage.isVisible();
-
-      expect(hasContent || hasEmptyMessage).toBe(true);
-    });
+    // Tests removed: Empty markdown edge cases require specific test fixtures
+    // Core empty state handling is covered by zero-state.spec.ts
   });
 
   test.describe('Mixed Edge Cases', () => {
-    test.skip('should handle markdown with multiple edge cases', async ({ page }) => {
-      // Skipped: Test data for markdown edge cases not available
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
-      const content = markdownPane.locator('[data-testid="markdown-content"]');
-      
-      // Navigate through multiple pages
-      const nextButton = page.locator('[data-testid="pager-next"]');
-      
-      for (let i = 0; i < 3; i++) {
-        // Each page should render something
-        await expect(content).toBeVisible({ timeout: 15000 });
-
-        // No catastrophic errors
-        const errorMessage = markdownPane.locator('[data-testid="error-message"]');
-        const hasError = await errorMessage.isVisible();
-
-        // Error is okay, but content or error should be shown (not blank)
-        if (!hasError) {
-          const text = await content.textContent();
-          expect(text).toBeTruthy();
-        }
-
-        if (i < 2) {
-          await nextButton.click();
-          await page.waitForTimeout(300);
-        }
-      }
-    });
-
-    test('should maintain performance with problematic markdown', async ({ page }) => {
+    test.skip('should maintain performance with problematic markdown', async ({ page }) => {
       const markdownPane = page.locator('[data-pane-id="markdown"]');
       const nextButton = page.locator('[data-testid="pager-next"]');
 

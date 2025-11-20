@@ -41,7 +41,7 @@ The OCR Translation Comparison Viewer is a Next.js 15 web application that enabl
 - E2E: Playwright with multi-browser support
 - Coverage Target: 70% minimum (90% for critical paths)
 
-**Target Platform**: Modern web browsers (Chrome/Edge/Firefox/Safari, current + 1 previous major version)  
+**Target Platform**: Google Chrome (current + 1 previous major version)  
 **Project Type**: Web application (Next.js full-stack)  
 **Performance Goals**: 
 - Document load: < 5 seconds for initial page display
@@ -577,7 +577,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        browser: [chromium, firefox, webkit]
+        browser: [chromium]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -629,7 +629,7 @@ jobs:
 - [ ] CSP headers configured to restrict script sources
 - [ ] Dependency vulnerabilities resolved (Dependabot clean)
 - [ ] Accessibility audit passed (axe-core, manual testing)
-- [ ] Cross-browser testing completed (Chrome, Firefox, Safari, Edge)
+- [ ] Chrome testing completed (current + 1 previous major version)
 - [ ] Documentation updated (README, quickstart.md)
 
 ### Scaling Considerations
