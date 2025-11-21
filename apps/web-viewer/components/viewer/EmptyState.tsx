@@ -62,13 +62,19 @@ const emptyStateConfig: Record<
 export function EmptyState({ type, message, action }: EmptyStateProps) {
   const config = emptyStateConfig[type];
   const Icon = config.icon;
+  const isError = type === 'error';
 
   return (
-    <div className="flex min-h-[400px] items-center justify-center p-8" data-testid="empty-state">
+    <div 
+      className="flex min-h-[400px] items-center justify-center p-8" 
+      data-testid="empty-state"
+      {...(isError ? { role: 'alert', 'aria-live': 'assertive' } : { role: 'status', 'aria-live': 'polite' })}
+      aria-label={config.title}
+    >
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-            <Icon className="h-8 w-8 text-muted-foreground" />
+            <Icon className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
           </div>
           <CardTitle className="text-xl" data-testid="empty-state-title">{config.title}</CardTitle>
           <CardDescription className="text-base" data-testid="empty-state-description">
@@ -78,12 +84,12 @@ export function EmptyState({ type, message, action }: EmptyStateProps) {
         {(action || config.defaultAction) && (
           <CardContent className="text-center">
             {action ? (
-              <Button onClick={action.onClick} variant="default">
+              <Button onClick={action.onClick} variant="default" aria-label={action.label}>
                 {action.label}
               </Button>
             ) : config.defaultAction ? (
               <Button asChild variant="outline">
-                <a href={config.defaultAction.href}>{config.defaultAction.label}</a>
+                <a href={config.defaultAction.href} aria-label={config.defaultAction.label}>{config.defaultAction.label}</a>
               </Button>
             ) : null}
           </CardContent>

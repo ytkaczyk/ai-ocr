@@ -160,7 +160,7 @@ function PdfPaneComponent({
     : null;
 
   return (
-    <div className={`pdf-pane relative flex flex-col h-full bg-background ${className}`}>
+    <div className={`pdf-pane relative flex flex-col h-full bg-background ${className}`} role="region" aria-label="PDF viewer pane">
       {/* Toolbar with zoom controls */}
       {onZoomIn && onZoomOut && onZoomChange && (
         <PdfToolbar
@@ -177,9 +177,9 @@ function PdfPaneComponent({
       <div ref={containerRef} className="flex-1 overflow-auto">
       {/* Loading state */}
       {loading && !error && (
-        <div className="flex h-full items-center justify-center">
+        <div className="flex h-full items-center justify-center" role="status" aria-live="polite" aria-label="Loading PDF">
           <div className="text-center">
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" aria-hidden="true" />
             <p className="mt-2 text-sm text-muted-foreground">Loading PDF...</p>
           </div>
         </div>
@@ -187,9 +187,9 @@ function PdfPaneComponent({
 
       {/* Error state */}
       {error && (
-        <div data-testid="error-message" className="flex h-full items-center justify-center p-4">
+        <div data-testid="error-message" className="flex h-full items-center justify-center p-4" role="alert" aria-live="assertive">
           <div className="text-center max-w-md">
-            <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
+            <AlertCircle className="mx-auto h-12 w-12 text-destructive" aria-hidden="true" />
             <p className="mt-4 text-sm text-destructive font-medium">Error loading PDF</p>
             <p className="mt-2 text-xs text-muted-foreground">{error}</p>
             <button
@@ -198,6 +198,7 @@ function PdfPaneComponent({
                 setLoading(true);
               }}
               className="mt-4 text-sm text-primary hover:underline"
+              aria-label="Retry loading PDF"
             >
               Try again
             </button>
@@ -217,9 +218,9 @@ function PdfPaneComponent({
         >
           {/* Non-standard PDF warning (FR-029a) */}
           {isNonStandard && pageDimensions && (
-            <div className="sticky top-0 z-10 bg-amber-50 border-b border-amber-200 px-4 py-2">
+            <div className="sticky top-0 z-10 bg-amber-50 border-b border-amber-200 px-4 py-2" role="status" aria-label="Non-standard page size warning">
               <div className="flex items-center gap-2 text-xs text-amber-900">
-                <Info className="h-4 w-4" />
+                <Info className="h-4 w-4" aria-hidden="true" />
                 <span>
                   Non-standard page size: {formatPdfDimensions(pageDimensions.width, pageDimensions.height)}
                   {orientation && ` (${orientation})`}
@@ -229,7 +230,10 @@ function PdfPaneComponent({
           )}
 
           {/* PDF Page with dimension tooltip (FR-029a) */}
-          <div title={pageDimensions ? formatPdfDimensions(pageDimensions.width, pageDimensions.height) : undefined}>
+          <div 
+            title={pageDimensions ? formatPdfDimensions(pageDimensions.width, pageDimensions.height) : undefined}
+            aria-label={`PDF page ${pageNumber}`}
+          >
             <Page
               pageNumber={pageNumber}
               scale={scale}

@@ -6,6 +6,7 @@ import { useViewerStore } from '@/lib/stores/useViewerStore';
 import { Pager } from './Pager';
 import { PaneContainer } from './PaneContainer';
 import { ModeToggle } from './ModeToggle';
+import { ScreenReaderAnnouncement } from './ScreenReaderAnnouncement';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { prefetchAdjacentPagesWithCache } from '@/lib/utils/prefetch';
 
@@ -14,6 +15,7 @@ import { prefetchAdjacentPagesWithCache } from '@/lib/utils/prefetch';
  * Main container for document viewing with panes and navigation
  * Implements FR-004: Pane synchronization
  * Implements FR-012: Page number and total page count display
+ * Implements T106: Screen reader announcements for page changes
  */
 
 interface ViewerProps {
@@ -25,8 +27,10 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   const { documents, getCurrentDocument, currentDocumentId } = useDocumentStore();
   const { currentPage, setCurrentPage, setError, error, paneMode, panes } = useViewerStore();
   const [totalPages, setTotalPages] = useState(0);
+  const [announcement, setAnnouncement] = useState('');
   const previousDocumentIdRef = useRef<string | null>(null);
   const previousPaneModeRef = useRef<string>(paneMode);
+  const previousPageRef = useRef<number>(currentPage);
 
   // Get document ID from props or store
   const activeDocumentId = documentId || currentDocumentId;
@@ -200,6 +204,14 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
       document.pageCount,
       languageVersion.languageCode
     );
+
+    // Announce page change to screen readers (T106, FR-018)
+    if (previousPageRef.current !== currentPage) {
+      queueMicrotask(() => {
+        setAnnouncement(`Page ${currentPage} of ${document.pageCount}`);
+      });
+      previousPageRef.current = currentPage;
+    }
   }, [document, currentPage]);
 
   // Preserve page position when switching modes (T095, FR-006)
@@ -222,9 +234,9 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   // Loading state
   if (loading && !document) {
     return (
-      <div className={`viewer flex h-full items-center justify-center ${className}`}>
+      <div className={`viewer flex h-full items-center justify-center ${className}`} role="status" aria-live="polite" aria-label="Loading document">
         <div className="text-center">
-          <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" aria-hidden="true" />
           <p className="mt-4 text-sm text-muted-foreground">Loading document...</p>
         </div>
       </div>
@@ -234,9 +246,9 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   // Error state
   if (error || !document) {
     return (
-      <div className={`viewer flex h-full items-center justify-center ${className}`}>
+      <div className={`viewer flex h-full items-center justify-center ${className}`} role="alert" aria-live="assertive">
         <div className="text-center max-w-md">
-          <AlertCircle className="mx-auto h-16 w-16 text-destructive" />
+          <AlertCircle className="mx-auto h-16 w-16 text-destructive" aria-hidden="true" />
           <p className="mt-4 text-lg font-medium text-destructive">Error loading document</p>
           <p className="mt-2 text-sm text-muted-foreground">
             {error || 'The requested document could not be found or loaded.'}
@@ -252,9 +264,9 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
 
   if (!languageVersion) {
     return (
-      <div className={`viewer flex h-full items-center justify-center ${className}`}>
+      <div className={`viewer flex h-full items-center justify-center ${className}`} role="status" aria-label="No content available">
         <div className="text-center max-w-md">
-          <AlertCircle className="mx-auto h-16 w-16 text-muted-foreground" />
+          <AlertCircle className="mx-auto h-16 w-16 text-muted-foreground" aria-hidden="true" />
           <p className="mt-4 text-lg font-medium">No content available</p>
           <p className="mt-2 text-sm text-muted-foreground">
             This document does not have any language versions available.
@@ -283,9 +295,12 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   const targetLanguageCode = processedVersion?.languageCode || languageVersion.languageCode;
 
   return (
-    <div data-testid="viewer-container" className={`viewer flex h-full flex-col ${className}`}>
+    <div data-testid="viewer-container" className={`viewer flex h-full flex-col ${className}`} role="main" aria-label="Document viewer">
+      {/* Screen reader announcements for page changes (T106, FR-018) */}
+      <ScreenReaderAnnouncement message={announcement} priority="polite" />
+
       {/* Pager navigation with mode toggle */}
-      <div className="flex items-center justify-between gap-4 px-4 py-2 border-b bg-background">
+      <div className="flex items-center justify-between gap-4 px-4 py-2 border-b bg-background" role="toolbar" aria-label="Document navigation and display controls">
         <ModeToggle availableLanguages={availableLanguageCodes} />
         
         <Pager
@@ -296,7 +311,7 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
       </div>
 
       {/* Pane container */}
-      <div className="viewer-content flex-1 overflow-hidden">
+      <div className="viewer-content flex-1 overflow-hidden" role="region" aria-label="Document content panes">
         <PaneContainer
           documentId={document.id}
           currentPage={currentPage}

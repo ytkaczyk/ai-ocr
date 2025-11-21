@@ -71,6 +71,7 @@ export function DocumentCard({ document, onSelect, isSelected = false }: Documen
         }
       }}
       aria-pressed={isSelected}
+      aria-label={`${document.fileName}, ${document.pageCount} pages, ${displayLanguages.map(l => getLanguageDisplay(l.languageCode, l.isRaw)).join(', ')}`}
     >
       <CardHeader>
         <CardTitle className="text-lg" data-testid="document-name">{document.fileName}</CardTitle>

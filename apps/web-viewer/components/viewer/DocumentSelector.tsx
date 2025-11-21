@@ -51,9 +51,9 @@ export function DocumentSelector({ onSelect, selectedDocumentId }: DocumentSelec
   // Loading state
   if (isLoading) {
     return (
-      <div data-testid="loading-indicator" className="flex min-h-[400px] items-center justify-center">
+      <div data-testid="loading-indicator" className="flex min-h-[400px] items-center justify-center" role="status" aria-live="polite" aria-label="Loading documents">
         <div className="text-center">
-          <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" aria-hidden="true" />
           <p className="mt-4 text-sm text-muted-foreground">Loading documents...</p>
         </div>
       </div>
@@ -81,7 +81,7 @@ export function DocumentSelector({ onSelect, selectedDocumentId }: DocumentSelec
 
   // Document list
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="region" aria-label="Document selection">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Select a Document</h2>
         <p className="text-muted-foreground">
@@ -100,7 +100,7 @@ export function DocumentSelector({ onSelect, selectedDocumentId }: DocumentSelec
         ))}
       </div>
 
-      <div className="text-center text-sm text-muted-foreground">
+      <div className="text-center text-sm text-muted-foreground" role="status" aria-live="polite">
         {documents.length} {documents.length === 1 ? 'document' : 'documents'} available
       </div>
     </div>

@@ -155,7 +155,7 @@ function MarkdownPaneComponent({
   }, [documentId, pageNumber, languageCode, isRaw, onLoadSuccess, onLoadError, retryTrigger]);
 
   return (
-    <div className={`markdown-pane relative flex flex-col h-full bg-background ${className}`}>
+    <div className={`markdown-pane relative flex flex-col h-full bg-background ${className}`} role="region" aria-label="Markdown viewer pane">
       {/* Language selector header (FR-034) */}
       {availableLanguages.length > 0 && onLanguageChange && (
         <div className="shrink-0 border-b bg-muted/30 px-4 py-2">
@@ -173,9 +173,9 @@ function MarkdownPaneComponent({
       <div className="flex-1 overflow-y-auto">
         {/* Loading state */}
         {loading && !error && (
-          <div className="flex h-full items-center justify-center">
+          <div className="flex h-full items-center justify-center" role="status" aria-live="polite" aria-label="Loading markdown content">
             <div className="text-center">
-              <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" aria-hidden="true" />
               <p className="mt-2 text-sm text-muted-foreground">Loading markdown...</p>
             </div>
           </div>
@@ -183,9 +183,9 @@ function MarkdownPaneComponent({
 
         {/* Error state */}
         {error && (
-        <div data-testid="error-message" className="flex h-full items-center justify-center p-4">
+        <div data-testid="error-message" className="flex h-full items-center justify-center p-4" role="alert" aria-live="assertive">
           <div className="text-center max-w-md">
-            <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
+            <AlertCircle className="mx-auto h-12 w-12 text-destructive" aria-hidden="true" />
             <p className="mt-4 text-sm text-destructive font-medium">Error loading markdown</p>
             <p className="mt-2 text-xs text-muted-foreground">{error}</p>
             <button
@@ -193,6 +193,7 @@ function MarkdownPaneComponent({
                 setRetryTrigger((prev) => prev + 1);
               }}
               className="mt-4 text-sm text-primary hover:underline"
+              aria-label="Retry loading markdown"
             >
               Try again
             </button>
@@ -202,9 +203,9 @@ function MarkdownPaneComponent({
 
       {/* Empty content (FR-030e) */}
       {!loading && !error && content.trim().length === 0 && (
-        <div data-testid="empty-message" className="flex h-full items-center justify-center p-4">
+        <div data-testid="empty-message" className="flex h-full items-center justify-center p-4" role="status" aria-label="No content available">
           <div className="text-center max-w-md">
-            <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+            <FileText className="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
             <p className="mt-4 text-sm text-muted-foreground font-medium">No content for this page</p>
             <p className="mt-2 text-xs text-muted-foreground">
               The markdown file for this page is empty or contains no visible content.
@@ -215,9 +216,9 @@ function MarkdownPaneComponent({
 
       {/* Malformed content warning (FR-030a) */}
       {malformedWarning && (
-        <div className="sticky top-0 z-10 bg-amber-50 border-b border-amber-200 px-4 py-2">
+        <div className="sticky top-0 z-10 bg-amber-50 border-b border-amber-200 px-4 py-2" role="status" aria-label="Malformed content warning">
           <div className="flex items-center gap-2 text-xs text-amber-900">
-            <AlertTriangle className="h-4 w-4" />
+            <AlertTriangle className="h-4 w-4" aria-hidden="true" />
             <span>Warning: {malformedWarning}. Content may not render correctly.</span>
           </div>
         </div>
@@ -225,9 +226,9 @@ function MarkdownPaneComponent({
 
       {/* Long lines warning (FR-030b) */}
       {hasLongLines && (
-        <div className="sticky top-0 z-10 bg-blue-50 border-b border-blue-200 px-4 py-2">
+        <div className="sticky top-0 z-10 bg-blue-50 border-b border-blue-200 px-4 py-2" role="status" aria-label="Long lines truncated warning">
           <div className="flex items-center gap-2 text-xs text-blue-900">
-            <AlertTriangle className="h-4 w-4" />
+            <AlertTriangle className="h-4 w-4" aria-hidden="true" />
             <span>Some lines were truncated for display. Original content preserved.</span>
           </div>
         </div>
@@ -235,7 +236,7 @@ function MarkdownPaneComponent({
 
       {/* Markdown content */}
       {!loading && !error && content && (
-        <div data-testid="markdown-content" className="markdown-content prose prose-sm max-w-none p-6">
+        <div data-testid="markdown-content" className="markdown-content prose prose-sm max-w-none p-6" role="article" aria-label={`Markdown content for ${languageCode} ${isRaw ? 'raw' : 'processed'}`}>
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
