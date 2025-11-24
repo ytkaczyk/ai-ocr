@@ -10,6 +10,50 @@ import { validateEnv } from './env';
  */
 
 /**
+ * Check if a path is a symbolic link (FR-033c)
+ * 
+ * @param filePath - Absolute path to check
+ * @returns True if path is a symlink, false otherwise
+ */
+export async function isSymlink(filePath: string): Promise<boolean> {
+  try {
+    const stats = await fs.lstat(filePath);
+    return stats.isSymbolicLink();
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if a path is a symbolic link (synchronous) (FR-033c)
+ * 
+ * @param filePath - Absolute path to check
+ * @returns True if path is a symlink, false otherwise
+ */
+export function isSymlinkSync(filePath: string): boolean {
+  try {
+    const stats = fsSync.lstatSync(filePath);
+    return stats.isSymbolicLink();
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Validate that a path is not a symlink and log violation if found (FR-033c)
+ * 
+ * @param filePath - Absolute path to validate
+ * @param context - Context for logging (e.g., "PDF file", "document folder")
+ * @throws Error if path is a symlink
+ */
+export async function rejectSymlink(filePath: string, context: string): Promise<void> {
+  if (await isSymlink(filePath)) {
+    console.error(`[SECURITY] Symlink access attempt blocked: ${context} at ${filePath}`);
+    throw new Error('Symbolic links are not permitted for security reasons');
+  }
+}
+
+/**
  * Check if a file or directory exists
  * 
  * @param filePath - Absolute path to check

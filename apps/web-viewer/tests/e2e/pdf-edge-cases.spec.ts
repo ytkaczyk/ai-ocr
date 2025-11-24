@@ -24,7 +24,7 @@ test.describe('PDF Edge Cases', () => {
       await firstCard.click();
       await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
 
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
+      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       await expect(pdfPane).toBeVisible();
 
       // PDF should render without errors
@@ -45,7 +45,7 @@ test.describe('PDF Edge Cases', () => {
       await firstCard.click();
       await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
 
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
+      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       const pdfCanvas = pdfPane.locator('canvas').first();
       
       await expect(pdfCanvas).toBeVisible({ timeout: 15000 });
@@ -68,7 +68,7 @@ test.describe('PDF Edge Cases', () => {
       await page.waitForTimeout(300);
 
       // PDF should still render correctly
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
+      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       const pdfContent = pdfPane.locator('canvas, iframe').first();
       await expect(pdfContent).toBeVisible({ timeout: 15000 });
 
@@ -82,7 +82,7 @@ test.describe('PDF Edge Cases', () => {
       await firstCard.click();
       await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
 
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
+      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       const pdfCanvas = pdfPane.locator('canvas').first();
 
       // Canvas should be visible and have valid dimensions
@@ -104,7 +104,7 @@ test.describe('PDF Edge Cases', () => {
       await firstCard.click();
       await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
 
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
+      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       const pdfContent = pdfPane.locator('canvas, iframe').first();
 
       // Large pages should still render
@@ -120,7 +120,7 @@ test.describe('PDF Edge Cases', () => {
       await firstCard.click();
       await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
 
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
+      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       const pdfCanvas = pdfPane.locator('canvas').first();
       await expect(pdfCanvas).toBeVisible({ timeout: 15000 });
 
@@ -175,7 +175,7 @@ test.describe('PDF Edge Cases', () => {
       await firstCard.click();
       await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
 
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
+      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       const pdfContent = pdfPane.locator('canvas, iframe').first();
 
       // Small pages should still render
@@ -187,7 +187,7 @@ test.describe('PDF Edge Cases', () => {
       await firstCard.click();
       await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
 
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
+      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       const pdfCanvas = pdfPane.locator('canvas').first();
       await expect(pdfCanvas).toBeVisible({ timeout: 15000 });
 
@@ -209,7 +209,7 @@ test.describe('PDF Edge Cases', () => {
       await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
 
       const nextButton = page.locator('[data-testid="pager-next"]');
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
+      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
 
       // Navigate through multiple pages with potentially different sizes
       for (let i = 0; i < 3; i++) {
@@ -232,7 +232,7 @@ test.describe('PDF Edge Cases', () => {
       await firstCard.click();
       await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
 
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
+      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       const nextButton = page.locator('[data-testid="pager-next"]');
 
       // Check layout on first page
@@ -267,7 +267,7 @@ test.describe('PDF Edge Cases', () => {
       await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
 
       // Corrupted PDF should show error message
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
+      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       
       // Wait for PDF.js to attempt loading and fail (may take a few seconds)
       await page.waitForTimeout(5000);
@@ -290,7 +290,7 @@ test.describe('PDF Edge Cases', () => {
       await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
 
       // Wait for initial page to load
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       await expect(markdownPane.locator('[data-testid="markdown-content"]')).toBeVisible({ timeout: 15000 });
 
       // Navigation should still work

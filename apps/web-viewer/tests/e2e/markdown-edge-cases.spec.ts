@@ -20,7 +20,7 @@ test.describe('Markdown Edge Cases', () => {
 
   test.describe('Broken Syntax (FR-030a)', () => {
     test('should gracefully handle missing closing tags', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       
       // Content should still be visible even with broken markdown
       await expect(markdownPane.locator('[data-testid="markdown-content"]')).toBeVisible({ timeout: 15000 });
@@ -32,7 +32,7 @@ test.describe('Markdown Edge Cases', () => {
     });
 
     test('should handle malformed headers', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const content = markdownPane.locator('[data-testid="markdown-content"]');
       
       await expect(content).toBeVisible({ timeout: 15000 });
@@ -46,7 +46,7 @@ test.describe('Markdown Edge Cases', () => {
     });
 
     test('should display warning icon for malformed markdown', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       
       // Check for warning icon (if markdown has issues)
       // Note: Actual implementation might not have warnings for all malformed markdown
@@ -61,7 +61,7 @@ test.describe('Markdown Edge Cases', () => {
 
   test.describe('Invalid Image Paths', () => {
     test('should handle missing images gracefully', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const content = markdownPane.locator('[data-testid="markdown-content"]');
       
       await expect(content).toBeVisible({ timeout: 15000 });
@@ -72,7 +72,7 @@ test.describe('Markdown Edge Cases', () => {
     });
 
     test('should display alt text for broken images', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       
       // Check for images
       const images = markdownPane.locator('img');
@@ -90,7 +90,7 @@ test.describe('Markdown Edge Cases', () => {
     });
 
     test('should not break layout with invalid image URLs', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       
       // Pane should still be visible and properly sized
       await expect(markdownPane).toBeVisible();
@@ -106,7 +106,7 @@ test.describe('Markdown Edge Cases', () => {
 
   test.describe('Long Lines (FR-030b)', () => {
     test('should handle very long lines with word-break', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const content = markdownPane.locator('[data-testid="markdown-content"]');
       
       await expect(content).toBeVisible({ timeout: 15000 });
@@ -125,7 +125,7 @@ test.describe('Markdown Edge Cases', () => {
     });
 
     test('should show horizontal scroll for very long code lines', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       
       // Code blocks might have horizontal scroll
       const codeBlocks = markdownPane.locator('pre, code');
@@ -138,7 +138,7 @@ test.describe('Markdown Edge Cases', () => {
     });
 
     test('should not break with lines over 10k characters', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const content = markdownPane.locator('[data-testid="markdown-content"]');
       
       // Should still render without crashing
@@ -152,7 +152,7 @@ test.describe('Markdown Edge Cases', () => {
 
   test.describe('Complex Nested Structures (FR-030c)', () => {
     test('should handle deeply nested lists', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const content = markdownPane.locator('[data-testid="markdown-content"]');
       
       await expect(content).toBeVisible({ timeout: 15000 });
@@ -168,7 +168,7 @@ test.describe('Markdown Edge Cases', () => {
     });
 
     test('should handle nested blockquotes', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const content = markdownPane.locator('[data-testid="markdown-content"]');
       
       await expect(content).toBeVisible({ timeout: 15000 });
@@ -183,7 +183,7 @@ test.describe('Markdown Edge Cases', () => {
     });
 
     test('should handle tables with complex formatting', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       
       // Tables should render if present in markdown
       const tables = markdownPane.locator('table');
@@ -202,7 +202,7 @@ test.describe('Markdown Edge Cases', () => {
 
   test.describe('Special Characters (FR-030d)', () => {
     test('should handle Unicode characters', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const content = markdownPane.locator('[data-testid="markdown-content"]');
       
       await expect(content).toBeVisible({ timeout: 15000 });
@@ -214,7 +214,7 @@ test.describe('Markdown Edge Cases', () => {
     });
 
     test('should handle emoji and special symbols', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const content = markdownPane.locator('[data-testid="markdown-content"]');
       
       await expect(content).toBeVisible({ timeout: 15000 });
@@ -225,7 +225,7 @@ test.describe('Markdown Edge Cases', () => {
     });
 
     test('should handle RTL (right-to-left) text', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const content = markdownPane.locator('[data-testid="markdown-content"]');
       
       await expect(content).toBeVisible({ timeout: 15000 });
@@ -237,7 +237,7 @@ test.describe('Markdown Edge Cases', () => {
     });
 
     test('should handle HTML entities', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const content = markdownPane.locator('[data-testid="markdown-content"]');
       
       await expect(content).toBeVisible({ timeout: 15000 });
@@ -255,7 +255,7 @@ test.describe('Markdown Edge Cases', () => {
 
   test.describe('Mixed Edge Cases', () => {
     test.skip('should maintain performance with problematic markdown', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const nextButton = page.locator('[data-testid="pager-next"]');
 
       // Navigate through pages - should remain responsive

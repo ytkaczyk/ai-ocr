@@ -1,6 +1,5 @@
 import { DocumentSet } from '@/lib/types/entities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 
 /**
  * DocumentCard component
@@ -56,22 +55,22 @@ export function DocumentCard({ document, onSelect, isSelected = false }: Documen
 
   return (
     <Card
+      role="button"
+      aria-pressed={isSelected}
       data-testid="document-card"
       data-selected={isSelected.toString()}
       className={`cursor-pointer transition-colors hover:border-primary ${
         isSelected ? 'border-primary bg-primary/5' : ''
       }`}
       onClick={() => onSelect(document.id)}
-      role="button"
-      tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           onSelect(document.id);
         }
       }}
-      aria-pressed={isSelected}
-      aria-label={`${document.fileName}, ${document.pageCount} pages, ${displayLanguages.map(l => getLanguageDisplay(l.languageCode, l.isRaw)).join(', ')}`}
+      tabIndex={0}
+      aria-label={`${document.fileName}, ${document.pageCount} pages, ${displayLanguages.map(l => getLanguageDisplay(l.languageCode, l.isRaw)).join(', ')}. ${isSelected ? 'Selected' : 'Not selected'}. Press Enter or Space to select.`}
     >
       <CardHeader>
         <CardTitle className="text-lg" data-testid="document-name">{document.fileName}</CardTitle>
@@ -100,20 +99,6 @@ export function DocumentCard({ document, onSelect, isSelected = false }: Documen
                 +{rawLanguages.length} raw {rawLanguages.length === 1 ? 'version' : 'versions'}
               </span>
             )}
-          </div>
-          <div className="mt-4">
-            <Button
-              data-testid="select-button"
-              variant={isSelected ? 'default' : 'outline'}
-              size="sm"
-              className="w-full"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelect(document.id);
-              }}
-            >
-              {isSelected ? 'Selected' : 'Select Document'}
-            </Button>
           </div>
         </div>
       </CardContent>

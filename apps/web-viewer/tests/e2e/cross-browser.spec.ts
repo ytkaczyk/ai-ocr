@@ -66,7 +66,7 @@ test.describe('Chrome: PDF Canvas Rendering (FR-028a)', () => {
     // This test validates Chrome-specific canvas behavior but is flaky in CI
     const timeout = 15000;
     
-    const pdfPane = page.locator('[data-pane-id="pdf"]');
+    const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
     await expect(pdfPane).toBeVisible({ timeout });
     
     // Wait for canvas with retry (some browsers render slower)
@@ -90,7 +90,7 @@ test.describe('Chrome: PDF Canvas Rendering (FR-028a)', () => {
   test('PDF renders at consistent aspect ratio', async ({ page }) => {
     const timeout = 15000;
     
-    const pdfPane = page.locator('[data-pane-id="pdf"]');
+    const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
     await expect(pdfPane).toBeVisible({ timeout });
     
     // Wait for canvas
@@ -123,7 +123,7 @@ test.describe('Chrome: Markdown Typography (FR-028b)', () => {
   test('markdown prose styles are applied consistently', async ({ page }) => {
     const timeout = 15000;
     
-    const markdownPane = page.locator('[data-pane-id="markdown"]');
+    const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
     await expect(markdownPane).toBeVisible({ timeout });
     
     // Check for prose class (Tailwind Typography)
@@ -146,7 +146,7 @@ test.describe('Chrome: Markdown Typography (FR-028b)', () => {
   test('markdown content renders without horizontal scroll', async ({ page }) => {
     const timeout = 15000;
     
-    const markdownPane = page.locator('[data-pane-id="markdown"]');
+    const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
     await expect(markdownPane).toBeVisible({ timeout });
     
     // Check that markdown pane doesn't have horizontal overflow
@@ -174,8 +174,8 @@ test.describe('Chrome: Layout Consistency (FR-028c)', () => {
     
     await page.waitForTimeout(1000); // Let layout stabilize
     
-    const pdfPane = page.locator('[data-pane-id="pdf"]');
-    const markdownPane = page.locator('[data-pane-id="markdown"]');
+    const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
+    const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
     
     await expect(pdfPane).toBeVisible({ timeout });
     await expect(markdownPane).toBeVisible({ timeout });
@@ -198,8 +198,8 @@ test.describe('Chrome: Layout Consistency (FR-028c)', () => {
   test('panes are horizontally aligned', async ({ page }) => {
     const timeout = 15000;
     
-    const pdfPane = page.locator('[data-pane-id="pdf"]');
-    const markdownPane = page.locator('[data-pane-id="markdown"]');
+    const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
+    const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
     
     await expect(pdfPane).toBeVisible({ timeout });
     await expect(markdownPane).toBeVisible({ timeout });

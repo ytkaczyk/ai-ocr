@@ -3,6 +3,7 @@ import { readFile } from 'fs/promises';
 import { resolve } from 'path';
 import { validateDocumentId, validateFilename } from '@/lib/utils/security';
 import { validateEnv } from '@/lib/utils/env';
+import { rejectSymlink } from '@/lib/utils/file-system';
 import { languageCodeSchema } from '@/lib/schemas/common';
 
 /**
@@ -82,6 +83,16 @@ export async function GET(
     if (!markdownPath.startsWith(config.DATA_FOLDER_PATH)) {
       return NextResponse.json(
         { code: 'PATH_TRAVERSAL_DETECTED', message: 'Access denied', details: 'Invalid file path' },
+        { status: 403 }
+      );
+    }
+
+    // Reject symlinks (FR-033c)
+    try {
+      await rejectSymlink(markdownPath, 'Markdown file');
+    } catch {
+      return NextResponse.json(
+        { code: 'SYMLINK_DETECTED', message: 'Access denied', details: 'Symbolic links are not permitted' },
         { status: 403 }
       );
     }

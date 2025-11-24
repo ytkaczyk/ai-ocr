@@ -160,12 +160,14 @@ describe('DocumentSelector', () => {
       render(<DocumentSelector onSelect={mockOnSelect} selectedDocumentId="selected-doc" />);
 
       await waitFor(() => {
-        expect(screen.getByText('Selected')).toBeInTheDocument();
+        const selectedCard = screen.getByRole('button', { pressed: true });
+        expect(selectedCard).toBeInTheDocument();
       });
 
-      // Should show "Selected" button for the selected document
-      const selectedButtons = screen.getAllByText('Selected');
-      expect(selectedButtons).toHaveLength(1);
+      // Should have aria-pressed="true" for the selected document
+      const cards = screen.getAllByRole('button');
+      const selectedCards = cards.filter((card) => card.getAttribute('aria-pressed') === 'true');
+      expect(selectedCards).toHaveLength(1);
     });
   });
 

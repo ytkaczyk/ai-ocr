@@ -11,6 +11,14 @@
         ".specify/scripts/powershell/": true
     },
     "css.lint.unknownAtRules": "ignore",
-    "css.customData": [".vscode/css-data.json"]
+    "css.customData": [".vscode/css-data.json"],
+    "files.associations": {
+    ".env*": "dotenv"
+    },
+    "github.copilot.enable": {
+        "*": true,
+        // ...
+        "dotenv": false,
+    }
 }
 

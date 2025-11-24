@@ -3,6 +3,7 @@ import { readFile } from 'fs/promises';
 import { resolve } from 'path';
 import { validateDocumentId } from '@/lib/utils/security';
 import { validateEnv } from '@/lib/utils/env';
+import { rejectSymlink } from '@/lib/utils/file-system';
 import { PDFDocument } from 'pdf-lib';
 
 /**
@@ -45,6 +46,16 @@ export async function GET(
     if (!pdfPath.startsWith(config.DATA_FOLDER_PATH)) {
       return NextResponse.json(
         { code: 'PATH_TRAVERSAL_DETECTED', message: 'Access denied', details: 'Invalid file path' },
+        { status: 403 }
+      );
+    }
+
+    // Reject symlinks (FR-033c)
+    try {
+      await rejectSymlink(pdfPath, 'PDF file');
+    } catch {
+      return NextResponse.json(
+        { code: 'SYMLINK_DETECTED', message: 'Access denied', details: 'Symbolic links are not permitted' },
         { status: 403 }
       );
     }

@@ -140,7 +140,7 @@ describe('MarkdownPane', () => {
       render(<MarkdownPane documentId="test-doc" pageNumber={1} languageCode="en-US" />);
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /retry loading markdown/i })).toBeInTheDocument();
       }, { timeout: 5000 });
     });
 
@@ -159,7 +159,7 @@ describe('MarkdownPane', () => {
         expect(screen.getByText(/error loading markdown/i)).toBeInTheDocument();
       }, { timeout: 5000 });
 
-      const tryAgainButton = screen.getByRole('button', { name: /try again/i });
+      const tryAgainButton = screen.getByRole('button', { name: /retry loading markdown/i });
       fireEvent.click(tryAgainButton);
 
       // After clicking "Try again", the fetch should retry and succeed

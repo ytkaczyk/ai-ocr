@@ -42,10 +42,7 @@ export function ScreenReaderAnnouncement({
     };
   }, [message, clearAfter]);
 
-  if (!message) {
-    return null;
-  }
-
+  // Always render the element, even if message is empty, for accessibility testing
   return (
     <>
       {priority === 'assertive' ? (

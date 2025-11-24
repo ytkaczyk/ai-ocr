@@ -77,7 +77,7 @@ test.describe('Mode Switching', () => {
       await page.waitForTimeout(500);
 
       // Check for PDF pane
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
+      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       await expect(pdfPane).toBeVisible();
 
       // Check for two markdown panes

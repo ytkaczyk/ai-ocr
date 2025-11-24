@@ -151,24 +151,12 @@ describe('DocumentCard', () => {
       expect(mockOnSelect).toHaveBeenCalledWith('test-doc');
     });
 
-    it('should call onSelect when "Select Document" button is clicked', async () => {
-      const user = userEvent.setup();
-      const document = createMockDocumentSet({ id: 'test-doc' });
-
-      render(<DocumentCard document={document} onSelect={mockOnSelect} />);
-
-      await user.click(screen.getByText('Select Document'));
-
-      expect(mockOnSelect).toHaveBeenCalledWith('test-doc');
-    });
-
     it('should show selected state when isSelected is true', () => {
       const document = createMockDocumentSet();
 
       render(<DocumentCard document={document} onSelect={mockOnSelect} isSelected={true} />);
 
       expect(screen.getByRole('button', { pressed: true })).toBeInTheDocument();
-      expect(screen.getByText('Selected')).toBeInTheDocument();
     });
 
     it('should show unselected state when isSelected is false', () => {
@@ -177,7 +165,6 @@ describe('DocumentCard', () => {
       render(<DocumentCard document={document} onSelect={mockOnSelect} isSelected={false} />);
 
       expect(screen.getByRole('button', { pressed: false })).toBeInTheDocument();
-      expect(screen.getByText('Select Document')).toBeInTheDocument();
     });
   });
 

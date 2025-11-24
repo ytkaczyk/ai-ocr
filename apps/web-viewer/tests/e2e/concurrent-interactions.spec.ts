@@ -47,7 +47,7 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
       expect(finalPage).toBeGreaterThan(initialPage);
 
       // No error should be displayed
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const errorMessage = markdownPane.locator('[data-testid="error-message"]');
       await expect(errorMessage).not.toBeVisible();
     });
@@ -83,7 +83,7 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
       expect(finalPage).toBeLessThan(initialPage);
 
       // No error should be displayed
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const errorMessage = markdownPane.locator('[data-testid="error-message"]');
       await expect(errorMessage).not.toBeVisible();
     });
@@ -103,7 +103,7 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
       await page.waitForTimeout(500);
 
       // Should not have any errors despite chaotic navigation
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const errorMessage = markdownPane.locator('[data-testid="error-message"]');
       await expect(errorMessage).not.toBeVisible();
 
@@ -139,7 +139,7 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
       expect(finalPage).toBeGreaterThan(initialPage);
 
       // No errors should be displayed
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const errorMessage = markdownPane.locator('[data-testid="error-message"]');
       await expect(errorMessage).not.toBeVisible();
     });
@@ -164,7 +164,7 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
       expect(text).toMatch(/Page \d+ of \d+/);
 
       // No errors
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const errorMessage = markdownPane.locator('[data-testid="error-message"]');
       await expect(errorMessage).not.toBeVisible();
     });
@@ -196,7 +196,7 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
       await expect(pageDisplay).toContainText('Page 2', { timeout: 5000 });
 
       // No errors
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const errorMessage = markdownPane.locator('[data-testid="error-message"]');
       await expect(errorMessage).not.toBeVisible();
     });
@@ -220,7 +220,7 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
 
       // Markdown pane should show content for the displayed page
       // (not stale content from intermediate pages)
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       await expect(markdownPane.locator('[data-testid="markdown-content"]')).toBeVisible({ timeout: 15000 });
 
       // Verify page number matches between display and actual content
@@ -230,7 +230,7 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
 
     test('should show loading state during rapid navigation', async ({ page }) => {
       const nextButton = page.locator('[data-testid="pager-next"]');
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
 
       // Rapidly click to trigger navigation
       for (let i = 0; i < 3; i++) {
@@ -290,7 +290,7 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
       expect(page.url()).toContain('page=4');
       
       // Rapid navigation should work without errors
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const hasError = await markdownPane.locator('[data-testid="error-message"]').isVisible().catch(() => false);
       expect(hasError).toBe(false);
     });
@@ -329,7 +329,7 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
       }
 
       // No errors
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const errorMessage = markdownPane.locator('[data-testid="error-message"]');
       await expect(errorMessage).not.toBeVisible();
     });
@@ -358,7 +358,7 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
       const viewerContainer = page.locator('[data-testid="viewer-container"]');
       await expect(viewerContainer).toBeVisible();
       
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const hasContent = await markdownPane.locator('[data-testid="markdown-content"]').isVisible().catch(() => false);
       const hasEmptyMessage = await markdownPane.locator('[data-testid="empty-message"]').isVisible().catch(() => false);
       const hasError = await markdownPane.locator('[data-testid="error-message"]').isVisible().catch(() => false);

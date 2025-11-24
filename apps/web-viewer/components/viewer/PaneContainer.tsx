@@ -203,7 +203,8 @@ export function PaneContainer({
             <div
               className="pane relative overflow-hidden"
               style={{ width: `${pane.widthPercent}%` }} // Dynamic width from store state
-              data-pane-id={pane.contentType}
+              data-pane-id={pane.id}
+              data-pane-type={pane.contentType}
             >
               {renderPane(pane)}
             </div>

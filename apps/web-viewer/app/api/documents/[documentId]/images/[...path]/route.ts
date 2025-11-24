@@ -3,6 +3,7 @@ import { readFile } from 'fs/promises';
 import { resolve, extname } from 'path';
 import { validateDocumentId } from '@/lib/utils/security';
 import { validateEnv } from '@/lib/utils/env';
+import { rejectSymlink } from '@/lib/utils/file-system';
 
 /**
  * GET /api/documents/[documentId]/images/[...path]
@@ -71,6 +72,16 @@ export async function GET(
       return NextResponse.json(
         { code: 'INVALID_FILE_TYPE', message: 'Unsupported file type', details: `Only image files are allowed (${allowedExtensions.join(', ')})` },
         { status: 400 }
+      );
+    }
+
+    // Reject symlinks (FR-033c)
+    try {
+      await rejectSymlink(imagePath, 'Image file');
+    } catch {
+      return NextResponse.json(
+        { code: 'SYMLINK_DETECTED', message: 'Access denied', details: 'Symbolic links are not permitted' },
+        { status: 403 }
       );
     }
 

@@ -47,13 +47,13 @@ test.describe('3-Pane Synchronization', () => {
     });
 
     test('should display PDF pane on the left', async ({ page }) => {
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
+      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       await expect(pdfPane).toBeVisible();
 
       // PDF should be first (leftmost) pane
       const allPanes = page.locator('[data-pane-id]');
       const firstPane = allPanes.first();
-      await expect(firstPane).toHaveAttribute('data-pane-id', 'pdf');
+      await expect(firstPane).toHaveAttribute('data-pane-id', 'pdf-pane');
     });
 
     test('should display two markdown panes', async ({ page }) => {

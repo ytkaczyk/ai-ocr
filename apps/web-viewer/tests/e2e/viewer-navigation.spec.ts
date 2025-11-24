@@ -27,8 +27,8 @@ test.describe('2-Pane Viewer Navigation', () => {
   test.describe('2-Pane Layout', () => {
     test('should display PDF and markdown panes side by side', async ({ page }) => {
       // Check that both panes are visible
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
 
       await expect(pdfPane).toBeVisible();
       await expect(markdownPane).toBeVisible();
@@ -204,8 +204,8 @@ test.describe('2-Pane Viewer Navigation', () => {
       await page.waitForTimeout(500); // Wait for both panes to load
 
       // Both panes should show page 2 content
-      const pdfPane = page.locator('[data-pane-id="pdf"]');
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
 
       // PDF should have loaded new content
       await expect(pdfPane.locator('canvas, iframe').first()).toBeVisible({ timeout: 15000 });
@@ -399,7 +399,7 @@ test.describe('2-Pane Viewer Navigation', () => {
       await page.waitForTimeout(1000);
 
       // Should show error in markdown pane
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const errorMessage = markdownPane.locator('[data-testid="error-message"]');
       
       // Error should be visible
@@ -414,7 +414,7 @@ test.describe('2-Pane Viewer Navigation', () => {
       await page.waitForTimeout(1000);
 
       // Check for retry button
-      const markdownPane = page.locator('[data-pane-id="markdown"]');
+      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const retryButton = markdownPane.locator('button:has-text("Retry")');
       
       if (await retryButton.isVisible()) {

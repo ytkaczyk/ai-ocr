@@ -95,10 +95,10 @@ function PdfPaneComponent({
     }
   }
 
-  // Handle document load error
+  // Handle document load error (FR-011b)
   function onDocumentLoadError(err: Error) {
     console.error('PDF load error:', err);
-    setError('Cannot render PDF (file may be corrupted). Please check the file or contact support.');
+    setError('Cannot render PDF (file may be corrupted). Please verify the PDF file and re-scan if necessary.');
     setLoading(false);
     if (onLoadError) {
       onLoadError(err);

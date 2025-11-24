@@ -295,7 +295,7 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   const targetLanguageCode = processedVersion?.languageCode || languageVersion.languageCode;
 
   return (
-    <div data-testid="viewer-container" className={`viewer flex h-full flex-col ${className}`} role="main" aria-label="Document viewer">
+    <div data-testid="viewer-container" className={`viewer flex h-full flex-col ${className}`} aria-label="Document viewer">
       {/* Screen reader announcements for page changes (T106, FR-018) */}
       <ScreenReaderAnnouncement message={announcement} priority="polite" />
 
