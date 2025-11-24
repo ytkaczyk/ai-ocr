@@ -1,0 +1,157 @@
+name: CI
+
+on:
+  push:
+    branches: ['main', '001-ocr-translation-viewer']
+  pull_request:
+    branches: ['main']
+
+jobs:
+  # Security audit job (T116a - FR-033)
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web-viewer/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: apps/web-viewer
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        working-directory: apps/web-viewer
+        continue-on-error: false  # Fail build on high/critical vulnerabilities
+
+  # Snyk security scanning (T116b - FR-033)
+  snyk-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web-viewer/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: apps/web-viewer
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        continue-on-error: false  # Fail build on vulnerabilities
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --file=apps/web-viewer/package.json
+          command: test
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web-viewer/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: apps/web-viewer
+      - name: Run ESLint
+        run: npm run lint
+        working-directory: apps/web-viewer
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web-viewer/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: apps/web-viewer
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+        working-directory: apps/web-viewer
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./apps/web-viewer/coverage/coverage-final.json
+          flags: unittests
+          name: codecov-web-viewer
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Check coverage threshold (70% minimum)
+        run: |
+          COVERAGE=$(jq '.total.lines.pct' apps/web-viewer/coverage/coverage-summary.json)
+          echo "Current coverage: $COVERAGE%"
+          if (( $(echo "$COVERAGE < 70" | bc -l) )); then
+            echo "Coverage is below 70% threshold"
+            exit 1
+          fi
+        working-directory: .
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web-viewer/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: apps/web-viewer
+      - name: Build project
+        run: npm run build
+        working-directory: apps/web-viewer
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web-viewer/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: apps/web-viewer
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+        working-directory: apps/web-viewer
+      - name: Run E2E tests
+        run: npm run test:e2e
+        working-directory: apps/web-viewer
+
+  # Lighthouse CI for performance testing (T126a - SC-001)
+  lighthouse-ci:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web-viewer/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: apps/web-viewer
+      - name: Build project
+        run: npm run build
+        working-directory: apps/web-viewer
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.13.x
+      - name: Run Lighthouse CI
+        run: lhci autorun
+        working-directory: apps/web-viewer
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
