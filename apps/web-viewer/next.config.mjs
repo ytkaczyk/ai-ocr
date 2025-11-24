@@ -27,9 +27,45 @@ const nextConfig = {
     } : false,
   },
   
-  // Configure headers for caching (T102b)
+  // Configure headers for caching (T102b) and security (T115)
   async headers() {
     return [
+      {
+        // Apply security headers to all routes (T115 - CSP for FR-033)
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // unsafe-eval for PDF.js worker, unsafe-inline for Next.js
+              "style-src 'self' 'unsafe-inline'", // unsafe-inline for Tailwind
+              "img-src 'self' data: blob:", // data: for PDF.js canvas, blob: for dynamic images
+              "font-src 'self' data:",
+              "connect-src 'self'",
+              "frame-ancestors 'none'", // Prevent clickjacking
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join('; '),
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY', // Prevent clickjacking
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff', // Prevent MIME sniffing
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()', // Disable unnecessary features
+          },
+        ],
+      },
       {
         // Cache document metadata for 1 hour
         source: '/api/documents',

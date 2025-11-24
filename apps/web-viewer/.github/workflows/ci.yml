@@ -7,6 +7,46 @@ on:
     branches: ['main']
 
 jobs:
+  # Security audit job (T116a - FR-033)
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web-viewer/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: apps/web-viewer
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        working-directory: apps/web-viewer
+        continue-on-error: false  # Fail build on high/critical vulnerabilities
+
+  # Snyk security scanning (T116b - FR-033)
+  snyk-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web-viewer/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: apps/web-viewer
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        continue-on-error: false  # Fail build on vulnerabilities
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --file=apps/web-viewer/package.json
+          command: test
+
   lint:
     runs-on: ubuntu-latest
     steps:
