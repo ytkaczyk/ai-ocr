@@ -493,13 +493,14 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 **Goal**: Add polish, accessibility, performance optimizations, and documentation.
 
 **Duration**: ~10-14 hours
-**Status**: 🔄 **IN PROGRESS** (32/45 tasks complete, 8/45 deferred)
+**Status**: 🔄 **IN PROGRESS** (38/45 tasks complete, 8/45 deferred)
 
 **Completed**: 
 - T100-T102b, T103a, T103e-h (Performance optimization core utilities)
 - T103k, T103m-n (Browser compatibility testing and documentation)
 - T104-T108 (Accessibility - ARIA labels, focus management, screen reader announcements, axe-core tests, manual testing docs)
 - T109-T113b (Error handling & edge cases - global error boundary, user-friendly messages, missing page placeholder, corrupted PDF guidance, symlink rejection)
+- T123-T126b (CI/CD - GitHub Actions, Codecov, build verification, branch protection, Lighthouse CI, Dependabot)
 
 **Deferred**: T103b-d, T103i-j, T103l (require integration and test fixtures)
 
@@ -580,12 +581,12 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 - [ ] T122a [P] Create browser compatibility documentation in docs/browser-compatibility.md (FR-028a: known limitations)
 
 #### CI/CD
-- [ ] T123 Create GitHub Actions workflow to run all tests (lint, unit, integration, e2e)
-- [ ] T124 [P] Add coverage reporting with Codecov (minimum 70% coverage per plan)
-- [ ] T125 [P] Add build verification step
-- [ ] T126 [P] Configure branch protection rules (require passing tests)
-- [ ] T126a [P] Add Lighthouse CI for performance testing (SC-001: fail if LCP > 5s on 3 runs)
-- [ ] T126b [P] Configure Dependabot for automated dependency updates
+- [X] T123 Create GitHub Actions workflow to run all tests (lint, unit, integration, e2e)
+- [X] T124 [P] Add coverage reporting with Codecov (minimum 70% coverage per plan)
+- [X] T125 [P] Add build verification step
+- [X] T126 [P] Configure branch protection rules (require passing tests)
+- [X] T126a [P] Add Lighthouse CI for performance testing (SC-001: fail if LCP > 5s on 3 runs)
+- [X] T126b [P] Configure Dependabot for automated dependency updates
 
 #### Final Validation
 - [ ] T127 Run full test suite and verify 70%+ coverage
