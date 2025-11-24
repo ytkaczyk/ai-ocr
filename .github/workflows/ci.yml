@@ -5,6 +5,7 @@ on:
     branches: ['main', '001-ocr-translation-viewer']
   pull_request:
     branches: ['main']
+  workflow_dispatch:  # Allows manual trigger from GitHub UI
 
 jobs:
   # Security audit job (T116a - FR-033)
