@@ -76,6 +76,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
         working-directory: apps/web-viewer
+      - name: Create test data directory
+        run: |
+          mkdir -p apps/web-viewer/data/kombucha/en-US
+          mkdir -p apps/web-viewer/data/kombucha/fr-FR
+          echo "# Test Page 1" > apps/web-viewer/data/kombucha/en-US/kombucha.en-US_page_1.md
+          echo "# Page de test 1" > apps/web-viewer/data/kombucha/fr-FR/kombucha.fr-FR_page_1.md
+        working-directory: .
       - name: Run unit tests with coverage
         run: npm run test:coverage
         working-directory: apps/web-viewer

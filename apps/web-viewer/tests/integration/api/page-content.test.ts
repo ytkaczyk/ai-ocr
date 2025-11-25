@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { GET as getMarkdown } from '@/app/api/documents/[documentId]/pages/[pageNumber]/markdown/route';
 import { GET as getImage } from '@/app/api/documents/[documentId]/images/[...path]/route';
 import { NextRequest } from 'next/server';
+import path from 'path';
 
 /**
  * Integration tests for page content API routes (T060)
@@ -14,7 +15,7 @@ import { NextRequest } from 'next/server';
 
 describe('Page Content API Integration Tests', () => {
   const originalEnv = process.env;
-  const testDataFolder = 'U:/source/ai-ocr/apps/web-viewer/data';
+  const testDataFolder = path.resolve(process.cwd(), 'data');
 
   beforeAll(() => {
     // Set environment for tests

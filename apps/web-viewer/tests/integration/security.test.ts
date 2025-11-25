@@ -27,7 +27,7 @@ import path from 'path';
  */
 
 describe('Security Utilities Integration Tests', () => {
-  const testDataFolder = path.resolve('U:/source/ai-ocr/apps/web-viewer/data');
+  const testDataFolder = path.resolve(process.cwd(), 'data');
   const originalEnv = process.env;
 
   beforeAll(() => {
@@ -83,6 +83,10 @@ describe('Security Utilities Integration Tests', () => {
     });
 
     it('should reject Windows absolute paths outside base directory', () => {
+      // Skip on non-Windows platforms where C:\ paths don't apply
+      if (process.platform !== 'win32') {
+        return;
+      }
       const maliciousPath = 'C:\\Windows\\System32\\config\\sam';
       expect(() => preventPathTraversal(maliciousPath, testDataFolder)).toThrow(/path traversal/i);
     });
