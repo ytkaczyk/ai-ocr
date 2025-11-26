@@ -86,7 +86,54 @@ export function debounceWithCancel<T extends (...args: never[]) => void>(
 }
 
 /**
+ * Creates a throttled function that only invokes func at most once per every wait milliseconds.
+ * Unlike debounce, throttle will execute the function immediately and then prevent subsequent
+ * calls until the wait period has elapsed. This is better for navigation where we want
+ * responsive feedback but need to prevent excessive rapid-fire calls.
+ * 
+ * @param func - The function to throttle
+ * @param wait - The number of milliseconds to throttle
+ * @returns A throttled version of the function
+ */
+export function throttle<T extends (...args: never[]) => void>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let lastCallTime = 0;
+  let timeoutId: NodeJS.Timeout | null = null;
+  let lastArgs: Parameters<T> | null = null;
+
+  return function throttled(...args: Parameters<T>): void {
+    const now = Date.now();
+    const timeSinceLastCall = now - lastCallTime;
+
+    // Clear any pending timeout
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+
+    // If enough time has passed, execute immediately
+    if (timeSinceLastCall >= wait) {
+      lastCallTime = now;
+      func(...args);
+      lastArgs = null;
+    } else {
+      // Otherwise, schedule execution for the remaining wait time
+      // This ensures the last call eventually executes
+      lastArgs = args;
+      timeoutId = setTimeout(() => {
+        lastCallTime = Date.now();
+        func(...lastArgs!);
+        lastArgs = null;
+        timeoutId = null;
+      }, wait - timeSinceLastCall);
+    }
+  };
+}
+
+/**
  * Debounce constants from requirements
  */
-export const DEBOUNCE_NAVIGATION = 100; // FR-024a: Navigation debounce
+export const DEBOUNCE_NAVIGATION = 100; // FR-024a: Navigation debounce (actually throttle for buttons)
 export const DEBOUNCE_URL_PERSIST = 500; // FR-024c: URL persistence debounce

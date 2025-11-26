@@ -318,49 +318,71 @@ describe('Pager', () => {
     });
   });
 
-  describe('Debouncing (FR-024a)', () => {
-    it('should debounce rapid button clicks', () => {
+  describe('Throttling (FR-024a)', () => {
+    it('should throttle rapid button clicks', () => {
       render(<Pager currentPage={1} totalPages={10} onPageChange={mockOnPageChange} />);
 
       const nextButton = screen.getByLabelText(/go to next page/i);
       
-      // Rapid clicks (all based on same currentPage=1, so all will be page 2)
+      // First click at t=0 should execute immediately with throttle
       fireEvent.click(nextButton);
-      act(() => vi.advanceTimersByTime(50));
+      expect(mockOnPageChange).toHaveBeenCalledTimes(1);
+      expect(mockOnPageChange).toHaveBeenCalledWith(2);
+      
+      mockOnPageChange.mockClear();
+      
+      // Advance time but stay within throttle window
+      act(() => vi.advanceTimersByTime(30)); // t=30ms
+      
+      // Second click at t=30ms (30ms < 100ms throttle window)
+      // This schedules a trailing call for (100-30) = 70ms later (at t=100ms)
       fireEvent.click(nextButton);
-      act(() => vi.advanceTimersByTime(50));
+      expect(mockOnPageChange).not.toHaveBeenCalled(); // Not called yet
+      
+      // Third click at t=60ms (still within window, updates trailing call)
+      act(() => vi.advanceTimersByTime(30)); // t=60ms
       fireEvent.click(nextButton);
+      expect(mockOnPageChange).not.toHaveBeenCalled(); // Still not called
 
-      // Should not be called yet
-      expect(mockOnPageChange).not.toHaveBeenCalled();
-
-      // Wait for debounce
+      // Advance to trigger the scheduled trailing call
       act(() => {
-        vi.advanceTimersByTime(100);
+        vi.advanceTimersByTime(40); // t=100ms, trailing call executes
       });
 
-      // Should only call once with page 2 (not accumulated because currentPage prop doesn't change)
+      // Trailing call should have executed
       expect(mockOnPageChange).toHaveBeenCalledTimes(1);
       expect(mockOnPageChange).toHaveBeenCalledWith(2);
     });
 
-    it('should debounce rapid keyboard shortcuts', () => {
+    it('should throttle rapid keyboard shortcuts', () => {
       render(<Pager currentPage={1} totalPages={10} onPageChange={mockOnPageChange} />);
 
-      // Rapid arrow key presses (all based on same currentPage=1, so all will be page 2)
+      // First key press at t=0 should execute immediately with throttle
       fireEvent.keyDown(window, { key: 'ArrowRight' });
-      act(() => vi.advanceTimersByTime(50));
+      expect(mockOnPageChange).toHaveBeenCalledTimes(1);
+      expect(mockOnPageChange).toHaveBeenCalledWith(2);
+      
+      mockOnPageChange.mockClear();
+      
+      // Advance time but stay within throttle window
+      act(() => vi.advanceTimersByTime(30)); // t=30ms
+      
+      // Second key press at t=30ms (30ms < 100ms throttle window)
+      // This schedules a trailing call for (100-30) = 70ms later (at t=100ms)
       fireEvent.keyDown(window, { key: 'ArrowRight' });
-      act(() => vi.advanceTimersByTime(50));
+      expect(mockOnPageChange).not.toHaveBeenCalled(); // Not called yet
+      
+      // Third key press at t=60ms (still within window, updates trailing call)
+      act(() => vi.advanceTimersByTime(30)); // t=60ms
       fireEvent.keyDown(window, { key: 'ArrowRight' });
+      expect(mockOnPageChange).not.toHaveBeenCalled(); // Still not called
 
-      expect(mockOnPageChange).not.toHaveBeenCalled();
-
+      // Advance to trigger the scheduled trailing call
       act(() => {
-        vi.advanceTimersByTime(100);
+        vi.advanceTimersByTime(40); // t=100ms, trailing call executes
       });
 
-      // Should only call once with page 2 (not accumulated because currentPage prop doesn't change)
+      // Trailing call should have executed
       expect(mockOnPageChange).toHaveBeenCalledTimes(1);
       expect(mockOnPageChange).toHaveBeenCalledWith(2);
     });

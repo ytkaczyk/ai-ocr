@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useDocumentStore } from '@/lib/stores/useDocumentStore';
 import { useViewerStore } from '@/lib/stores/useViewerStore';
 import { Pager } from './Pager';
@@ -225,11 +225,11 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   }, [paneMode]);
 
   // Handle page change
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
-  };
+  }, [totalPages, setCurrentPage]);
 
   // Loading state
   if (loading && !document) {

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { debounce, DEBOUNCE_NAVIGATION } from '@/lib/utils/debounce';
+import { throttle, DEBOUNCE_NAVIGATION } from '@/lib/utils/debounce';
 
 /**
  * Pager component
@@ -32,15 +32,19 @@ export function Pager({
 }: PagerProps) {
   const [jumpValue, setJumpValue] = useState(currentPage.toString());
   
-  // Debounced page change handler (FR-024a: 100ms)
-  const debouncedPageChangeRef = useRef(
-    debounce((page: number) => onPageChange(page), DEBOUNCE_NAVIGATION)
-  );
-
-  // Update debounced function when onPageChange changes
+  // Store onPageChange in a ref so throttled function always calls latest version
+  const onPageChangeRef = useRef(onPageChange);
   useEffect(() => {
-    debouncedPageChangeRef.current = debounce((page: number) => onPageChange(page), DEBOUNCE_NAVIGATION);
+    onPageChangeRef.current = onPageChange;
   }, [onPageChange]);
+  
+  // Throttled page change handler (FR-024a: 100ms)
+  // Note: Using throttle instead of debounce for responsive navigation
+  // Throttle executes immediately then prevents rapid-fire calls
+  // Parent should memoize onPageChange with useCallback for stability
+  const throttledPageChangeRef = useRef(
+    throttle((page: number) => onPageChangeRef.current(page), DEBOUNCE_NAVIGATION)
+  );
 
   // Update jump value when current page changes
   useEffect(() => {
@@ -50,25 +54,25 @@ export function Pager({
   // Navigation handlers with boundary checks (FR-013) and debouncing (FR-024a)
   const goToFirstPage = useCallback(() => {
     if (currentPage > 1 && !disabled) {
-      debouncedPageChangeRef.current(1);
+      throttledPageChangeRef.current(1);
     }
   }, [currentPage, disabled]);
 
   const goToPreviousPage = useCallback(() => {
     if (currentPage > 1 && !disabled) {
-      debouncedPageChangeRef.current(currentPage - 1);
+      throttledPageChangeRef.current(currentPage - 1);
     }
   }, [currentPage, disabled]);
 
   const goToNextPage = useCallback(() => {
     if (currentPage < totalPages && !disabled) {
-      debouncedPageChangeRef.current(currentPage + 1);
+      throttledPageChangeRef.current(currentPage + 1);
     }
   }, [currentPage, totalPages, disabled]);
 
   const goToLastPage = useCallback(() => {
     if (currentPage < totalPages && !disabled) {
-      debouncedPageChangeRef.current(totalPages);
+      throttledPageChangeRef.current(totalPages);
     }
   }, [currentPage, totalPages, disabled]);
 
@@ -83,7 +87,7 @@ export function Pager({
     }
 
     if (page !== currentPage && !disabled) {
-      debouncedPageChangeRef.current(page);
+      throttledPageChangeRef.current(page);
     }
   }, [jumpValue, currentPage, totalPages, disabled]);
 
