@@ -96,13 +96,19 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Check coverage threshold (70% minimum)
         run: |
-          COVERAGE=$(jq '.total.lines.pct' apps/web-viewer/coverage/coverage-summary.json)
+          if [ ! -f coverage/coverage-summary.json ]; then
+            echo "Error: coverage-summary.json not found"
+            echo "Available files in coverage directory:"
+            ls -la coverage/
+            exit 1
+          fi
+          COVERAGE=$(jq '.total.lines.pct' coverage/coverage-summary.json)
           echo "Current coverage: $COVERAGE%"
           if (( $(echo "$COVERAGE < 70" | bc -l) )); then
             echo "Coverage is below 70% threshold"
             exit 1
           fi
-        working-directory: .
+        working-directory: apps/web-viewer
 
   build:
     runs-on: ubuntu-latest
