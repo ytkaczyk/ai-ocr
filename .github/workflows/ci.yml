@@ -136,6 +136,32 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
         working-directory: apps/web-viewer
+      - name: Create test data directory structure
+        run: |
+          mkdir -p data/kombucha/en-US
+          mkdir -p data/kombucha/fr-FR
+          mkdir -p data/kombucha/raw.en-US
+          mkdir -p data/kombucha/raw.fr-FR
+          # Create sample markdown files for testing
+          echo "# Test Page 1 - English" > data/kombucha/en-US/kombucha.en-US_page_1.md
+          echo "# Test Page 2 - English" > data/kombucha/en-US/kombucha.en-US_page_2.md
+          echo "# Page de test 1 - Français" > data/kombucha/fr-FR/kombucha.fr-FR_page_1.md
+          echo "# Page de test 2 - Français" > data/kombucha/fr-FR/kombucha.fr-FR_page_2.md
+          echo "# Raw Page 1 - English" > data/kombucha/raw.en-US/kombucha.raw.en-US_page_1.md
+          echo "# Raw Page 1 - Français" > data/kombucha/raw.fr-FR/kombucha.raw.fr-FR_page_1.md
+        working-directory: apps/web-viewer
+      - name: Copy test PDF files
+        run: |
+          # Copy actual test PDFs from data directory if they exist
+          if [ -d "../../examples/kombucha" ]; then
+            cp -r ../../examples/kombucha/* data/kombucha/ 2>/dev/null || true
+          fi
+        working-directory: apps/web-viewer
+      - name: Create .env file for E2E tests
+        run: |
+          echo "DATA_FOLDER_PATH=${{ github.workspace }}/apps/web-viewer/data" > .env.local
+          echo "MAX_PDF_SIZE_MB=100" >> .env.local
+        working-directory: apps/web-viewer
       - name: Run E2E tests
         run: npm run test:e2e
         working-directory: apps/web-viewer
