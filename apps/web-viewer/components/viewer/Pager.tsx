@@ -32,19 +32,26 @@ export function Pager({
 }: PagerProps) {
   const [jumpValue, setJumpValue] = useState(currentPage.toString());
   
-  // Store onPageChange in a ref so throttled function always calls latest version
+  // Store onPageChange in a ref so we always call the latest version
   const onPageChangeRef = useRef(onPageChange);
   useEffect(() => {
     onPageChangeRef.current = onPageChange;
   }, [onPageChange]);
   
-  // Throttled page change handler (FR-024a: 100ms)
+  // Create throttled function in useEffect to avoid ref access during render (FR-024a: 100ms)
   // Note: Using throttle instead of debounce for responsive navigation
   // Throttle executes immediately then prevents rapid-fire calls
-  // Parent should memoize onPageChange with useCallback for stability
-  const throttledPageChangeRef = useRef(
-    throttle((page: number) => onPageChangeRef.current(page), DEBOUNCE_NAVIGATION)
-  );
+  const throttledPageChangeRef = useRef<((page: number) => void) | null>(null);
+  
+  useEffect(() => {
+    throttledPageChangeRef.current = throttle((page: number) => {
+      onPageChangeRef.current(page);
+    }, DEBOUNCE_NAVIGATION);
+  }, []); // Empty deps - create throttle only once
+  
+  const throttledPageChange = useCallback((page: number) => {
+    throttledPageChangeRef.current?.(page);
+  }, []);
 
   // Update jump value when current page changes
   useEffect(() => {
@@ -54,27 +61,27 @@ export function Pager({
   // Navigation handlers with boundary checks (FR-013) and debouncing (FR-024a)
   const goToFirstPage = useCallback(() => {
     if (currentPage > 1 && !disabled) {
-      throttledPageChangeRef.current(1);
+      throttledPageChange(1);
     }
-  }, [currentPage, disabled]);
+  }, [currentPage, disabled, throttledPageChange]);
 
   const goToPreviousPage = useCallback(() => {
     if (currentPage > 1 && !disabled) {
-      throttledPageChangeRef.current(currentPage - 1);
+      throttledPageChange(currentPage - 1);
     }
-  }, [currentPage, disabled]);
+  }, [currentPage, disabled, throttledPageChange]);
 
   const goToNextPage = useCallback(() => {
     if (currentPage < totalPages && !disabled) {
-      throttledPageChangeRef.current(currentPage + 1);
+      throttledPageChange(currentPage + 1);
     }
-  }, [currentPage, totalPages, disabled]);
+  }, [currentPage, totalPages, disabled, throttledPageChange]);
 
   const goToLastPage = useCallback(() => {
     if (currentPage < totalPages && !disabled) {
-      throttledPageChangeRef.current(totalPages);
+      throttledPageChange(totalPages);
     }
-  }, [currentPage, totalPages, disabled]);
+  }, [currentPage, totalPages, disabled, throttledPageChange]);
 
   const handleJumpToPage = useCallback(() => {
     const page = parseInt(jumpValue, 10);
@@ -87,9 +94,9 @@ export function Pager({
     }
 
     if (page !== currentPage && !disabled) {
-      throttledPageChangeRef.current(page);
+      throttledPageChange(page);
     }
-  }, [jumpValue, currentPage, totalPages, disabled]);
+  }, [jumpValue, currentPage, totalPages, disabled, throttledPageChange]);
 
   // Keyboard navigation (FR-015)
   useEffect(() => {
