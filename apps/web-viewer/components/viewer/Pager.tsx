@@ -49,9 +49,10 @@ export function Pager({
     }, DEBOUNCE_NAVIGATION);
   }, []); // Empty deps - create throttle only once
   
-  const throttledPageChange = useCallback((page: number) => {
+  // Stable wrapper function that never changes - prevents dependency chain re-renders
+  const throttledPageChange = useRef((page: number) => {
     throttledPageChangeRef.current?.(page);
-  }, []);
+  }).current;
 
   // Update jump value when current page changes
   useEffect(() => {
