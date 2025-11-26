@@ -13,6 +13,7 @@ import {
   rejectSymlink,
 } from '@/lib/utils/file-system';
 import path from 'path';
+import fs from 'fs';
 
 /**
  * Integration tests for security utilities (T116)
@@ -31,6 +32,11 @@ describe('Security Utilities Integration Tests', () => {
   const originalEnv = process.env;
 
   beforeAll(() => {
+    // Create test data directory if it doesn't exist
+    if (!fs.existsSync(testDataFolder)) {
+      fs.mkdirSync(testDataFolder, { recursive: true });
+    }
+    
     // Set environment for tests that use sanitizeErrorMessage
     process.env = {
       ...originalEnv,
