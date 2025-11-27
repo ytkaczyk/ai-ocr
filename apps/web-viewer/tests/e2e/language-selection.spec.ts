@@ -105,11 +105,18 @@ test.describe('Language Selection', () => {
       
       const FrenchOption = page.getByRole('option', { name: /French/ }).first();
       await FrenchOption.click();
-      await page.waitForTimeout(800);
+      
+      // Wait for content to load after language change
+      await expect(markdownPane.locator('[data-testid="markdown-content"]')).toBeVisible({ timeout: 5000 });
 
       // Navigate to next page
       await page.locator('[data-testid="pager-next"]').click();
-      await page.waitForTimeout(1000);
+      
+      // Wait for page number to update (confirms navigation completed)
+      await expect(page.locator('[data-testid="page-display"]')).toContainText('Page 2', { timeout: 5000 });
+      
+      // Wait for new content to load after navigation
+      await expect(markdownPane.locator('[data-testid="markdown-content"]')).toBeVisible({ timeout: 5000 });
 
       // Language selection should persist - check the selector button text
       const selectorButton = markdownPane.locator('[aria-label="Select language version"]');
