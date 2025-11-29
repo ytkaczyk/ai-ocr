@@ -172,7 +172,7 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
         expect(finalPage).toBeGreaterThan(initialPage);
       } else {
         // If element disappeared, test keyboard navigation stability instead
-        console.log('Page display not visible after keyboard navigation - checking for crash');
+        console.warn('Page display not visible after keyboard navigation - checking for crash');
         const errorMessage = page.locator('[role=\"alert\"]');
         await expect(errorMessage).not.toBeVisible();
       }
