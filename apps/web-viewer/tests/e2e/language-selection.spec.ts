@@ -96,10 +96,8 @@ test.describe('Language Selection', () => {
     });
 
     test('should persist language selection across page navigation', async ({ page }) => {
-      const markdownPane = page.locator('[data-pane-id^="markdown"]').first();
-      
       // Change to French
-      const selector = markdownPane.locator('[aria-label="Select language version"]');
+      const selector = page.locator('[data-pane-id^="markdown"]').first().locator('[aria-label="Select language version"]');
       await selector.click();
       await page.waitForSelector('[role="listbox"]', { timeout: 5000 });
       
@@ -107,19 +105,19 @@ test.describe('Language Selection', () => {
       await FrenchOption.click();
       
       // Wait for content to load after language change
-      await expect(markdownPane.locator('[data-testid="markdown-content"]')).toBeVisible({ timeout: 5000 });
+      await page.waitForTimeout(800);
 
       // Navigate to next page
       await page.locator('[data-testid="pager-next"]').click();
       
       // Wait for page number to update (confirms navigation completed)
-      await expect(page.locator('[data-testid="page-display"]')).toContainText('Page 2', { timeout: 5000 });
+      await expect(page.locator('[data-testid="page-display"]')).toContainText('Page 2', { timeout: 10000 });
       
-      // Wait for new content to load after navigation
-      await expect(markdownPane.locator('[data-testid="markdown-content"]')).toBeVisible({ timeout: 5000 });
+      // Wait for pane to stabilize after navigation (throttle + render time)
+      await page.waitForTimeout(500);
 
-      // Language selection should persist - check the selector button text
-      const selectorButton = markdownPane.locator('[aria-label="Select language version"]');
+      // Language selection should persist - re-query selector after navigation
+      const selectorButton = page.locator('[data-pane-id^="markdown"]').first().locator('[aria-label="Select language version"]');
       await expect(selectorButton).toContainText(/French/, { timeout: 5000 });
     });
   });

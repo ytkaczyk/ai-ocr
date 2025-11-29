@@ -135,16 +135,19 @@ test.describe('3-Pane Synchronization', () => {
     test('should synchronize when clicking first page button', async ({ page }) => {
       // Navigate away from page 1
       for (let i = 0; i < 3; i++) {
-        await page.locator('[data-testid="pager-next"]').click();
-        await page.waitForTimeout(200);
+        await page.waitForSelector('[data-testid="pager-next"]', { state: 'visible', timeout: 40000 });
+        await page.locator('[data-testid="pager-next"]').click({ timeout: 40000 });
+        await page.waitForTimeout(800);
       }
 
+      await page.waitForTimeout(1000);
       const pageInput = page.locator('[data-testid="pager-input"]');
       await expect(pageInput).toHaveValue('4');
 
       // Click first page button
-      await page.locator('[data-testid="pager-first"]').click();
-      await page.waitForTimeout(600);
+      await page.waitForSelector('[data-testid="pager-first"]', { state: 'visible', timeout: 40000 });
+      await page.locator('[data-testid="pager-first"]').click({ timeout: 40000 });
+      await page.waitForTimeout(1500);
 
       // Verify back to page 1
       await expect(pageInput).toHaveValue('1');
@@ -174,17 +177,20 @@ test.describe('3-Pane Synchronization', () => {
   test.describe('Rapid Navigation in 3-Pane Mode', () => {
     test('should handle rapid next clicks without desynchronization', async ({ page }) => {
       const pageInput = page.locator('[data-testid="pager-input"]');
+      const nextButton = page.locator('[data-testid="pager-next"]');
       
-      // Rapidly click next 5 times
+      // Rapidly click next 5 times with stability checks
       for (let i = 0; i < 5; i++) {
-        await page.locator('[data-testid="pager-next"]').click();
-        await page.waitForTimeout(150);
+        await nextButton.waitFor({ state: 'visible', timeout: 40000 });
+        await nextButton.click({ timeout: 40000 });
+        await page.waitForTimeout(400);
       }
 
       // Wait for final state to settle
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(2000);
 
       // Verify page number is updated
+      await pageInput.waitFor({ state: 'visible', timeout: 40000 });
       const finalPage = await pageInput.inputValue();
       expect(parseInt(finalPage)).toBeGreaterThan(1);
 

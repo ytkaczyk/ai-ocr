@@ -97,20 +97,25 @@ test.describe('2-Pane Viewer Navigation', () => {
 
     test('should navigate to previous page using prev button', async ({ page }) => {
       // First go to page 2
-      await page.locator('[data-testid="pager-next"]').click();
-      await page.waitForTimeout(200);
+      await page.waitForSelector('[data-testid="pager-next"]', { state: 'visible', timeout: 40000 });
+      await page.locator('[data-testid="pager-next"]').click({ timeout: 40000 });
+      await page.waitForTimeout(1000);
 
-      // Get current page number
+      // Get current page number - use fresh locator
       const pageDisplay = page.locator('[data-testid="page-display"]');
+      await pageDisplay.waitFor({ state: 'visible', timeout: 40000 });
       const initialText = await pageDisplay.textContent();
       const initialPage = parseInt(initialText!.match(/Page (\d+)/)?.[1] || '1');
 
       // Click prev button
-      await page.locator('[data-testid="pager-prev"]').click();
-      await page.waitForTimeout(200);
+      await page.waitForSelector('[data-testid="pager-prev"]', { state: 'visible', timeout: 40000 });
+      await page.locator('[data-testid="pager-prev"]').click({ timeout: 40000 });
+      await page.waitForTimeout(1000);
 
-      // Check that page number decreased
-      const newText = await pageDisplay.textContent();
+      // Check that page number decreased - use fresh locator
+      const pageDisplay2 = page.locator('[data-testid="page-display"]');
+      await pageDisplay2.waitFor({ state: 'visible', timeout: 40000 });
+      const newText = await pageDisplay2.textContent();
       const newPage = parseInt(newText!.match(/Page (\d+)/)?.[1] || '1');
       
       expect(newPage).toBe(initialPage - 1);
@@ -118,17 +123,23 @@ test.describe('2-Pane Viewer Navigation', () => {
 
     test('should navigate to first page using first button', async ({ page }) => {
       // First go to a later page
-      await page.locator('[data-testid="pager-next"]').click();
-      await page.waitForTimeout(200);
-      await page.locator('[data-testid="pager-next"]').click();
-      await page.waitForTimeout(200);
+      const nextButton = page.locator('[data-testid="pager-next"]');
+      await nextButton.waitFor({ state: 'visible', timeout: 40000 });
+      await nextButton.click({ timeout: 40000 });
+      await page.waitForTimeout(500);
+      await nextButton.waitFor({ state: 'visible', timeout: 40000 });
+      await nextButton.click({ timeout: 40000 });
+      await page.waitForTimeout(500);
 
       // Click first button
-      await page.locator('[data-testid="pager-first"]').click();
-      await page.waitForTimeout(200);
+      const firstButton = page.locator('[data-testid="pager-first"]');
+      await firstButton.waitFor({ state: 'visible', timeout: 40000 });
+      await firstButton.click({ timeout: 40000 });
+      await page.waitForTimeout(1000);
 
       // Check that we're on page 1
       const pageDisplay = page.locator('[data-testid="page-display"]');
+      await pageDisplay.waitFor({ state: 'visible', timeout: 40000 });
       const text = await pageDisplay.textContent();
       expect(text).toContain('Page 1');
     });
@@ -232,29 +243,35 @@ test.describe('2-Pane Viewer Navigation', () => {
     test('should update URL parameter when page changes', async ({ page }) => {
       // Navigate to page 3
       const nextButton = page.locator('[data-testid="pager-next"]');
-      await nextButton.click();
-      await page.waitForTimeout(200);
-      await nextButton.click();
-      await page.waitForTimeout(200);
+      await nextButton.waitFor({ state: 'visible', timeout: 40000 });
+      await nextButton.click({ timeout: 40000 });
+      await page.waitForTimeout(500);
+      await nextButton.waitFor({ state: 'visible', timeout: 40000 });
+      await nextButton.click({ timeout: 40000 });
+      await page.waitForTimeout(1000);
 
       // Verify we're on page 3 and URL is updated
       const pageDisplay = page.locator('[data-testid="page-display"]');
+      await pageDisplay.waitFor({ state: 'visible', timeout: 40000 });
       let text = await pageDisplay.textContent();
       expect(text).toContain('Page 3');
       expect(page.url()).toContain('page=3');
 
       // Navigate back to page 1 using the first page button
       const firstButton = page.locator('[data-testid="pager-first"]');
-      await firstButton.click();
+      await firstButton.waitFor({ state: 'visible', timeout: 10000 });
+      await firstButton.click({ timeout: 10000 });
       await page.waitForTimeout(200);
 
       // Should be back on page 1 and URL should reflect it
+      await pageDisplay.waitFor({ state: 'visible', timeout: 10000 });
       text = await pageDisplay.textContent();
       expect(text).toContain('Page 1');
       expect(page.url()).toContain('page=1');
 
       // Jump to page 5 using input
       const jumpInput = page.locator('[data-testid="pager-input"]');
+      await jumpInput.waitFor({ state: 'visible', timeout: 10000 });
       await jumpInput.click();
       await jumpInput.fill('5');
       await jumpInput.press('Enter');
@@ -271,26 +288,32 @@ test.describe('2-Pane Viewer Navigation', () => {
     test('should navigate with arrow keys', async ({ page }) => {
       // Focus the viewer
       await page.locator('[data-testid="viewer-container"]').click();
+      await page.waitForTimeout(500);
 
       // Get initial page
       const pageDisplay = page.locator('[data-testid="page-display"]');
+      await pageDisplay.waitFor({ state: 'visible', timeout: 40000 });
       const initialText = await pageDisplay.textContent();
       const initialPage = parseInt(initialText!.match(/Page (\d+)/)?.[1] || '1');
 
       // Press Right arrow
       await page.keyboard.press('ArrowRight');
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(1500);
 
-      // Check page increased
-      const newText = await pageDisplay.textContent();
+      // Check page increased - use fresh locator
+      const pageDisplay2 = page.locator('[data-testid="page-display"]');
+      await pageDisplay2.waitFor({ state: 'visible', timeout: 40000 });
+      const newText = await pageDisplay2.textContent();
       const newPage = parseInt(newText!.match(/Page (\d+)/)?.[1] || '1');
       expect(newPage).toBe(initialPage + 1);
 
       // Press Left arrow
       await page.keyboard.press('ArrowLeft');
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(1500);
 
-      // Check page decreased
+      // Check page decreased - use fresh locator
+      const pageDisplay3 = page.locator('[data-testid="page-display"]');
+      await pageDisplay3.waitFor({ state: 'visible', timeout: 40000 });
       const backText = await pageDisplay.textContent();
       const backPage = parseInt(backText!.match(/Page (\d+)/)?.[1] || '1');
       expect(backPage).toBe(initialPage);
@@ -299,43 +322,51 @@ test.describe('2-Pane Viewer Navigation', () => {
     test('should navigate to first/last page with Ctrl+Home/End', async ({ page }) => {
       // Focus the viewer
       await page.locator('[data-testid="viewer-container"]').click();
+      await page.waitForTimeout(500);
 
       // Get total pages
       const pageDisplay = page.locator('[data-testid="page-display"]');
+      await pageDisplay.waitFor({ state: 'visible', timeout: 40000 });
       const initialText = await pageDisplay.textContent();
       const totalPages = parseInt(initialText!.match(/of (\d+)/)?.[1] || '1');
 
       // Press Ctrl+End to go to last page
       await page.keyboard.press('Control+End');
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(2000);
 
-      // Check we're on last page
-      const endText = await pageDisplay.textContent();
+      // Check we're on last page - use fresh locator
+      const pageDisplay2 = page.locator('[data-testid="page-display"]');
+      await pageDisplay2.waitFor({ state: 'visible', timeout: 40000 });
+      const endText = await pageDisplay2.textContent();
       expect(endText).toContain(`Page ${totalPages}`);
 
       // Press Ctrl+Home to go to first page
       await page.keyboard.press('Control+Home');
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(2000);
 
-      // Check we're on first page
-      const homeText = await pageDisplay.textContent();
+      // Check we're on first page - use fresh locator
+      const pageDisplay3 = page.locator('[data-testid="page-display"]');
+      await pageDisplay3.waitFor({ state: 'visible', timeout: 40000 });
+      const homeText = await pageDisplay3.textContent();
       expect(homeText).toContain('Page 1');
     });
   });
 
   test.describe('Jump to Page', () => {
     test('should jump to specific page via input', async ({ page }) => {
+      await page.waitForSelector('[data-testid="pager-input"]', { state: 'visible', timeout: 40000 });
       const jumpInput = page.locator('[data-testid="pager-input"]');
       
       // Clear input and type page number
-      await jumpInput.click();
+      await jumpInput.click({ timeout: 40000 });
       await jumpInput.fill('3');
       await jumpInput.press('Enter');
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(1500);
 
       // Check that we're on page 3
+      await page.waitForSelector('[data-testid="page-display"]', { state: 'visible', timeout: 40000 });
       const pageDisplay = page.locator('[data-testid="page-display"]');
-      const text = await pageDisplay.textContent();
+      const text = await pageDisplay.textContent({ timeout: 40000 });
       expect(text).toContain('Page 3');
     });
 

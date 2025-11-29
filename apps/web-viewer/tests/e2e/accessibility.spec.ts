@@ -215,17 +215,19 @@ test.describe('Accessibility Tests', () => {
 
     // Test arrow key navigation
     await page.keyboard.press('ArrowRight');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(1000);
 
     // Verify page changed
     const pageDisplay = page.locator('[data-testid="page-display"]');
+    await pageDisplay.waitFor({ state: 'visible', timeout: 40000 });
     const pageText = await pageDisplay.textContent();
     expect(pageText).toContain('Page 2');
 
     // Test going back
     await page.keyboard.press('ArrowLeft');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(1000);
 
+    await pageDisplay.waitFor({ state: 'visible', timeout: 40000 });
     const pageText2 = await pageDisplay.textContent();
     expect(pageText2).toContain('Page 1');
   });
