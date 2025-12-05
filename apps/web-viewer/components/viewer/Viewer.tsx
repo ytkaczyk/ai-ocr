@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useDocumentStore } from '@/lib/stores/useDocumentStore';
 import { useViewerStore } from '@/lib/stores/useViewerStore';
 import { Pager } from './Pager';
@@ -24,7 +24,7 @@ interface ViewerProps {
 }
 
 export function Viewer({ documentId, className = '' }: ViewerProps) {
-  const { documents, getCurrentDocument, currentDocumentId } = useDocumentStore();
+  const { documents, currentDocumentId } = useDocumentStore();
   const { currentPage, setCurrentPage, setError, error, paneMode, panes } = useViewerStore();
   const [totalPages, setTotalPages] = useState(0);
   const [announcement, setAnnouncement] = useState('');
@@ -35,10 +35,11 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   // Get document ID from props or store
   const activeDocumentId = documentId || currentDocumentId;
 
-  // Find the document
-  const document = activeDocumentId 
-    ? documents.find((doc) => doc.id === activeDocumentId) || getCurrentDocument()
-    : getCurrentDocument();
+  // Find the document - memoize based on stable values only
+  const document = useMemo(() => {
+    if (!activeDocumentId) return null;
+    return documents.find((doc) => doc.id === activeDocumentId) || null;
+  }, [activeDocumentId, documents]);
 
   // Derive loading state - we're loading if we have an active ID but no document
   const loading = !!activeDocumentId && !document;

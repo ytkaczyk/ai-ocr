@@ -23,18 +23,18 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
 
   test.describe('Rapid Button Clicking', () => {
     test('should handle rapid next button clicks', async ({ page }) => {
-      const nextButton = page.locator('[data-testid="pager-next"]');
       const pageDisplay = page.locator('[data-testid="page-display"]');
 
       // Get initial page
-      await pageDisplay.waitFor({ state: 'visible', timeout: 40000 });
+      await pageDisplay.waitFor({ state: 'visible', timeout: 10000 });
       const initialText = await pageDisplay.textContent();
       const initialPage = parseInt(initialText!.match(/Page (\d+)/)?.[1] || '1');
 
-      // Rapidly click next button 5 times with stability checks
+      // Rapidly click next button 5 times - re-query button each time to handle DOM updates
       for (let i = 0; i < 5; i++) {
-        await nextButton.waitFor({ state: 'visible', timeout: 40000 });
-        await nextButton.click({ timeout: 40000 });
+        const nextButton = page.locator('[data-testid="pager-next"]');
+        await nextButton.waitFor({ state: 'visible', timeout: 10000 });
+        await nextButton.click();
         await page.waitForTimeout(250); // Increased pause for low-powered CI
       }
 
@@ -58,8 +58,8 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
       // First navigate to page 5 with longer delays for stability
       const nextButton = page.locator('[data-testid="pager-next"]');
       for (let i = 0; i < 4; i++) {
-        await nextButton.waitFor({ state: 'visible', timeout: 40000 });
-        await nextButton.click({ timeout: 40000 });
+        await nextButton.waitFor({ state: 'visible', timeout: 10000 });
+        await nextButton.click();
         await page.waitForTimeout(400);
       }
 
@@ -67,15 +67,15 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
       await page.waitForTimeout(1500);
 
       const pageDisplay = page.locator('[data-testid="page-display"]');
-      await pageDisplay.waitFor({ state: 'visible', timeout: 40000 });
+      await pageDisplay.waitFor({ state: 'visible', timeout: 10000 });
       const initialText = await pageDisplay.textContent();
       const initialPage = parseInt(initialText!.match(/Page (\d+)/)?.[1] || '1');
 
       // Rapidly click prev button 3 times with increased delay
       const prevButton = page.locator('[data-testid="pager-prev"]');
       for (let i = 0; i < 3; i++) {
-        await prevButton.waitFor({ state: 'visible', timeout: 40000 });
-        await prevButton.click({ timeout: 40000 });
+        await prevButton.waitFor({ state: 'visible', timeout: 10000 });
+        await prevButton.click();
         await page.waitForTimeout(300);
       }
 
@@ -95,28 +95,30 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
     });
 
     test('should handle alternating next/prev clicks', async ({ page }) => {
-      const nextButton = page.locator('[data-testid="pager-next"]');
-      const prevButton = page.locator('[data-testid="pager-prev"]');
-
-      // Alternating rapid clicks with increased stability checks
-      await nextButton.waitFor({ state: 'visible', timeout: 40000 });
-      await nextButton.click({ timeout: 40000 });
+      // Alternating rapid clicks - re-query buttons each time to handle DOM updates
+      let nextButton = page.locator('[data-testid="pager-next"]');
+      await nextButton.waitFor({ state: 'visible', timeout: 10000 });
+      await nextButton.click();
       await page.waitForTimeout(300);
       
-      await prevButton.waitFor({ state: 'visible', timeout: 40000 });
-      await prevButton.click({ timeout: 40000 });
+      let prevButton = page.locator('[data-testid="pager-prev"]');
+      await prevButton.waitFor({ state: 'visible', timeout: 10000 });
+      await prevButton.click();
       await page.waitForTimeout(300);
       
-      await nextButton.waitFor({ state: 'visible', timeout: 40000 });
-      await nextButton.click({ timeout: 40000 });
+      nextButton = page.locator('[data-testid="pager-next"]');
+      await nextButton.waitFor({ state: 'visible', timeout: 10000 });
+      await nextButton.click();
       await page.waitForTimeout(300);
       
-      await prevButton.waitFor({ state: 'visible', timeout: 40000 });
-      await prevButton.click({ timeout: 40000 });
+      prevButton = page.locator('[data-testid="pager-prev"]');
+      await prevButton.waitFor({ state: 'visible', timeout: 10000 });
+      await prevButton.click();
       await page.waitForTimeout(300);
       
-      await nextButton.waitFor({ state: 'visible', timeout: 40000 });
-      await nextButton.click({ timeout: 40000 });
+      nextButton = page.locator('[data-testid="pager-next"]');
+      await nextButton.waitFor({ state: 'visible', timeout: 10000 });
+      await nextButton.click();
 
       // Wait for debouncing and loading
       await page.waitForTimeout(2000);
@@ -184,36 +186,44 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
     });
 
     test('should handle mixed button and keyboard navigation', async ({ page }) => {
+      // Ensure viewer is stable
+      await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
+      
       const nextButton = page.locator('[data-testid="pager-next"]');
       await page.locator('[data-testid="viewer-container"]').click();
       await page.waitForTimeout(500);
 
       // Mix of button clicks and keyboard with generous delays for CI
-      await nextButton.waitFor({ state: 'visible', timeout: 40000 });
-      await nextButton.click({ timeout: 40000 });
+      await nextButton.waitFor({ state: 'visible', timeout: 10000 });
+      await nextButton.click();
       await page.waitForTimeout(800);
       
       await page.keyboard.press('ArrowRight');
       await page.waitForTimeout(800);
       
-      await page.waitForSelector('[data-testid="pager-next"]', { state: 'visible', timeout: 40000 });
+      // Re-ensure viewer is present after keyboard nav
+      await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
+      await page.waitForSelector('[data-testid="pager-next"]', { state: 'visible', timeout: 10000 });
       const nextButton2 = page.locator('[data-testid="pager-next"]');
-      await nextButton2.click({ timeout: 40000 });
+      await nextButton2.click();
       await page.waitForTimeout(800);
       
       await page.keyboard.press('ArrowLeft');
       await page.waitForTimeout(800);
       
-      await page.waitForSelector('[data-testid="pager-next"]', { state: 'visible', timeout: 40000 });
+      // Re-ensure viewer is present after keyboard nav
+      await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
+      await page.waitForSelector('[data-testid="pager-next"]', { state: 'visible', timeout: 10000 });
       const nextButton3 = page.locator('[data-testid="pager-next"]');
-      await nextButton3.click({ timeout: 40000 });
+      await nextButton3.click();
 
       // Wait for all operations to complete
       await page.waitForTimeout(3000);
 
-      // Should have valid state
+      // Should have valid state - wait for viewer first
+      await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
       const pageDisplay = page.locator('[data-testid="page-display"]');
-      await pageDisplay.waitFor({ state: 'visible', timeout: 40000 });
+      await pageDisplay.waitFor({ state: 'visible', timeout: 10000 });
       const text = await pageDisplay.textContent();
       expect(text).toMatch(/Page \d+ of \d+/);
 

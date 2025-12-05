@@ -134,23 +134,25 @@ test.describe('3-Pane Synchronization', () => {
 
     test('should synchronize when clicking first page button', async ({ page }) => {
       // Navigate away from page 1
+      const pageInput = page.locator('[data-testid="pager-input"]');
       for (let i = 0; i < 3; i++) {
-        await page.waitForSelector('[data-testid="pager-next"]', { state: 'visible', timeout: 40000 });
-        await page.locator('[data-testid="pager-next"]').click({ timeout: 40000 });
+        await page.waitForSelector('[data-testid="pager-next"]', { state: 'visible', timeout: 10000 });
+        await page.locator('[data-testid="pager-next"]').click();
         await page.waitForTimeout(800);
       }
 
+      // Verify we're on page 4
       await page.waitForTimeout(1000);
-      const pageInput = page.locator('[data-testid="pager-input"]');
-      await expect(pageInput).toHaveValue('4');
+      await expect(pageInput).toHaveValue('4', { timeout: 10000 });
 
       // Click first page button
-      await page.waitForSelector('[data-testid="pager-first"]', { state: 'visible', timeout: 40000 });
-      await page.locator('[data-testid="pager-first"]').click({ timeout: 40000 });
+      await page.waitForSelector('[data-testid="pager-first"]', { state: 'visible', timeout: 10000 });
+      await page.locator('[data-testid="pager-first"]').click();
       await page.waitForTimeout(1500);
 
-      // Verify back to page 1
-      await expect(pageInput).toHaveValue('1');
+      // Verify back to page 1 - wait for viewer to be stable first
+      await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
+      await expect(pageInput).toHaveValue('1', { timeout: 10000 });
 
       // All panes visible
       const panes = page.locator('[data-pane-id]');
@@ -181,16 +183,17 @@ test.describe('3-Pane Synchronization', () => {
       
       // Rapidly click next 5 times with stability checks
       for (let i = 0; i < 5; i++) {
-        await nextButton.waitFor({ state: 'visible', timeout: 40000 });
-        await nextButton.click({ timeout: 40000 });
-        await page.waitForTimeout(400);
+        await nextButton.waitFor({ state: 'visible', timeout: 10000 });
+        await nextButton.click();
+        await page.waitForTimeout(500); // Increased for 3-pane mode
       }
 
       // Wait for final state to settle
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(2500);
 
-      // Verify page number is updated
-      await pageInput.waitFor({ state: 'visible', timeout: 40000 });
+      // Ensure viewer is stable before checking state
+      await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
+      await pageInput.waitFor({ state: 'visible', timeout: 10000 });
       const finalPage = await pageInput.inputValue();
       expect(parseInt(finalPage)).toBeGreaterThan(1);
 

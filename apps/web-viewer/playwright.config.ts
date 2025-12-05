@@ -7,11 +7,11 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
-  timeout: 45000, // Increase global test timeout to 45s (default is 30s)
+  timeout: 60000, // Increase global test timeout to 60s for CI stability
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
-    actionTimeout: 20000, // Increase action timeout to 20s (default is 0, which means no timeout)
+    actionTimeout: 15000, // Reduce action timeout to 15s (was 20s)
   },
   projects: [
     {
