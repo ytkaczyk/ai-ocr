@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo, memo } from 'react';
 import { Document, Page } from 'react-pdf';
-import type { PDFPageProxy } from 'pdfjs-dist';
+import type { PageCallback } from 'react-pdf/dist/shared/types.js';
 import { Loader2, AlertCircle, Info } from 'lucide-react';
 import {
   formatPdfDimensions,
@@ -106,7 +106,7 @@ function PdfPaneComponent({
   }
 
   // Handle page load success
-  function onPageLoadSuccess(page: PDFPageProxy) {
+  function onPageLoadSuccess(page: PageCallback) {
     const viewport = page.getViewport({ scale: 1 });
     setPageDimensions({
       width: viewport.width,

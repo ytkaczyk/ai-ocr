@@ -164,16 +164,20 @@ test.describe('2-Pane Viewer Navigation', () => {
       const nextButton = page.locator('[data-testid="pager-next"]');
       if (await nextButton.isEnabled()) {
         await nextButton.click();
-        await page.waitForTimeout(200);
+        await page.waitForTimeout(300);
         
         // Now go back to page 1
         const firstButton = page.locator('[data-testid="pager-first"]');
         await firstButton.click();
-        await page.waitForTimeout(200);
+        await page.waitForTimeout(500);
       }
 
+      // Wait for viewer to be stable
+      await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
+      await page.waitForTimeout(300);
+
       // Check that prev and first buttons are disabled
-      await expect(page.locator('[data-testid="pager-first"]')).toBeDisabled();
+      await expect(page.locator('[data-testid="pager-first"]')).toBeDisabled({ timeout: 5000 });
       await expect(page.locator('[data-testid="pager-prev"]')).toBeDisabled();
 
       // Next and last should be enabled (if there are multiple pages)
@@ -344,9 +348,10 @@ test.describe('2-Pane Viewer Navigation', () => {
       await page.keyboard.press('Control+Home');
       await page.waitForTimeout(2000);
 
-      // Check we're on first page - use fresh locator
+      // Check we're on first page - wait for viewer first, then use fresh locator
+      await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
       const pageDisplay3 = page.locator('[data-testid="page-display"]');
-      await pageDisplay3.waitFor({ state: 'visible', timeout: 40000 });
+      await pageDisplay3.waitFor({ state: 'visible', timeout: 10000 });
       const homeText = await pageDisplay3.textContent();
       expect(homeText).toContain('Page 1');
     });

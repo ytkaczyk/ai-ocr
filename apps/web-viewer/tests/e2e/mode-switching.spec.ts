@@ -168,30 +168,40 @@ test.describe('Mode Switching', () => {
     });
 
     test('should maintain page position through multiple mode switches', async ({ page }) => {
-      // Navigate to page 5
+      // Wait for initial viewer stability before navigation
+      await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
+      await page.waitForTimeout(500);
+      await page.waitForSelector('[data-testid="pager-next"]', { state: 'visible', timeout: 10000 });
+      
+      // Navigate to page 5 - re-query button each time to handle DOM updates
       for (let i = 0; i < 4; i++) {
-        await page.locator('[data-testid="pager-next"]').click();
+        const nextButton = page.locator('[data-testid="pager-next"]');
+        await nextButton.waitFor({ state: 'visible', timeout: 10000 });
+        await nextButton.click();
         await page.waitForTimeout(200);
       }
 
       const pageInput = page.locator('[data-testid="pager-input"]');
-      await expect(pageInput).toHaveValue('5');
+      await expect(pageInput).toHaveValue('5', { timeout: 10000 });
 
-      // Switch modes multiple times
+      // Switch modes multiple times with viewer stability checks
       await page.locator('[data-testid="three-pane-button"]').click();
-      await page.waitForTimeout(300);
-      await page.waitForSelector('[data-testid="pager-input"]', { timeout: 10000 });
-      await expect(pageInput).toHaveValue('5');
+      await page.waitForTimeout(500);
+      await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
+      await page.waitForSelector('[data-testid="pager-input"]', { state: 'visible', timeout: 10000 });
+      await expect(pageInput).toHaveValue('5', { timeout: 10000 });
 
       await page.locator('[data-testid="two-pane-button"]').click();
-      await page.waitForTimeout(300);
-      await page.waitForSelector('[data-testid="pager-input"]', { timeout: 10000 });
-      await expect(pageInput).toHaveValue('5');
+      await page.waitForTimeout(500);
+      await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
+      await page.waitForSelector('[data-testid="pager-input"]', { state: 'visible', timeout: 10000 });
+      await expect(pageInput).toHaveValue('5', { timeout: 10000 });
 
       await page.locator('[data-testid="three-pane-button"]').click();
-      await page.waitForTimeout(300);
-      await page.waitForSelector('[data-testid="pager-input"]', { timeout: 10000 });
-      await expect(pageInput).toHaveValue('5');
+      await page.waitForTimeout(500);
+      await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
+      await page.waitForSelector('[data-testid="pager-input"]', { state: 'visible', timeout: 10000 });
+      await expect(pageInput).toHaveValue('5', { timeout: 10000 });
     });
   });
 

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Locator } from '@playwright/test';
 
 /**
  * E2E tests for language selection (T097g)
@@ -7,6 +7,30 @@ import { test, expect } from '@playwright/test';
  * Tests FR-034b: Raw/processed toggle
  * Tests FR-034c: Selection priority over defaults
  */
+
+/**
+ * Helper function to wait for markdown content to finish loading
+ * Checks both for the absence of the loading spinner and that content is visible
+ */
+async function waitForMarkdownLoadComplete(pane: Locator, timeout = 15000) {
+  // Wait for the loading spinner to disappear
+  const loadingStatus = pane.locator('[role="status"][aria-label="Loading markdown content"]');
+  
+  // Wait for the loading to complete (spinner to be hidden)
+  try {
+    await loadingStatus.waitFor({ state: 'hidden', timeout });
+  } catch (e) {
+    // If spinner was never visible or already gone, that's OK
+    const isVisible = await loadingStatus.isVisible().catch(() => false);
+    if (isVisible) {
+      throw e; // Re-throw if spinner is still visible
+    }
+  }
+  
+  // Ensure the language selector is enabled (confirms loading complete)
+  const selector = pane.locator('[aria-label="Select language version"]');
+  await expect(selector).not.toBeDisabled({ timeout: 5000 });
+}
 
 test.describe('Language Selection', () => {
   test.beforeEach(async ({ page }) => {
@@ -69,14 +93,19 @@ test.describe('Language Selection', () => {
       // Click on French option (dropdown is in a portal, so search globally)
       const FrenchOption = page.getByRole('option', { name: /French/ }).first();
       await FrenchOption.click();
-      await page.waitForTimeout(500);
+      
+      // Wait for dropdown to close
+      await page.waitForSelector('[role="listbox"]', { state: 'hidden', timeout: 5000 });
 
       // Verify French is now selected
-      await expect(markdownPane.locator('text=/French/')).toBeVisible();
+      await expect(markdownPane.locator('text=/French/')).toBeVisible({ timeout: 5000 });
     });
 
     test('should update content when language changed', async ({ page }) => {
       const markdownPane = page.locator('[data-pane-id^="markdown"]').first();
+      
+      // Wait for initial content to load
+      await waitForMarkdownLoadComplete(markdownPane);
       
       // Get initial content
       const initialContent = await markdownPane.textContent();
@@ -88,7 +117,12 @@ test.describe('Language Selection', () => {
 
       const FrenchOption = page.getByRole('option', { name: /French/ }).first();
       await FrenchOption.click();
-      await page.waitForTimeout(800);
+      
+      // Wait for dropdown to close
+      await page.waitForSelector('[role="listbox"]', { state: 'hidden', timeout: 5000 });
+      
+      // Wait for content to load with the new language
+      await waitForMarkdownLoadComplete(markdownPane);
 
       // Content should have changed
       const newContent = await markdownPane.textContent();
@@ -96,25 +130,39 @@ test.describe('Language Selection', () => {
     });
 
     test('should persist language selection across page navigation', async ({ page }) => {
+      // Wait for initial page to load
+      const markdownPane = page.locator('[data-pane-id^="markdown"]').first();
+      await waitForMarkdownLoadComplete(markdownPane);
+      
       // Change to French
-      const selector = page.locator('[data-pane-id^="markdown"]').first().locator('[aria-label="Select language version"]');
+      const selector = markdownPane.locator('[aria-label="Select language version"]');
       await selector.click();
       await page.waitForSelector('[role="listbox"]', { timeout: 5000 });
       
       const FrenchOption = page.getByRole('option', { name: /French/ }).first();
       await FrenchOption.click();
       
-      // Wait for content to load after language change
-      await page.waitForTimeout(800);
+      // Wait for the dropdown to close
+      await page.waitForSelector('[role="listbox"]', { state: 'hidden', timeout: 5000 });
+      
+      // Wait for the selector button to show French (confirms language change completed)
+      await expect(selector).toContainText(/French/, { timeout: 5000 });
+      
+      // Wait for markdown content to be loaded after language change
+      await waitForMarkdownLoadComplete(markdownPane);
 
       // Navigate to next page
-      await page.locator('[data-testid="pager-next"]').click();
+      const nextButton = page.locator('[data-testid="pager-next"]');
+      await nextButton.click();
       
       // Wait for page number to update (confirms navigation completed)
       await expect(page.locator('[data-testid="page-display"]')).toContainText('Page 2', { timeout: 10000 });
       
-      // Wait for pane to stabilize after navigation (throttle + render time)
-      await page.waitForTimeout(500);
+      // Wait for viewer to be stable
+      await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
+      
+      // Wait for the markdown pane to finish loading the new page content
+      await waitForMarkdownLoadComplete(markdownPane);
 
       // Language selection should persist - re-query selector after navigation
       const selectorButton = page.locator('[data-pane-id^="markdown"]').first().locator('[aria-label="Select language version"]');
