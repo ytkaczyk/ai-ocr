@@ -131,10 +131,13 @@ test.describe('PDF Edge Cases', () => {
       }
     });
 
-    test.skip('should not freeze browser with very large pages', async ({ page }) => {
-      // Skipped: Test data for very large PDF pages not available
-      const firstCard = page.locator('[data-testid="document-card"]').first();
-      await firstCard.click();
+    test('should not freeze browser with very large pages', async ({ page }) => {
+      // Select the very-large-pages document
+      const veryLargeCard = page.locator('[data-testid="document-card"]', {
+        hasText: /very-large-pages/i,
+      }).first();
+      await veryLargeCard.waitFor({ timeout: 10000 });
+      await veryLargeCard.click();
       await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
 
       // Wait for rendering
