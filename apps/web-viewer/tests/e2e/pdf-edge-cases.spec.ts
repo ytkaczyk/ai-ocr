@@ -39,21 +39,6 @@ test.describe('PDF Edge Cases', () => {
         expect(pdfBox.height).toBeGreaterThan(0);
       }
     });
-
-    test.skip('should maintain aspect ratio for landscape pages', async ({ page }) => {
-      const firstCard = page.locator('[data-testid="document-card"]').first();
-      await firstCard.click();
-      await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
-
-      const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
-      const pdfCanvas = pdfPane.locator('canvas').first();
-      
-      await expect(pdfCanvas).toBeVisible({ timeout: 15000 });
-
-      // Canvas should have dimensions (width > height for landscape)
-      const canvasBox = await pdfCanvas.boundingBox();
-      expect(canvasBox).toBeTruthy();
-    });
   });
 
   test.describe('Rotated Pages (FR-029b)', () => {
@@ -275,58 +260,6 @@ test.describe('PDF Edge Cases', () => {
       // Should show error message for corrupted PDF
       const errorMessage = pdfPane.locator('[data-testid="error-message"]');
       await expect(errorMessage).toBeVisible({ timeout: 10000 });
-    });
-
-    test.skip('should remain functional after PDF rendering error', async ({ page }) => {
-      // Select a multi-page document to ensure we can navigate
-      const kombuchaCard = page.locator('[data-testid="document-card"]')
-        .filter({ hasText: 'kombucha' });
-      
-      // If kombucha not found, use first card
-      const cardCount = await kombuchaCard.count();
-      const selectedCard = cardCount > 0 ? kombuchaCard.first() : page.locator('[data-testid="document-card"]').first();
-      
-      await selectedCard.click();
-      await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
-
-      // Wait for initial page to load
-      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
-      await expect(markdownPane.locator('[data-testid="markdown-content"]')).toBeVisible({ timeout: 15000 });
-
-      // Navigation should still work
-      const nextButton = page.locator('[data-testid="pager-next"]');
-      
-      // Check if next button is enabled (there is a page 2)
-      const isNextEnabled = await nextButton.isEnabled();
-      if (!isNextEnabled) {
-        // Document only has 1 page, test passes as navigation is not applicable
-        return;
-      }
-      
-      await nextButton.click();
-      
-      // Wait for page transition
-      await page.waitForTimeout(1000);
-
-      // Wait for any loading state to complete
-      const loadingIndicator = markdownPane.locator('[data-testid="loading-indicator"]');
-      await loadingIndicator.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
-
-      // Verify page display updated to page 2
-      const pageDisplay = page.locator('[data-testid="page-display"]');
-      await expect(pageDisplay).toContainText('Page 2', { timeout: 5000 });
-
-      // Markdown pane should show content for page 2 (or error state, both indicate functionality)
-      // Check for either content or error message - both show the pane is functional
-      const markdownContent = markdownPane.locator('[data-testid="markdown-content"]');
-      const errorMessage = markdownPane.locator('[data-testid="error-message"]');
-      
-      try {
-        await expect(markdownContent).toBeVisible({ timeout: 15000 });
-      } catch {
-        // If content not visible, error message should be visible (both are acceptable - shows functionality)
-        await expect(errorMessage).toBeVisible({ timeout: 5000 });
-      }
     });
   });
 });

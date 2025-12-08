@@ -61,32 +61,6 @@ test.describe('Chrome: PDF Canvas Rendering (FR-028a)', () => {
     await expect(page.locator('[data-testid="viewer-container"]')).toBeVisible({ timeout: 10000 });
   });
 
-  test.skip('PDF canvas renders with non-zero dimensions', async ({ page }) => {
-    // Skipped: PDF canvas rendering is timing-dependent and covered by pdf-edge-cases.spec.ts
-    // This test validates Chrome-specific canvas behavior but is flaky in CI
-    const timeout = 15000;
-    
-    const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
-    await expect(pdfPane).toBeVisible({ timeout });
-    
-    // Wait for canvas with retry (some browsers render slower)
-    const canvas = pdfPane.locator('canvas').first();
-    const retries = 3;
-    let boundingBox = null;
-    
-    for (let i = 0; i < retries; i++) {
-      await page.waitForTimeout(1000);
-      if (await canvas.isVisible()) {
-        boundingBox = await canvas.boundingBox();
-        if (boundingBox && boundingBox.width > 0) break;
-      }
-    }
-    
-    expect(boundingBox).not.toBeNull();
-    expect(boundingBox!.width).toBeGreaterThan(0);
-    expect(boundingBox!.height).toBeGreaterThan(0);
-  });
-
   test('PDF renders at consistent aspect ratio', async ({ page }) => {
     const timeout = 15000;
     

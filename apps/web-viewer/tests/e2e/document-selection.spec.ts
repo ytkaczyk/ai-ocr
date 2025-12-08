@@ -211,12 +211,6 @@ test.describe('Document Selection Workflow', () => {
       await expect(page.locator('[data-testid="viewer-container"]')).toBeVisible({ timeout: 10000 });
     }
   });
-
-  test.skip('displays "No documents" message when data folder is empty', async () => {
-    // This test would require a test environment with no documents
-    // For now, we document the expected behavior
-    // TODO: Set up test environment with empty data folder
-  });
 });
 
 test.describe('Document Selection - Real Data', () => {

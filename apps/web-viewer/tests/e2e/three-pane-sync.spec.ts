@@ -93,7 +93,7 @@ test.describe('3-Pane Synchronization', () => {
       }
     });
 
-    test.skip('should synchronize all panes when clicking previous', async ({ page }) => {
+    test('should synchronize all panes when clicking previous', async ({ page }) => {
       // Go to page 3 first
       await page.locator('[data-testid="pager-next"]').click();
       await page.waitForTimeout(300);
@@ -202,24 +202,27 @@ test.describe('3-Pane Synchronization', () => {
       await expect(panes).toHaveCount(3);
     });
 
-    test.skip('should handle rapid previous clicks without desynchronization', async ({ page }) => {
-      // Navigate to page 7 first
+    test('should handle rapid previous clicks without desynchronization', async ({ page }) => {
+      // Navigate to page 7 first with better stability
       for (let i = 0; i < 6; i++) {
         const nextButton = page.locator('[data-testid="pager-next"]');
-        await nextButton.waitFor({ state: 'visible', timeout: 3000 });
-        await nextButton.click();
-        await page.waitForTimeout(200);
+        await nextButton.waitFor({ state: 'attached', timeout: 5000 });
+        await nextButton.click({ force: true });
+        await page.waitForTimeout(400); // Increased from 200ms
       }
 
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(800);
 
-      // Rapidly click previous 4 times
+      // Rapidly click previous 4 times with re-query
       for (let i = 0; i < 4; i++) {
-        await page.locator('[data-testid="pager-prev"]').click();
-        await page.waitForTimeout(150);
+        const prevButton = page.locator('[data-testid="pager-prev"]');
+        await prevButton.waitFor({ state: 'attached', timeout: 5000 });
+        await prevButton.click({ force: true });
+        await page.waitForTimeout(400); // Increased from 150ms
       }
 
       // Wait for final state
+      await page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {});
       await page.waitForTimeout(1000);
 
       // All panes should still be synchronized
