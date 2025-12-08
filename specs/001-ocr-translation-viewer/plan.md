@@ -8,12 +8,12 @@
 
 ## Summary
 
-The OCR Translation Comparison Viewer is a Next.js 15 web application that enables users to compare original PDF documents with their OCR-extracted and translated markdown outputs side-by-side. The system supports both 2-pane (PDF + OCR) and 3-pane (PDF + OCR + translation) viewing modes with synchronized page navigation. Documents are pre-loaded in a configured server-side data folder; no file uploads are required. The application follows test-driven development principles with comprehensive test coverage, automated CI/CD via GitHub Actions, and strict adherence to constitution principles for code quality, accessibility, security, and performance.
+The OCR Translation Comparison Viewer is a Next.js 16 web application that enables users to compare original PDF documents with their OCR-extracted and translated markdown outputs side-by-side. The system supports both 2-pane (PDF + OCR) and 3-pane (PDF + OCR + translation) viewing modes with synchronized page navigation. Documents are pre-loaded in a configured server-side data folder; no file uploads are required. The application follows test-driven development principles with comprehensive test coverage, automated CI/CD via GitHub Actions, and strict adherence to constitution principles for code quality, accessibility, security, and performance.
 
 **Terminology**: "DocumentSet" (entity) vs "document set" (general reference). See spec.md for complete terminology glossary.
 
 **Key Technical Decisions**:
-- Next.js 15 App Router for full-stack React framework
+- Next.js 16 App Router for full-stack React framework
 - ShadCN UI component library for accessible, customizable components
 - IETF BCP 47 language tags (e.g., `en-US`, `es-ES`, `fr-CA`) for internationalization
 - Test-driven development with Vitest and Playwright
@@ -24,9 +24,9 @@ The OCR Translation Comparison Viewer is a Next.js 15 web application that enabl
 ## Technical Context
 
 **Language/Version**: TypeScript 5.3+ / Node.js 20.x  
-**Framework**: Next.js 15 (App Router with Server Components and Server Actions)  
+**Framework**: Next.js 16 (App Router with Server Components and Server Actions)  
 **Primary Dependencies**: 
-- React 18 (UI library)
+- React 19 (UI library)
 - ShadCN (UI component library built on Radix UI + Tailwind CSS)
 - React-PDF (client-side PDF rendering via PDF.js)
 - react-markdown + remark-gfm (secure markdown rendering)
@@ -388,10 +388,10 @@ apps/web-viewer/
 
 **Artifacts Created**:
 - ✅ `research.md`: Technology stack decisions documented
-- ✅ Best practices gathered for Next.js 15, ShadCN, TDD, GitHub Actions
+- ✅ Best practices gathered for Next.js 16, ShadCN, TDD, GitHub Actions
 
 **Key Decisions**:
-1. Next.js 15 (App Router) for full-stack framework
+1. Next.js 16 (App Router) for full-stack framework
 2. ShadCN + Tailwind for accessible UI components
 3. Vitest for fast TDD cycle
 4. React-PDF for client-side PDF rendering
