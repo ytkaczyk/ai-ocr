@@ -254,7 +254,7 @@ test.describe('Markdown Edge Cases', () => {
   });
 
   test.describe('Mixed Edge Cases', () => {
-    test.skip('should maintain performance with problematic markdown', async ({ page }) => {
+    test('should maintain performance with problematic markdown', async ({ page }) => {
       const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
       const nextButton = page.locator('[data-testid="pager-next"]');
 

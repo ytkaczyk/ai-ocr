@@ -24,17 +24,6 @@ test.describe('Zero-State Scenarios (FR-023)', () => {
     // One of these should be true
     expect(hasDocuments || hasEmptyState).toBe(true);
   });
-
-  test.skip('empty state shows appropriate icon', async () => {
-    // Navigate to a route that would show empty state
-    // This requires mocking or a test environment
-    // For documentation purposes only
-  });
-
-  test.skip('empty state provides actionable next steps', async () => {
-    // Test that empty state has helpful CTAs
-    // Requires test environment setup
-  });
 });
 
 test.describe('Error States (FR-023)', () => {
@@ -64,16 +53,6 @@ test.describe('Error States (FR-023)', () => {
 
     // One of these should be true
     expect(hasDocuments || hasError || hasEmptyState).toBe(true);
-  });
-
-  test.skip('error state shows retry button', async () => {
-    // This test would require triggering an error state
-    // For documentation purposes
-  });
-
-  test.skip('retry button reloads the page', async () => {
-    // Test retry functionality
-    // Requires error state setup
   });
 });
 

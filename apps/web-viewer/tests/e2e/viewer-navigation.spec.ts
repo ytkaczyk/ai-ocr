@@ -417,31 +417,6 @@ test.describe('2-Pane Viewer Navigation', () => {
   });
 
   test.describe('Error Handling', () => {
-    test.skip('should show error state when markdown fails to load', async ({ page }) => {
-      // Skipped: API discovers pages by counting markdown files, so can't have missing markdown on existing page
-      // Navigate to home and select the missing markdown test document by filename
-      await page.goto('/');
-      
-      const missingMdCard = page.locator('[data-testid="document-card"]')
-        .filter({ hasText: 'test-missing-markdown.pdf' });
-      
-      await missingMdCard.waitFor({ timeout: 10000 });
-      await missingMdCard.click();
-      await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
-      
-      // Navigate to page 2 which has missing markdown file
-      const nextButton = page.locator('[data-testid="pager-next"]');
-      await nextButton.click();
-      await page.waitForTimeout(1000);
-
-      // Should show error in markdown pane
-      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
-      const errorMessage = markdownPane.locator('[data-testid="error-message"]');
-      
-      // Error should be visible
-      await expect(errorMessage).toBeVisible({ timeout: 15000 });
-    });
-
     test('should allow retry on error', async ({ page }) => {
       // Navigate to a page that might not exist
       const url = new URL(page.url());
