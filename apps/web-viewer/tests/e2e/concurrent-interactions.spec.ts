@@ -329,18 +329,8 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
   });
 
   test.describe('Performance and Stability', () => {
-
-      // No errors
-      const markdownPane = page.locator('[data-pane-id="markdown-pane"]');
-      const errorMessage = markdownPane.locator('[data-testid="error-message"]');
-      await expect(errorMessage).not.toBeVisible();
-    });
-
     test('should not leak memory or accumulate pending requests', async ({ page }) => {
       // Reduced stress test - perform navigation operations to verify system remains functional
-      const nextButton = page.locator('[data-testid="pager-next"]');
-      const prevButton = page.locator('[data-testid="pager-prev"]');
-
       // Reduced from 5 to 3 iterations to prevent DOM thrashing
       for (let i = 0; i < 3; i++) {
         // Re-query locators each iteration to handle DOM updates
