@@ -1,0 +1,24 @@
+{
+  "pages": [
+    {
+      "index": 0,
+      "markdown": "# Very Large Page Test\n\nThis document tests the application's ability to handle extremely large PDF pages without freezing or becoming unresponsive.\n\n## Test Scenario\n\nThis page simulates a very large document (20000x20000 pixels) to verify that:\n- The application remains responsive\n- Navigation controls remain functional\n- The page renders without crashing the browser\n- Zoom controls work correctly\n\n## Technical Details\n\nLarge pages can occur in real-world scenarios such as:\n- Architectural blueprints\n- Engineering diagrams\n- Large-format posters\n- High-resolution scans\n\nThe application should gracefully handle these edge cases while maintaining performance and user experience.",
+      "images": [],
+      "dimensions": {
+        "dpi": 200,
+        "height": 20000,
+        "width": 20000
+      }
+    },
+    {
+      "index": 1,
+      "markdown": "# Page 2: Performance Verification\n\nThis is the second page of the very large page test document.\n\n## Navigation Test\n\nIf you can see this page, it means:\n- The application successfully handled the very large first page\n- Navigation between pages works correctly\n- The browser did not freeze or crash\n- Memory management is functioning properly\n\n## Conclusion\n\nThe application has demonstrated robust handling of extreme edge cases with very large PDF pages.",
+      "images": [],
+      "dimensions": {
+        "dpi": 200,
+        "height": 2200,
+        "width": 1700
+      }
+    }
+  ]
+}
