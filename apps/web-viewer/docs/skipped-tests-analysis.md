@@ -3,19 +3,19 @@
 **Date**: 2025-12-08  
 **Total Skipped Tests Before**: 20  
 **Tests Removed**: 10  
-**Tests Fixed**: 8 (4 timing-related, 4 multi-language tests now passing)  
-**Tests Remaining Skipped**: 3 (2 require test fixtures, 1 uncovers React 19 bug)
+**Tests Fixed**: 9 (4 timing-related, 4 multi-language, 1 boundary navigation)  
+**Tests Remaining Skipped**: 2 (1 requires test fixture, 1 uncovers React 19 bug)
 
 ---
 
 ## Executive Summary
 
-Analyzed all 20 skipped e2e tests. **Removed 10 superfluous/redundant/unreliable tests** and **fixed 8 tests** (4 timing-related, 4 multi-language). The remaining **3 tests are skipped for valid reasons**:
+Analyzed all 20 skipped e2e tests. **Removed 10 superfluous/redundant/unreliable tests** and **fixed 9 tests** (4 timing-related, 4 multi-language, 1 boundary navigation). The remaining **2 tests are skipped for valid reasons**:
 
-- **2 tests** require specific test fixtures (very large PDFs, boundary data)
+- **1 test** requires specific test fixture (very large PDF)
 - **1 test** uncovers a real React 19 transition bug that needs application-level fix
 
-**Current Test Status**: 176/179 passing (98.3%), 3 skipped, 0 failing
+**Current Test Status**: 177/179 passing (98.9%), 2 skipped, 0 failing
 
 ---
 
@@ -64,7 +64,7 @@ Analyzed all 20 skipped e2e tests. **Removed 10 superfluous/redundant/unreliable
 
 ---
 
-## Tests Remaining: Require Test Fixtures (2 tests)
+## Tests Remaining: Require Test Fixtures (1 test)
 
 #### pdf-edge-cases.spec.ts (1 test)
 1. **Line 148**: "should handle very large PDF pages gracefully"
@@ -73,14 +73,6 @@ Analyzed all 20 skipped e2e tests. **Removed 10 superfluous/redundant/unreliable
      - Create test PDF with very large pages (e.g., 20000x20000px)
      - Place in `data/test-edge-cases/very-large.pdf`
      - Add corresponding markdown files
-
-#### three-pane-sync.spec.ts (1 test)
-2. **Line 447**: "should handle navigation at document boundaries"
-   - **Issue**: Tests boundary navigation, needs reliable multi-page test document
-   - **Requirements**:
-     - Ensure test document has at least 5 pages
-     - Add explicit waits for button state changes
-     - Increase timeout from 600ms to 1200ms for verification
 
 ---
 
@@ -192,15 +184,16 @@ These tests require specific fixtures that don't exist in the test data folder.
 | **Superfluous/Redundant/Unreliable** | 10 | ✅ **REMOVED** |
 | **Timing/CI Issues** | 4 | ✅ **FIXED - NOW PASSING** |
 | **Multi-Language Tests** | 4 | ✅ **FIXED - NOW PASSING** (kombucha document has en-US, fr-FR) |
-| **Missing Test Fixtures** | 2 | 📁 Requires test data setup |
+| **Boundary Navigation Test** | 1 | ✅ **FIXED - NOW PASSING** (kombucha has 7 pages) |
+| **Missing Test Fixtures** | 1 | 📁 Requires very large PDF test data |
 | **Uncovers React 19 Bug** | 1 | 🐛 Application code needs fix |
-| **TOTAL SKIPPED** | 3 | (down from 20) |
-| **TOTAL PASSING** | 176 | (up from 167) |
-| **PASS RATE** | 98.3% | (176/179 tests) |
+| **TOTAL SKIPPED** | 2 | (down from 20) |
+| **TOTAL PASSING** | 177 | (up from 167) |
+| **PASS RATE** | 98.9% | (177/179 tests) |
 
 ---
 
-## Tests Fixed (8 tests)
+## Tests Fixed (9 tests)
 
 ### Timing-Related Tests (4 tests)
 
@@ -245,6 +238,14 @@ These tests were skipped because they required multi-language test data. The kom
 - **Fix**: Changed `test.skip` → `test` (kombucha has multi-language data)
 - **Status**: ✅ Now passing
 
+### Boundary Navigation Test (1 test)
+
+#### three-pane-sync.spec.ts (1 test)
+**Line 447**: "should handle navigation at document boundaries"
+- **Fix**: Changed `test.skip` → `test`, increased timeouts from 600ms → 1200ms, added explicit timeout to button state checks
+- **Note**: Kombucha document has 7 pages (more than the required 5)
+- **Status**: ✅ Now passing
+
 ---
 
 ## Next Steps
@@ -253,11 +254,12 @@ These tests were skipped because they required multi-language test data. The kom
 1. ✅ **DONE**: Remove 10 superfluous tests
 2. ✅ **DONE**: Fix 4 timing-related tests
 3. ✅ **DONE**: Enable 4 multi-language tests (kombucha has en-US, fr-FR)
+4. ✅ **DONE**: Enable boundary navigation test (kombucha has 7 pages)
 
 ### Short-term (To reduce skipped tests):
-1. Create test fixtures for edge cases (enables 2 tests)
+1. Create test fixture for very large PDF edge case (enables 1 test)
    - Very large PDF pages (20000x20000px)
-   - Document with at least 5 pages for boundary testing
+   - Place in `data/test-edge-cases/very-large.pdf`
 
 ### Long-term (Address React 19 bug):
 1. Fix concurrent transition handling in application code
@@ -269,8 +271,8 @@ These tests were skipped because they required multi-language test data. The kom
 ## Conclusion
 
 **Before**: 20 skipped tests  
-**After**: 3 skipped tests with clear requirements  
-**Improvement**: 85% reduction in skipped tests, 98.3% pass rate achieved  
+**After**: 2 skipped tests with clear requirements  
+**Improvement**: 90% reduction in skipped tests, 98.9% pass rate achieved  
 **Removed**: 10 superfluous/redundant/unreliable tests  
 **Fixed**: 4 timing-related tests now passing
 
