@@ -447,27 +447,27 @@ test.describe('3-Pane Synchronization', () => {
       await expect(panes).toHaveCount(2);
     });
 
-    test.skip('should handle navigation at document boundaries', async ({ page }) => {
+    test('should handle navigation at document boundaries', async ({ page }) => {
       const pageInput = page.locator('[data-testid="pager-input"]');
       const nextButton = page.locator('[data-testid="pager-next"]');
       const prevButton = page.locator('[data-testid="pager-prev"]');
       
       // Go to last page
       await page.locator('[data-testid="pager-last"]').click();
-      await page.waitForTimeout(600);
+      await page.waitForTimeout(1200); // Increased from 600ms for better stability
 
       const lastPage = await pageInput.inputValue();
 
       // Next button should be disabled at last page
-      await expect(nextButton).toBeDisabled();
+      await expect(nextButton).toBeDisabled({ timeout: 5000 });
       await expect(pageInput).toHaveValue(lastPage);
 
       // Go to first page
       await page.locator('[data-testid="pager-first"]').click();
-      await page.waitForTimeout(600);
+      await page.waitForTimeout(1200); // Increased from 600ms for better stability
 
       // Prev button should be disabled at first page
-      await expect(prevButton).toBeDisabled();
+      await expect(prevButton).toBeDisabled({ timeout: 5000 });
       await expect(pageInput).toHaveValue('1');
 
       // All 3 panes should still be visible
