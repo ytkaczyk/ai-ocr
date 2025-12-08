@@ -36,8 +36,8 @@ npm install
 ```
 
 This installs all required packages including:
-- Next.js 15
-- React 18
+- Next.js 16
+- React 19
 - TypeScript
 - ShadCN UI components
 - Vitest for testing
@@ -246,7 +246,7 @@ apps/web-viewer/
 
 | Technology | Purpose | Documentation |
 |------------|---------|---------------|
-| **Next.js 15** | React framework with SSR | [nextjs.org](https://nextjs.org) |
+| **Next.js 16** | React framework with SSR | [nextjs.org](https://nextjs.org) |
 | **ShadCN UI** | Accessible component library | [ui.shadcn.com](https://ui.shadcn.com) |
 | **Tailwind CSS** | Utility-first CSS framework | [tailwindcss.com](https://tailwindcss.com) |
 | **Vitest** | Fast unit test runner | [vitest.dev](https://vitest.dev) |

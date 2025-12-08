@@ -18,10 +18,10 @@ This research document resolves all NEEDS CLARIFICATION items from the Technical
 
 ---
 
-## 1. Framework Selection: Next.js 15
+## 1. Framework Selection: Next.js 16
 
 ### Decision
-Use **Next.js 15** with the App Router pattern for the web application.
+Use **Next.js 16** with the App Router pattern for the web application.
 
 ### Rationale
 - **Server-side rendering**: Spec requires server-side processing for PDF rendering and markdown parsing; Next.js Server Components and Server Actions provide native support
@@ -304,7 +304,7 @@ Meet WCAG 2.1 AA standards (Constitution Principle III).
 
 | Category | Technology | Rationale |
 |----------|------------|-----------|
-| Framework | Next.js 15 (App Router) | Server-side processing, performance, ecosystem |
+| Framework | Next.js 16 (App Router) | Server-side processing, performance, ecosystem |
 | UI Library | ShadCN + Tailwind CSS | Accessibility, customization, modern patterns |
 | Testing | Vitest + React Testing Library + Playwright | Fast TDD, user-centric, E2E coverage |
 | PDF Rendering | React-PDF | Mature, React-native, worker support |
