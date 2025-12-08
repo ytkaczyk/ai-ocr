@@ -424,7 +424,7 @@ test.describe('3-Pane Synchronization', () => {
   });
 
   test.describe('Edge Cases', () => {
-    test.skip('should maintain synchronization when switching from 3-pane to 2-pane', async ({ page }) => {
+    test('should maintain synchronization when switching from 3-pane to 2-pane', async ({ page }) => {
       const pageInput = page.locator('[data-testid="pager-input"]');
       
       // Navigate to page 3 in 3-pane mode

@@ -219,7 +219,7 @@ test.describe('Language Selection', () => {
       await expect(secondPane.locator('text=/French/')).toBeVisible();
     });
 
-    test.skip('should override 3-pane defaults with user selection', async ({ page }) => {
+    test('should override 3-pane defaults with user selection', async ({ page }) => {
       const markdownPanes = page.locator('[data-pane-id^="markdown"]');
       const firstPane = markdownPanes.nth(0);
 
@@ -245,7 +245,7 @@ test.describe('Language Selection', () => {
       await expect(firstPane.locator('text=/French/')).toBeVisible();
     });
 
-    test.skip('should maintain independent selections across page navigation', async ({ page }) => {
+    test('should maintain independent selections across page navigation', async ({ page }) => {
       const markdownPanes = page.locator('[data-pane-id^="markdown"]');
       const firstPane = markdownPanes.nth(0);
       const secondPane = markdownPanes.nth(1);
@@ -490,7 +490,7 @@ test.describe('Language Selection', () => {
       await expect(finalPane.locator('text=/French/')).toBeVisible();
     });
 
-    test.skip('should handle language selection combined with page navigation', async ({ page }) => {
+    test('should handle language selection combined with page navigation', async ({ page }) => {
       const markdownPane = page.locator('[data-pane-id^="markdown"]').first();
       
       // Navigate to page 2
