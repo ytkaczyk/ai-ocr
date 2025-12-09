@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import { resolve } from 'path';
-import { validateDocumentId, validateFilename } from '@/lib/utils/security';
+import { validateDocumentId } from '@/lib/utils/security';
 import { validateEnv } from '@/lib/utils/env';
 import { rejectSymlink } from '@/lib/utils/file-system';
 import { languageCodeSchema } from '@/lib/schemas/common';
@@ -63,14 +63,6 @@ export async function GET(
     // Construct folder and file paths
     const folderName = isRaw ? `raw.${lang}` : lang;
     const fileName = `${documentId}.${isRaw ? 'raw.' : ''}${lang}_page_${pageNumber}.md`;
-    
-    // Validate filename (security check)
-    if (!validateFilename(documentId)) {
-      return NextResponse.json(
-        { code: 'INVALID_FILENAME', message: 'Invalid file name', details: 'File name contains invalid characters' },
-        { status: 400 }
-      );
-    }
 
     const markdownPath = resolve(
       config.DATA_FOLDER_PATH,
