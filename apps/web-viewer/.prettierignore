@@ -1,0 +1,12 @@
+# Prettier ignore patterns
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+playwright-report/
+test-results/

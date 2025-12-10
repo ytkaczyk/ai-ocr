@@ -1,0 +1,9 @@
+{
+  "id": "test-corrupted-pdf",
+  "name": "Test Document (Corrupted PDF)",
+  "pageCount": 1,
+  "languages": ["en-US"],
+  "defaultLanguage": "en-US",
+  "fileSizeBytes": 5000,
+  "pdfPath": "test-corrupted-pdf"
+}

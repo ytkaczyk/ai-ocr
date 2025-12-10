@@ -1,0 +1,29 @@
+{
+  "version": 1.1,
+  "atDirectives": [
+    {
+      "name": "@import",
+      "description": "Imports external stylesheets. In Tailwind CSS v4, use `@import \"tailwindcss\"` to load Tailwind."
+    },
+    {
+      "name": "@plugin",
+      "description": "Loads a Tailwind CSS v4 plugin. Example: `@plugin \"tailwindcss-animate\"`"
+    },
+    {
+      "name": "@custom-variant",
+      "description": "Defines a custom variant in Tailwind CSS v4. Example: `@custom-variant dark (&:is(.dark *))`"
+    },
+    {
+      "name": "@theme",
+      "description": "Defines theme configuration inline in Tailwind CSS v4. Use `@theme inline { ... }` to configure design tokens."
+    },
+    {
+      "name": "@layer",
+      "description": "Tailwind CSS layer directive. Use `@layer base`, `@layer components`, or `@layer utilities` to organize styles."
+    },
+    {
+      "name": "@apply",
+      "description": "Applies Tailwind utility classes within custom CSS rules."
+    }
+  ]
+}
