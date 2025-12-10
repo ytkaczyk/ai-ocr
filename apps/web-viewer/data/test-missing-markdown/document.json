@@ -1,0 +1,9 @@
+{
+  "id": "test-missing-markdown",
+  "name": "Test Document (Missing Markdown)",
+  "pageCount": 2,
+  "languages": ["en-US"],
+  "defaultLanguage": "en-US",
+  "fileSizeBytes": 8000,
+  "pdfPath": "test-missing-markdown"
+}

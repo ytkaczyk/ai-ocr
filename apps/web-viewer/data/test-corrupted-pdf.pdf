@@ -1,0 +1,9 @@
+%PDF-CORRUPTED-FILE
+This is not a valid PDF file.
+It should cause PDF.js to fail parsing.
+Missing proper PDF structure:
+- No valid header
+- No xref table
+- No trailer
+- Invalid objects
+EOF

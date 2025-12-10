@@ -1,0 +1,9 @@
+{
+  "id": "test-edge-cases",
+  "name": "Test Document (Edge Cases)",
+  "pageCount": 3,
+  "languages": ["en-US"],
+  "defaultLanguage": "en-US",
+  "fileSizeBytes": 15000,
+  "pdfPath": "test-edge-cases"
+}
