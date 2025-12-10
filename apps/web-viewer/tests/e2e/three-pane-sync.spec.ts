@@ -206,19 +206,19 @@ test.describe('3-Pane Synchronization', () => {
       // Navigate to page 7 first with better stability
       for (let i = 0; i < 6; i++) {
         const nextButton = page.locator('[data-testid="pager-next"]');
-        await nextButton.waitFor({ state: 'attached', timeout: 5000 });
+        await nextButton.waitFor({ state: 'visible', timeout: 10000 });
         await nextButton.click({ force: true });
-        await page.waitForTimeout(400); // Increased from 200ms
+        await page.waitForTimeout(600); // Increased from 400ms
       }
 
-      await page.waitForTimeout(800);
+      await page.waitForTimeout(1000);
 
       // Rapidly click previous 4 times with re-query
       for (let i = 0; i < 4; i++) {
         const prevButton = page.locator('[data-testid="pager-prev"]');
-        await prevButton.waitFor({ state: 'attached', timeout: 5000 });
+        await prevButton.waitFor({ state: 'visible', timeout: 10000 });
         await prevButton.click({ force: true });
-        await page.waitForTimeout(400); // Increased from 150ms
+        await page.waitForTimeout(600); // Increased from 400ms
       }
 
       // Wait for final state

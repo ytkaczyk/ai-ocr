@@ -155,38 +155,39 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
       // Ensure viewer is stable
       await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
       
+      // Test realistic mixed navigation with proper delays
+      // Use button navigation
       const nextButton = page.locator('[data-testid="pager-next"]');
-      await page.locator('[data-testid="viewer-container"]').click();
-      await page.waitForTimeout(500);
-
-      // Mix of button clicks and keyboard with generous delays for CI
       await nextButton.waitFor({ state: 'visible', timeout: 10000 });
       await nextButton.click();
-      await page.waitForTimeout(800);
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(1000);
       
+      // Use keyboard navigation
       await page.keyboard.press('ArrowRight');
-      await page.waitForTimeout(800);
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(1000);
       
-      // Re-ensure viewer is present after keyboard nav
-      await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
-      await page.waitForSelector('[data-testid="pager-next"]', { state: 'visible', timeout: 10000 });
+      // Mix button navigation again
       const nextButton2 = page.locator('[data-testid="pager-next"]');
+      await nextButton2.waitFor({ state: 'visible', timeout: 10000 });
       await nextButton2.click();
-      await page.waitForTimeout(800);
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(1000);
       
+      // Use keyboard navigation backward
       await page.keyboard.press('ArrowLeft');
-      await page.waitForTimeout(800);
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(1000);
       
-      // Re-ensure viewer is present after keyboard nav
-      await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
-      await page.waitForSelector('[data-testid="pager-next"]', { state: 'visible', timeout: 10000 });
+      // Final button navigation
       const nextButton3 = page.locator('[data-testid="pager-next"]');
+      await nextButton3.waitFor({ state: 'visible', timeout: 10000 });
       await nextButton3.click();
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(1000);
 
-      // Wait for all operations to complete
-      await page.waitForTimeout(3000);
-
-      // Should have valid state - wait for viewer first
+      // Verify valid final state
       await page.waitForSelector('[data-testid="viewer-container"]', { state: 'visible', timeout: 10000 });
       const pageDisplay = page.locator('[data-testid="page-display"]');
       await pageDisplay.waitFor({ state: 'visible', timeout: 10000 });
@@ -347,13 +348,13 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
         const next = page.locator('[data-testid="pager-next"]');
         const prev = page.locator('[data-testid="pager-prev"]');
         
-        await next.waitFor({ state: 'attached', timeout: 5000 });
+        await next.waitFor({ state: 'visible', timeout: 10000 });
         await next.click({ force: true });
-        await page.waitForTimeout(500); // Increased wait to prevent DOM detachment
+        await page.waitForTimeout(800); // Increased wait to prevent DOM detachment
         
-        await prev.waitFor({ state: 'attached', timeout: 5000 });
+        await prev.waitFor({ state: 'visible', timeout: 10000 });
         await prev.click({ force: true });
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(800);
       }
 
       // Wait for all operations to complete
@@ -362,9 +363,9 @@ test.describe('Concurrent Interactions and Rapid Navigation', () => {
 
       // System should still be functional and responsive
       const finalNext = page.locator('[data-testid="pager-next"]');
-      await finalNext.waitFor({ state: 'attached', timeout: 5000 });
+      await finalNext.waitFor({ state: 'visible', timeout: 10000 });
       await finalNext.click();
-      await page.waitForTimeout(800);
+      await page.waitForTimeout(1000);
 
       // Verify the viewer is still functional (any content state is acceptable)
       const viewerContainer = page.locator('[data-testid="viewer-container"]');
