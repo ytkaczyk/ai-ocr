@@ -25,14 +25,23 @@ export default function Error({ error, reset }: ErrorProps) {
 
   // Extract error message, ensuring no internal paths are disclosed (FR-033e)
   const getErrorMessage = () => {
+    // Handle null/undefined error objects
+    if (!error) {
+      return 'An unexpected error occurred';
+    }
+    
     // Generic error messages to prevent information disclosure
     const message = error.message || 'An unexpected error occurred';
     
-    // Remove any file paths from error messages
+    // Remove any file paths from error messages with improved patterns to reduce false positives
     const sanitized = message
-      .replace(/\/[^\s]+/g, '[path]') // Unix paths
-      .replace(/[A-Z]:\\[^\s]+/g, '[path]') // Windows paths
-      .replace(/\w+:\d+:\d+/g, '[location]'); // Source locations
+      // Unix absolute paths - require path to start with / after whitespace or at start
+      .replace(/(^|\s)(\/(?:home|usr|var|tmp|opt|etc|root|mnt|proc|sys|dev)\/[^\s]*)/g, '$1[path]')
+      .replace(/(^|\s)(\/[a-z][a-z0-9_-]*\/[^\s]+)/gi, '$1[path]') // Generic absolute paths
+      // Windows paths - keep current but ensure word boundary
+      .replace(/\b([A-Z]:\\[^\s]+)/g, '[path]')
+      // Source locations - keep as is (legitimately removes stack trace info)
+      .replace(/\w+:\d+:\d+/g, '[location]');
     
     return sanitized;
   };
@@ -56,7 +65,7 @@ export default function Error({ error, reset }: ErrorProps) {
           {getErrorMessage()}
         </p>
         
-        {error.digest && (
+        {error?.digest && (
           <p className="mb-6 text-xs text-muted-foreground">
             Error ID: {error.digest}
           </p>
