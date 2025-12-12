@@ -52,7 +52,7 @@
     "@vitest/coverage-v8": "^4.0.15",
     "axe-core": "^4.11.0",
     "eslint": "^9.39.1",
-    "eslint-config-next": "^16.0.7",
+    "eslint-config-next": "^16.0.10",
     "jsdom": "^27.2.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
