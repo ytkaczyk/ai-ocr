@@ -44,3 +44,6 @@ next-env.d.ts
 
 # vendor files (generated at build time)
 /public/pdf.worker.mjs
+
+# Snyk Security Extension - AI Rules (auto-generated)
+.github/instructions/snyk_rules.instructions.md
