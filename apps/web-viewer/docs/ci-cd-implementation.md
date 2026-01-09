@@ -70,7 +70,7 @@ Route (app)
 ├ ƒ /api/documents/[documentId]
 ├ ƒ /api/documents/[documentId]/images/[...path]
 ├ ƒ /api/documents/[documentId]/pages/[pageNumber]/markdown
-├ ƒ /api/documents/[documentId]/pages/[pageNumber]/pdf
+├ ƒ /api/documents/[documentId]/pdf
 └ ƒ /api/documents/[documentId]/validate
 ```
 

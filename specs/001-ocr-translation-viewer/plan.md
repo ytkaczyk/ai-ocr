@@ -422,7 +422,7 @@ apps/web-viewer/
 - GET /api/documents
 - GET /api/documents/{id}
 - POST /api/documents/{id}/validate
-- GET /api/documents/{id}/pages/{n}/pdf
+- GET /api/documents/{id}/pdf
 - GET /api/documents/{id}/pages/{n}/markdown
 - GET /api/documents/{id}/images/{lang}/{path}
 - GET /api/viewer/state

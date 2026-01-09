@@ -7,33 +7,27 @@ import { rejectSymlink } from '@/lib/utils/file-system';
 import { PDFDocument } from 'pdf-lib';
 
 /**
- * GET /api/documents/[documentId]/pages/[pageNumber]/pdf
- * Returns a single PDF page as an image or PDF blob
+ * GET /api/documents/[documentId]/pdf
+ * Returns the complete PDF file for client-side rendering with react-pdf
  * 
- * Query params:
- * - format: 'image' | 'pdf' (default: 'image')
- * - scale: number (default: 1, max: 3 for high-DPI displays)
+ * Client-side page extraction:
+ * - React-PDF loads the entire PDF and extracts the requested page
+ * - This enables efficient browser caching since all page views fetch the same URL
+ * - Page number is handled client-side by react-pdf <Page pageNumber={n} />
+ * 
+ * Implements FR-001: PDF rendering with client-side page extraction
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ documentId: string; pageNumber: string }> }
+  { params }: { params: Promise<{ documentId: string }> }
 ) {
-  const { documentId, pageNumber: pageNumStr } = await params;
+  const { documentId } = await params;
   
   try {
     // Validate document ID
     if (!validateDocumentId(documentId)) {
       return NextResponse.json(
         { code: 'INVALID_DOCUMENT_ID', message: 'Invalid document identifier', details: 'Document ID must contain only alphanumeric characters, hyphens, and underscores' },
-        { status: 400 }
-      );
-    }
-
-    // Validate and parse page number
-    const pageNumber = parseInt(pageNumStr, 10);
-    if (isNaN(pageNumber) || pageNumber < 1) {
-      return NextResponse.json(
-        { code: 'INVALID_PAGE_NUMBER', message: 'Invalid page number', details: 'Page number must be a positive integer' },
         { status: 400 }
       );
     }
@@ -82,7 +76,7 @@ export async function GET(
       );
     }
 
-    // Load PDF document
+    // Validate PDF structure
     let pdfDoc: PDFDocument;
     try {
       pdfDoc = await PDFDocument.load(pdfBytes);
@@ -95,32 +89,23 @@ export async function GET(
 
     const pageCount = pdfDoc.getPageCount();
 
-    // Validate page number is within bounds
-    if (pageNumber > pageCount) {
-      return NextResponse.json(
-        { code: 'PAGE_OUT_OF_BOUNDS', message: 'Page number exceeds document length', details: `Document has ${pageCount} pages, requested page ${pageNumber}` },
-        { status: 404 }
-      );
-    }
-
-    // For now, return the entire PDF (client-side rendering with react-pdf will handle page extraction)
-    // In a production system, you might extract and return only the requested page
+    // Return the entire PDF for client-side page extraction
+    // Caching strategy: aggressive caching since URL is stable across all page views
     const response = new NextResponse(pdfBytes.buffer as ArrayBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Length': pdfBytes.length.toString(),
-        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+        'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800', // 24 hours + 7 days stale
         'X-Page-Count': pageCount.toString(),
-        'X-Requested-Page': pageNumber.toString(),
       },
     });
 
     return response;
   } catch (error) {
-    console.error('Error serving PDF page:', error);
+    console.error('Error serving PDF:', error);
     return NextResponse.json(
-      { code: 'INTERNAL_ERROR', message: 'An error occurred while loading the PDF page', details: 'Please try again or contact support if the problem persists' },
+      { code: 'INTERNAL_ERROR', message: 'An error occurred while loading the PDF', details: 'Please try again or contact support if the problem persists' },
       { status: 500 }
     );
   }
