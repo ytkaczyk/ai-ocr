@@ -224,7 +224,7 @@ function PdfPaneComponent({
       {/* PDF Document */}
       {!error && (
         <Document
-          key={`${documentId}-${pageNumber}`}
+          key={documentId}
           file={httpSource}
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
