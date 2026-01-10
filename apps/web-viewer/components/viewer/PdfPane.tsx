@@ -105,15 +105,8 @@ function PdfPaneComponent({
   // Handle document load error (FR-011b)
   function onDocumentLoadError(err: Error) {
     console.error('PDF load error:', err);
-    
-    // Check if this is an HTTP error from the API
-    const errorMessage = err.message || '';
-    if (errorMessage.includes('422') || errorMessage.includes('Unprocessable')) {
-      setError('Cannot render PDF (file may be corrupted). Please verify the PDF file and re-scan if necessary.');
-    } else {
-      setError('Cannot render PDF (file may be corrupted). Please verify the PDF file and re-scan if necessary.');
-    }
-    
+
+    setError('Cannot render PDF (file may be corrupted). Please verify the PDF file and re-scan if necessary.');
     setLoading(false);
     if (onLoadError) {
       onLoadError(err);
