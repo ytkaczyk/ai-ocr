@@ -6,7 +6,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: [['html', { outputFolder: 'playwright-report' }]],
   timeout: 60000, // Increase global test timeout to 60s for CI stability
   use: {
     baseURL: 'http://localhost:3000',

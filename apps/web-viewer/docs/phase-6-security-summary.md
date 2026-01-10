@@ -23,7 +23,7 @@ Phase 6: Security tasks have been successfully implemented, covering all FR-033 
 - Confirmed usage in all API routes:
   - `/api/documents`
   - `/api/documents/[documentId]`
-  - `/api/documents/[documentId]/pages/[pageNumber]/pdf`
+  - `/api/documents/[documentId]/pdf`
   - `/api/documents/[documentId]/pages/[pageNumber]/markdown`
   - `/api/documents/[documentId]/images/[...path]`
 - Verified `validateFilename()` rejects path separators and special characters

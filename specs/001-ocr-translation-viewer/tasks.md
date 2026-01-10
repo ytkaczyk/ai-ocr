@@ -237,7 +237,7 @@ This delivers the core value: loading documents and comparing PDF with OCR in 2-
 ### Tasks:
 
 #### API Layer
-- [X] T057 [P] [US1] Create GET /api/documents/[documentId]/pages/[pageNumber]/pdf/route in app/api/documents/[documentId]/pages/[pageNumber]/pdf/route.ts
+- [X] T057 [P] [US1] Create GET /api/documents/[documentId]/pdf/route in app/api/documents/[documentId]/pdf/route.ts (client-side page extraction)
 - [X] T058 [P] [US1] Create GET /api/documents/[documentId]/pages/[pageNumber]/markdown/route in app/api/documents/[documentId]/pages/[pageNumber]/markdown/route.ts
 - [X] T059 [P] [US1] Create GET /api/documents/[documentId]/images/[...path]/route for markdown images
 - [X] T060 [P] [US1] Write integration tests for page content API routes in tests/integration/api/page-content.test.ts ✅ (20 tests: markdown endpoint, image endpoint, validation, security, errors)

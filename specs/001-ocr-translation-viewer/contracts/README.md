@@ -19,7 +19,7 @@ See `openapi.yaml` for the complete OpenAPI 3.1 specification.
 | `/api/documents` | GET | List all document sets | FR-007 |
 | `/api/documents/{id}` | GET | Get document details | FR-007, FR-011 |
 | `/api/documents/{id}/validate` | POST | Validate structure | FR-011, FR-014 |
-| `/api/documents/{id}/pages/{n}/pdf` | GET | Render PDF page | FR-001, FR-020 |
+| `/api/documents/{id}/pdf` | GET | Get complete PDF for client-side page extraction | FR-001, FR-020 |
 | `/api/documents/{id}/pages/{n}/markdown` | GET | Get markdown content | FR-002, FR-009, FR-021 |
 | `/api/documents/{id}/images/{lang}/{path}` | GET | Get markdown image | FR-010 |
 | `/api/viewer/state` | GET | Get viewer state | FR-003, FR-004 |
@@ -38,8 +38,8 @@ See `openapi.yaml` for the complete OpenAPI 3.1 specification.
 **Rationale**: API Routes better for caching and external access; Server Actions for form submissions
 
 ### 3. PDF Rendering Strategy
-**Decision**: Server-side render to base64 PNG data URL  
-**Rationale**: Avoids client-side PDF.js complexity; easier to cache; consistent rendering
+**Decision**: Client-side render using React-PDF (built on Mozilla's PDF.js)  
+**Rationale**: Clean React component API; efficient page-by-page rendering; Web Worker support for main thread performance; text layer support for accessibility
 
 ### 4. Image Serving
 **Decision**: Dedicated image endpoint with path parameter  
@@ -178,9 +178,11 @@ describe('Page Navigation', () => {
     
     expect(stateResponse.status).toBe(200);
     
-    // Fetch PDF page
-    const pdfResponse = await fetch('/api/documents/test-doc/pages/5/pdf');
+    // Fetch PDF (same URL for all pages - enables caching)
+    const pdfResponse = await fetch('/api/documents/test-doc/pdf');
     expect(pdfResponse.status).toBe(200);
+    
+    // Client-side react-pdf handles page extraction via <Page pageNumber={5} />
     
     // Fetch markdown page
     const mdResponse = await fetch('/api/documents/test-doc/pages/5/markdown?languageCode=en');

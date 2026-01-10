@@ -68,8 +68,15 @@ function PdfPaneComponent({
     queueMicrotask(() => setHighResReady(false));
   }, [pageNumber]);
 
-  // PDF URL
-  const pdfUrl = `/api/documents/${documentId}/pages/${pageNumber}/pdf`;
+  // PDF URL - same for all pages, enabling efficient browser caching
+  const pdfUrl = `/api/documents/${documentId}/pdf`;
+
+  // Handle HTTP errors (e.g., 422 for corrupted PDFs)
+  const httpSource = useMemo(() => ({
+    url: pdfUrl,
+    httpHeaders: {},
+    withCredentials: false,
+  }), [pdfUrl]);
 
   // Update container dimensions on resize
   useEffect(() => {
@@ -98,6 +105,7 @@ function PdfPaneComponent({
   // Handle document load error (FR-011b)
   function onDocumentLoadError(err: Error) {
     console.error('PDF load error:', err);
+
     setError('Cannot render PDF (file may be corrupted). Please verify the PDF file and re-scan if necessary.');
     setLoading(false);
     if (onLoadError) {
@@ -209,8 +217,8 @@ function PdfPaneComponent({
       {/* PDF Document */}
       {!error && (
         <Document
-          key={`${documentId}-${pageNumber}`}
-          file={pdfUrl}
+          key={documentId}
+          file={httpSource}
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
           loading={null}

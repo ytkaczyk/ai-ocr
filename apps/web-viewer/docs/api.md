@@ -135,38 +135,42 @@ Checks folder structure, file naming conventions, and page counts.
 
 ### Pages
 
-#### Get PDF Page Content
+#### Get PDF Content
 
 ```http
-GET /api/documents/{documentId}/pages/{pageNumber}/pdf
+GET /api/documents/{documentId}/pdf
 ```
 
-Renders a specific PDF page for display in the viewer.
+Retrieves the complete PDF file for client-side rendering with react-pdf. The same URL is used regardless of which page the user is viewing, enabling efficient browser and CDN caching.
 
 **Parameters**
 
 - `documentId` (path, required): Document identifier
-- `pageNumber` (path, required): Page number (1-based index)
-- `scale` (query, optional): Render scale factor (0.5-3.0, default: 1.0)
 
 **Response**
 
-```json
-{
-  "pageNumber": 5,
-  "width": 612,
-  "height": 792,
-  "pdfPath": "/data/contract-2024.pdf",
-  "scale": 1.0
-}
-```
+- **Status**: 200 OK
+- **Content-Type**: `application/pdf`
+- **Body**: Binary PDF file data
+- **Headers**:
+  - `X-Page-Count`: Total number of pages in the PDF
+  - `Cache-Control`: `public, max-age=86400, stale-while-revalidate=604800`
+
+**How Client-Side Page Extraction Works**
+
+1. Browser fetches PDF via this endpoint (cached after first request)
+2. React-PDF library loads the PDF in the browser
+3. `<Page pageNumber={n} />` component extracts and renders the requested page
+4. Users can navigate pages without additional server requests (page 1-7 all use same cached PDF)
 
 **Error Responses**
 
-- `400 Bad Request`: Invalid page number or scale
-- `404 Not Found`: Document or page does not exist
+- `400 Bad Request`: Invalid document ID format
+- `403 Forbidden`: Path traversal or symlink detected
+- `404 Not Found`: Document does not exist
 - `413 Payload Too Large`: PDF exceeds size limit
-- `500 Internal Server Error`: PDF rendering failed
+- `422 Unprocessable Entity`: PDF is corrupted or invalid
+- `500 Internal Server Error`: Server error while loading PDF
 
 ---
 

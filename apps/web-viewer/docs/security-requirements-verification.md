@@ -77,7 +77,7 @@ console.error(`[SECURITY] Symlink access attempt blocked: ${context} at ${filePa
 - Implementation: `lib/utils/file-system.ts` (lines 17-53)
 - Tests: `tests/integration/security.test.ts` (lines 138-153)
 - API Usage: 
-  - `app/api/documents/[documentId]/pages/[pageNumber]/pdf/route.ts` (line 55)
+  - `app/api/documents/[documentId]/pdf/route.ts` (line 55)
   - `app/api/documents/[documentId]/pages/[pageNumber]/markdown/route.ts` (line 92)
   - `app/api/documents/[documentId]/images/[...path]/route.ts` (line 80)
 
@@ -233,8 +233,8 @@ All API routes implement security measures:
    - ✅ Path traversal prevention
    - ✅ Error message sanitization
 
-3. **GET /api/documents/[documentId]/pages/[pageNumber]/pdf**
-   - ✅ Page number sanitization
+3. **GET /api/documents/[documentId]/pdf**
+   - ✅ Document ID validation
    - ✅ PDF file symlink rejection
    - ✅ Size limit validation (MAX_PDF_SIZE_MB)
 
