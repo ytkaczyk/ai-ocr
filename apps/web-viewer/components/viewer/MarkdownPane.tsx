@@ -180,7 +180,7 @@ function MarkdownPaneComponent({
       )}
 
       {/* Scrollable content area */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto" tabIndex={0} role="region" aria-label="Markdown content">
         {/* Loading state */}
         {loading && !error && !isPageMissing && (
           <div className="flex h-full items-center justify-center" role="status" aria-live="polite" aria-label="Loading markdown content">

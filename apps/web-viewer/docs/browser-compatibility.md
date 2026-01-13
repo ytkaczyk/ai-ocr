@@ -101,8 +101,11 @@ All E2E test suites run exclusively against Chrome (Chromium):
 ### Run Tests
 
 ```bash
-# Run all E2E tests (Chrome only)
+# Run all E2E tests (Chrome only, parallel execution)
 npm run test:e2e
+
+# Run E2E tests with single worker and dev server (for debugging)
+npm run test:e2e:single
 
 # Run tests for specific browser
 npx playwright test --project=chromium
