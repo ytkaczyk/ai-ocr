@@ -416,7 +416,8 @@ API routes are tested with:
 Run tests:
 ```bash
 npm run test                 # Integration tests
-npm run test:e2e             # E2E tests
+npm run test:e2e             # E2E tests (parallel, production build)
+npm run test:e2e:single      # E2E tests (single worker, dev server, for debugging)
 ```
 
 ## Support

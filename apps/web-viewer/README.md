@@ -136,7 +136,8 @@ npm run test         # Run unit/integration tests (Vitest)
 npm run test:watch   # Run tests in watch mode
 npm run test:ui      # Open Vitest UI
 npm run test:coverage # Generate coverage report
-npm run test:e2e     # Run E2E tests (Playwright)
+npm run test:e2e     # Run E2E tests (4 workers, production build)
+npm run test:e2e:single # Run E2E tests (1 worker, dev server)
 npm run test:e2e:ui  # Open Playwright UI
 npm run test:debug   # Debug tests with Node inspector
 ```
@@ -195,7 +196,8 @@ apps/web-viewer/
 Run the full test suite:
 ```bash
 npm test                 # Unit/integration tests
-npm run test:e2e         # E2E tests
+npm run test:e2e         # E2E tests (parallel, production build)
+npm run test:e2e:single  # E2E tests (single worker, dev server, for debugging)
 npm run test:coverage    # With coverage report
 ```
 
@@ -207,8 +209,8 @@ npm run test:coverage    # With coverage report
 
 **Current Status:**
 - 375+ unit tests passing
-- 230+ E2E tests (204 passing, 26 skipped)
-- 88.7% E2E pass rate (Chrome)
+- 179 E2E tests (100% pass rate)
+- All tests run in Chrome (Chromium)
 
 ### Code Quality
 
