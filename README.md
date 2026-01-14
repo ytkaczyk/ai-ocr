@@ -142,7 +142,8 @@ Language codes must follow IETF BCP 47 format (e.g., `en-US`, `es-ES`, `fr-CA`).
 
 **Testing & Quality:**
 - 375+ unit tests passing
-- 230+ E2E tests (88.7% pass rate)
+- 179 E2E tests (100% pass rate)
+- All tests run in Chrome (Chromium)
 - TypeScript strict mode + ESLint (Airbnb config)
 - CI/CD pipeline with automated checks
 
