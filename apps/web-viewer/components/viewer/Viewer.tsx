@@ -44,6 +44,21 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   // Derive loading state - we're loading if we have an active ID but no document
   const loading = !!activeDocumentId && !document;
 
+  // Memoize available languages to prevent unnecessary re-renders
+  // Must be before early returns to comply with Rules of Hooks
+  const availableLanguageCodes = useMemo(
+    () => document?.availableLanguages.map((lang: { languageCode: string }) => lang.languageCode) || [],
+    [document?.availableLanguages]
+  );
+  
+  const availableLanguagesForSelector = useMemo(
+    () => document?.availableLanguages.map((lang: { languageCode: string; isRaw: boolean }) => ({
+      languageCode: lang.languageCode,
+      isRaw: lang.isRaw,
+    })) || [],
+    [document?.availableLanguages]
+  );
+
   // Initialize page from URL query parameter when document loads
   useEffect(() => {
     if (typeof window === 'undefined' || !document) return;
@@ -277,16 +292,6 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
     );
   }
 
-  // Detect available language versions for 3-pane mode (T090)
-  // FR-005: 3-pane mode requires at least 2 language versions
-  const availableLanguageCodes = document.availableLanguages.map((lang: { languageCode: string }) => lang.languageCode);
-  
-  // Build list of available languages with raw/processed info for language selector
-  const availableLanguagesForSelector = document.availableLanguages.map((lang: { languageCode: string; isRaw: boolean }) => ({
-    languageCode: lang.languageCode,
-    isRaw: lang.isRaw,
-  }));
-  
   // For 3-pane mode, determine source and target language codes
   // Strategy: Use raw version as source, processed version as target
   const rawVersion = document.availableLanguages.find((lang: { isRaw: boolean }) => lang.isRaw);
