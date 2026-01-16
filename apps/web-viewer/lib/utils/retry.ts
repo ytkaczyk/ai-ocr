@@ -9,10 +9,9 @@ export interface RetryOptions {
   delayMs?: number;
   backoffMultiplier?: number;
   shouldRetry?: (error: Error) => boolean;
-  fetchFn?: (url: string, init?: RequestInit) => Promise<Response>;
 }
 
-const DEFAULT_OPTIONS: Required<Omit<RetryOptions, 'fetchFn'>> = {
+const DEFAULT_OPTIONS: Required<RetryOptions> = {
   maxAttempts: 3,
   delayMs: 1000,
   backoffMultiplier: 2,
@@ -85,11 +84,9 @@ export async function retryFetch(
   init?: RequestInit,
   options: RetryOptions = {}
 ): Promise<Response> {
-  const fetchFn = options.fetchFn || fetch;
-  
   return retry(
     async () => {
-      const response = await fetchFn(url, init);
+      const response = await fetch(url, init);
       
       // Treat non-OK responses as errors for retry logic
       if (!response.ok && response.status >= 500) {
