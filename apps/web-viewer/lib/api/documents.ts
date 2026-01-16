@@ -155,35 +155,6 @@ export async function validateDocument(
 }
 
 /**
- * Fetch PDF page
- * @param documentId - The document ID
- * @param pageNumber - The page number
- * @param options - Optional request options including AbortSignal
- * @returns Blob containing the PDF page
- * @throws Error if the request fails
- */
-export async function fetchPdfPage(
-  documentId: string,
-  pageNumber: number,
-  options?: ApiRequestOptions
-): Promise<Blob> {
-  const response = await fetch(
-    `/api/documents/${encodeURIComponent(documentId)}/pages/${pageNumber}/pdf`,
-    {
-      method: 'GET',
-      signal: options?.signal,
-    }
-  );
-
-  if (!response.ok) {
-    const error: ApiError = await response.json();
-    throw new Error(error.message || 'Failed to fetch PDF page');
-  }
-
-  return response.blob();
-}
-
-/**
  * Fetch markdown page
  * @param documentId - The document ID
  * @param pageNumber - The page number

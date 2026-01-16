@@ -73,14 +73,13 @@ export function prefetchAdjacentPages(
     pagesToPrefetch.push(currentPage + 1);
   }
 
-  // Prefetch PDF and markdown for each adjacent page
+  // Prefetch markdown for each adjacent page
+  // Note: PDF is loaded entirely upfront, so no need to prefetch individual pages
   pagesToPrefetch.forEach((pageNumber) => {
-    const pdfUrl = `/api/documents/${encodeURIComponent(documentId)}/pages/${pageNumber}/pdf`;
     const markdownUrl = `/api/documents/${encodeURIComponent(documentId)}/pages/${pageNumber}/markdown?lang=${encodeURIComponent(languageCode)}`;
 
-    // Prefetch with slight delay between requests to avoid flooding
-    setTimeout(() => prefetchUrl(pdfUrl), 0);
-    setTimeout(() => prefetchUrl(markdownUrl), 50);
+    // Prefetch markdown content
+    setTimeout(() => prefetchUrl(markdownUrl), 0);
   });
 }
 
