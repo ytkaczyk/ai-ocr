@@ -268,7 +268,7 @@ Addressed review feedback:
 
 All quality gates passing:
 - Build: ✓
-- Lint: ✓  
+- Lint: ✓
 - Unit tests: ✓
 - E2E tests: ✓
 
