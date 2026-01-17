@@ -528,8 +528,9 @@ Found 6 review comments from Gemini and Copilot
 
 **Step 3**: Analyze
 ```
-Critical (1): TTL race condition
-Important (5): Dead code, response bugs, cleanup races, cache key issues, missing tests
+Critical (2): TTL race condition, Response cloning bug
+Important (3): Dead code, cleanup races, cache key issues
+Suggestions (1): Missing test coverage
 ```
 
 **Step 4**: Confirm with user
@@ -572,7 +573,7 @@ git push origin remove-extra-api-calls
 
 **Step 9**: Mark conversations as resolved
 ```
-Marked 5 review threads as resolved (all addressed by removing dead code)
+Marked 6 review threads as resolved (all addressed by removing dead code)
 Added summary comment to PR explaining what was fixed
 ```
 
