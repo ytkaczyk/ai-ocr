@@ -46,17 +46,18 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
 
   // Memoize available languages to prevent unnecessary re-renders
   // Must be before early returns to comply with Rules of Hooks
-  const availableLanguageCodes = useMemo(
-    () => document?.availableLanguages.map((lang: { languageCode: string }) => lang.languageCode) || [],
-    [document?.availableLanguages]
-  );
-  
+  // Compute full object first, then derive codes from it to avoid double iteration
   const availableLanguagesForSelector = useMemo(
-    () => document?.availableLanguages.map((lang: { languageCode: string; isRaw: boolean }) => ({
+    () => document?.availableLanguages.map((lang) => ({
       languageCode: lang.languageCode,
       isRaw: lang.isRaw,
     })) || [],
     [document?.availableLanguages]
+  );
+
+  const availableLanguageCodes = useMemo(
+    () => availableLanguagesForSelector.map((lang) => lang.languageCode),
+    [availableLanguagesForSelector]
   );
 
   // Initialize page from URL query parameter when document loads

@@ -78,8 +78,8 @@ export function prefetchAdjacentPages(
   pagesToPrefetch.forEach((pageNumber) => {
     const markdownUrl = `/api/documents/${encodeURIComponent(documentId)}/pages/${pageNumber}/markdown?lang=${encodeURIComponent(languageCode)}`;
 
-    // Prefetch markdown content
-    setTimeout(() => prefetchUrl(markdownUrl), 0);
+    // prefetchUrl already uses requestIdleCallback for non-blocking behavior
+    prefetchUrl(markdownUrl);
   });
 }
 
