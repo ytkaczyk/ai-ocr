@@ -47,21 +47,30 @@ Use this skill when you:
 **Use GitHub MCP tools to get feedback:**
 
 ```typescript
+// TypeScript function signature for the MCP tool
+declare function mcp_github_pull_request_read(params: {
+  method: "get_review_comments" | "get_reviews";
+  owner: string;
+  repo: string;
+  pullNumber: number;
+}): Promise<unknown>;
+
+// Usage examples:
 // Get review comments (line-specific feedback)
-mcp_github_pull_request_read({
+await mcp_github_pull_request_read({
   method: "get_review_comments",
-  owner: "owner",
-  repo: "repo", 
-  pullNumber: prNumber
-})
+  owner: "ytkaczyk",
+  repo: "ai-ocr",
+  pullNumber: 35,
+});
 
 // Get general reviews (approval, changes requested, comments)
-mcp_github_pull_request_read({
+await mcp_github_pull_request_read({
   method: "get_reviews",
-  owner: "owner",
-  repo: "repo",
-  pullNumber: prNumber
-})
+  owner: "ytkaczyk",
+  repo: "ai-ocr",
+  pullNumber: 35,
+});
 ```
 
 ### Step 3: Analyze and Categorize Feedback
