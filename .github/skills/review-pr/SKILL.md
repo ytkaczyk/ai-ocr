@@ -579,8 +579,8 @@ Added summary comment to PR explaining what was fixed
 
 ```bash
 # Fetch PR review comments
-mcp_github_pull_request_read(method: "get_review_comments", ...)
-mcp_github_pull_request_read(method: "get_reviews", ...)
+mcp_github_pull_request_read get_review_comments ...
+mcp_github_pull_request_read get_reviews ...
 
 # Validate changes (ALL REQUIRED - NO EXCEPTIONS)
 npm run build      # ✓ Must pass
