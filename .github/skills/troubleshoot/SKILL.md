@@ -305,7 +305,7 @@ if (loading) return <Spinner />;
 
 **What to Record**:
 - Exact steps to reproduce
-- Observed behavior vs expected behavior  
+- Observed behavior vs expected behavior
 - Evidence gathered (console errors, network logs)
 - Root cause identified
 - Fix applied
