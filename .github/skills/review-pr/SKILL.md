@@ -584,7 +584,7 @@ mcp_github_pull_request_read get_reviews ...
 
 # Validate changes (ALL REQUIRED - NO EXCEPTIONS)
 npm run build      # ✓ Must pass
-npm run lint       # ✓ Must pass  
+npm run lint       # ✓ Must pass
 npm run test       # ✓ Must pass
 npm run test:e2e   # ✓ Must pass
 
