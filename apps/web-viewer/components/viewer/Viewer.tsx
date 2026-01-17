@@ -46,19 +46,15 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
 
   // Memoize available languages to prevent unnecessary re-renders
   // Must be before early returns to comply with Rules of Hooks
-  // Compute full object first, then derive codes from it to avoid double iteration
-  const availableLanguagesForSelector = useMemo(
-    () => document?.availableLanguages.map((lang) => ({
+  // Compute both values in single useMemo to avoid overhead and group related logic
+  const [availableLanguagesForSelector, availableLanguageCodes] = useMemo(() => {
+    const languages = document?.availableLanguages.map((lang) => ({
       languageCode: lang.languageCode,
       isRaw: lang.isRaw,
-    })) || [],
-    [document?.availableLanguages]
-  );
-
-  const availableLanguageCodes = useMemo(
-    () => availableLanguagesForSelector.map((lang) => lang.languageCode),
-    [availableLanguagesForSelector]
-  );
+    })) || [];
+    const codes = languages.map((lang) => lang.languageCode);
+    return [languages, codes];
+  }, [document?.availableLanguages]);
 
   // Initialize page from URL query parameter when document loads
   useEffect(() => {
