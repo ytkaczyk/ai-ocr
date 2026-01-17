@@ -349,7 +349,7 @@ if (loading) return <Spinner />;
 // Before
 const email = form.email.value.trim();
 
-// After  
+// After
 const email = form.email?.value?.trim() || '';
 ```
 
