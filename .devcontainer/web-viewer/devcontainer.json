@@ -1,0 +1,81 @@
+{
+  "name": "OCR Translation Viewer",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // TypeScript & JavaScript
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+
+        // Framework specific
+        "bradlc.vscode-tailwindcss",
+
+        // Testing
+        "ms-playwright.playwright",
+        "vitest.explorer",
+
+        // Security
+        "snyk-security.snyk-vulnerability-scanner",
+
+        // Git
+        "eamodio.gitlens",
+
+        // General development
+        "github.copilot",
+        "github.copilot-chat",
+        "ms-vscode.vscode-typescript-next",
+        "christian-kohler.npm-intellisense",
+        "christian-kohler.path-intellisense",
+
+        // Code Quality & Reviews
+        "codecov.codecov",
+        "coderabbit.coderabbit-vscode",
+        "anthropic.claude-code"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "eslint.validate": [
+          "javascript",
+          "javascriptreact",
+          "typescript",
+          "typescriptreact"
+        ],
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "playwright.reuseBrowser": true,
+        "playwright.showTrace": true
+      }
+    }
+  },
+
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Next.js Dev Server",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "postCreateCommand": "cd apps/web-viewer && npm install && npx playwright install chromium",
+
+  "postStartCommand": "cd apps/web-viewer && npm run postinstall",
+
+  "remoteUser": "node",
+
+  "mounts": [
+    "source=${localWorkspaceFolder}/.next,target=${containerWorkspaceFolder}/.next,type=bind,consistency=cached",
+    "source=${localWorkspaceFolder}/node_modules,target=${containerWorkspaceFolder}/node_modules,type=bind,consistency=cached"
+  ]
+}

@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    volumes:
+      - ..:/workspaces/web-viewer:cached
+      - node_modules:/workspaces/web-viewer/node_modules
+      - next_cache:/workspaces/web-viewer/.next
+    
+    ports:
+      - "3000:3000"
+    
+    command: sleep infinity
+    
+    environment:
+      - NODE_ENV=development
+
+volumes:
+  node_modules:
+  next_cache:
