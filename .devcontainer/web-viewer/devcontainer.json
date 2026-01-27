@@ -1,5 +1,6 @@
 {
   "name": "OCR Translation Viewer",
+  "workspaceFolder": "/workspaces/ai-ocr/apps/web-viewer",
   "build": {
     "dockerfile": "Dockerfile"
   },
@@ -68,14 +69,13 @@
     }
   },
 
-  "postCreateCommand": "cd apps/web-viewer && npm install && npx playwright install chromium",
+  "postCreateCommand": "npm install && npx playwright install chromium",
 
-  "postStartCommand": "cd apps/web-viewer && npm run postinstall",
+  "postStartCommand": "npm run postinstall",
 
-  "remoteUser": "node",
+  "remoteEnv": {
+    "NODE_OPTIONS": ""
+  },
 
-  "mounts": [
-    "source=${localWorkspaceFolder}/.next,target=${containerWorkspaceFolder}/.next,type=bind,consistency=cached",
-    "source=${localWorkspaceFolder}/node_modules,target=${containerWorkspaceFolder}/node_modules,type=bind,consistency=cached"
-  ]
+  "remoteUser": "node"
 }

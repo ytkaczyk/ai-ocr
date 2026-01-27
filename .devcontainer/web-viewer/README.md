@@ -7,7 +7,7 @@ This dev container provides a fully configured, reproducible development environ
 The dev container uses:
 
 - **Base Image**: Microsoft's TypeScript-Node devcontainer (Node.js 22 LTS on Debian Bookworm)
-- **Container Runtime**: Docker with Docker Compose for volume management
+- **Container Runtime**: Docker with volume management
 - **Package Manager**: npm with automatic dependency installation
 - **Browser Testing**: Playwright with Chromium pre-installed
 
@@ -58,7 +58,7 @@ The dev container automatically configures VS Code with:
 
 ### Pre-installed Tools
 
-- **Node.js 22** (LTS) - JavaScript runtime
+- **Node.js 22** - JavaScript runtime
 - **npm** - Package manager
 - **Git** - Version control
 - **GitHub CLI** (`gh`) - GitHub integration from terminal
@@ -72,8 +72,8 @@ The container uses Docker volumes for optimal performance:
 - **node_modules volume**: Persists dependencies between rebuilds
 - **next_cache volume**: Persists Next.js build cache for faster rebuilds
 - **Workspace bind mount**: Syncs your local code with the container
-
-## Getting Started
+- Edit `.devcontainer/web-viewer/devcontainer.json` for VS Code settings and extensions
+- Edit `.devcontainer/web-viewer/Dockerfile` for additional tools or dependencies
 
 ### Prerequisites
 
@@ -209,7 +209,6 @@ You can also use the VS Code extensions:
 .devcontainer/web-viewer/
 ├── devcontainer.json      # Main configuration
 ├── Dockerfile             # Container image definition
-├── docker-compose.yml     # Volume and service configuration
 └── README.md             # This file
 ```
 
@@ -272,12 +271,13 @@ FROM mcr.microsoft.com/devcontainers/typescript-node:1-20-bookworm
 
 ### Adding Environment Variables
 
-Edit `.devcontainer/docker-compose.yml`:
+Edit `.devcontainer/devcontainer.json`:
 
-```yaml
-environment:
-  - NODE_ENV=development
-  - YOUR_VAR=value
+```jsonc
+"containerEnv": {
+  "NODE_ENV": "development",
+  "YOUR_VAR": "value"
+}
 ```
 
 Or create a `.env` file in the workspace root (make sure it's in `.gitignore`).
@@ -364,9 +364,9 @@ whoami  # Should show 'node'
 **Solutions**:
 
 1. Check Docker Desktop logs
-2. Ensure `docker-compose.yml` has `command: sleep infinity`
-3. Review container logs: `docker logs <container-id>`
-4. Verify no syntax errors in config files
+2. Review container logs: `docker logs <container-id>`
+3. Verify no syntax errors in `devcontainer.json` or `Dockerfile`
+4. Rebuild container: `F1` → "Dev Containers: Rebuild Container"
 
 ### Git Line Ending Issues
 
