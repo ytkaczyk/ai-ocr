@@ -21,23 +21,60 @@ A Next.js web application for comparing original PDF documents with their OCR-ex
 
 ### Installation
 
+#### Option 1: Dev Container (Recommended)
+
+The easiest way to get started with a fully configured environment:
+
+1. **Prerequisites**:
+   - [Docker Desktop](https://www.docker.com/products/docker-desktop) installed and running
+   - [VS Code](https://code.visualstudio.com/) with [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+
+2. **Clone and open**:
+
+   ```bash
+   git clone https://github.com/ytkaczyk/ai-ocr.git
+   cd ai-ocr
+   code .
+   ```
+
+3. **Start dev container**:
+   - VS Code will prompt to "Reopen in Container"
+   - Or press `F1` → "Dev Containers: Reopen in Container"
+   - Wait for container to build (5-10 minutes first time)
+
+4. **Configure and run**:
+   ```bash
+   cd apps/web-viewer
+   cp .env.example .env.local
+   # Edit .env.local with your data folder path
+   npm run dev
+   ```
+
+See [.devcontainer/web-viewer/README.md](../../.devcontainer/web-viewer/README.md) for full documentation.
+
+#### Option 2: Local Installation
+
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/ytkaczyk/ai-ocr.git
 cd ai-ocr/apps/web-viewer
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Configure environment:
+
 ```bash
 cp .env.example .env.local
 ```
 
 Edit `.env.local` with your data folder path:
+
 ```bash
 DATA_FOLDER_PATH=/path/to/your/ocr-data
 MAX_PDF_SIZE_MB=50
@@ -45,6 +82,7 @@ MEMORY_LIMIT_MB=500
 ```
 
 4. Run the development server:
+
 ```bash
 npm run dev
 ```
@@ -70,6 +108,7 @@ data/
 ```
 
 **Requirements:**
+
 - Language codes must follow IETF BCP 47 format (e.g., `en-US`, `es-ES`, `fr-CA`)
 - Each page must have a corresponding markdown file
 - Processed content preferred over raw (use `processed/` prefix or no prefix)
@@ -78,10 +117,12 @@ data/
 ## Usage
 
 ### Document Selection
+
 1. Select a document from the list on the home page
 2. Click to load the document in 2-pane mode (PDF + OCR)
 
 ### Navigation
+
 - **Next/Previous Page**: Click buttons or use arrow keys (←/→)
 - **Jump to Page**: Click page number input and type page number
 - **First/Last Page**: Click first/last buttons or use Home/End keys
@@ -91,21 +132,25 @@ data/
   - `Tab`: Cycle through controls
 
 ### Mode Switching
+
 - **2-Pane Mode**: View PDF + OCR side-by-side
 - **3-Pane Mode**: View PDF + OCR + Translation (requires translation data)
 - Click mode toggle button or use `Ctrl+M` (Windows) / `Cmd+M` (Mac)
 
 ### Language Selection
+
 - Click language dropdown in each markdown pane header
 - Select language version (e.g., English, Spanish, French)
 - Toggle between processed and raw OCR output
 
 ### Pane Resizing
+
 - Drag divider between panes to adjust widths
 - Each pane supports 20%-80% width range
 - Double-click divider to reset to equal widths
 
 ### Zoom Controls (PDF Only)
+
 - **Zoom In/Out**: Click +/- buttons or use `Ctrl +/-`
 - **Zoom Presets**: Select from dropdown (50%, 75%, 100%, etc.)
 - **Fit Page**: Scale to fit entire page in view
@@ -114,6 +159,7 @@ data/
 ## Development
 
 ### Tech Stack
+
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript 5.3+
 - **UI Library**: React 19 + ShadCN UI + Tailwind CSS
@@ -194,6 +240,7 @@ apps/web-viewer/
 ### Testing
 
 Run the full test suite:
+
 ```bash
 npm test                 # Unit/integration tests
 npm run test:e2e         # E2E tests (parallel, production build)
@@ -202,12 +249,14 @@ npm run test:coverage    # With coverage report
 ```
 
 **Test Coverage Goals:**
+
 - API routes: 90%
 - Viewer components: 80%
 - Utility functions: 70%
 - UI components: 60%
 
 **Current Status:**
+
 - 375+ unit tests passing
 - 179 E2E tests (100% pass rate)
 - All tests run in Chrome (Chromium)
@@ -215,6 +264,7 @@ npm run test:coverage    # With coverage report
 ### Code Quality
 
 The project enforces code quality through:
+
 - **TypeScript**: Strict mode enabled
 - **ESLint**: Airbnb config with Next.js rules
 - **Prettier**: Consistent code formatting
@@ -231,9 +281,12 @@ The project enforces code quality through:
 
 ## Browser Support
 
-- **Recommended**: Chrome/Edge (current + 1 previous major version)
-- **Supported**: Firefox, Safari (latest versions)
+- **Supported**: Chrome/Chromium only (current + 1 previous major version)
+- **Testing**: All tests run in Chromium via Playwright
+- **Not Supported**: Firefox, Safari, Edge (may work but not tested)
 - **Mobile**: Not optimized (shows viewport warning)
+
+**Note**: The application is developed and tested exclusively in Chrome/Chromium. Other browsers may work but are not officially supported or tested.
 
 See [docs/browser-compatibility.md](./docs/browser-compatibility.md) for details.
 
@@ -246,6 +299,7 @@ See [docs/browser-compatibility.md](./docs/browser-compatibility.md) for details
 - **Memory Limit**: 500MB (configurable)
 
 Performance is monitored via:
+
 - Lighthouse CI (LCP threshold)
 - Memory pressure detection
 - Navigation timing metrics
@@ -253,6 +307,7 @@ Performance is monitored via:
 ## Accessibility
 
 WCAG 2.1 AA compliant with:
+
 - Keyboard navigation (no mouse required)
 - Screen reader support (ARIA labels, live regions)
 - Focus indicators on all interactive elements
@@ -260,6 +315,7 @@ WCAG 2.1 AA compliant with:
 - Semantic HTML with proper landmarks
 
 Tested with:
+
 - NVDA (Windows)
 - JAWS (Windows)
 - VoiceOver (macOS)
@@ -268,6 +324,7 @@ Tested with:
 ## Security
 
 Security features:
+
 - Path traversal prevention (server-side validation)
 - Filename validation (alphanumeric + hyphens/underscores only)
 - Symlink rejection
@@ -286,18 +343,23 @@ See [docs/deployment.md](./docs/deployment.md) for deployment instructions.
 ### Common Issues
 
 **Issue**: Document list is empty
+
 - **Solution**: Check `DATA_FOLDER_PATH` in `.env.local` points to valid directory with `.pdf` files
 
 **Issue**: PDF not rendering
+
 - **Solution**: Verify PDF size < `MAX_PDF_SIZE_MB` limit, check browser console for errors
 
 **Issue**: Markdown images not loading
+
 - **Solution**: Ensure image paths in markdown are relative to data folder
 
 **Issue**: Page navigation slow
+
 - **Solution**: Check document size (< 200 pages recommended), reduce PDF quality in settings
 
 **Issue**: Tests failing in CI
+
 - **Solution**: Verify test data fixtures exist, check Playwright browser installation
 
 ## License
@@ -315,6 +377,7 @@ See [LICENSE.txt](../../LICENSE.txt) for details.
 ## Support
 
 For issues or questions:
+
 1. Check [Troubleshooting](#troubleshooting) section
 2. Review [specification](../../specs/001-ocr-translation-viewer/spec.md)
 3. Search existing GitHub issues

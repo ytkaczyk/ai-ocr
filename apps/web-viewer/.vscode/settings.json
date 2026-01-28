@@ -1,24 +1,23 @@
 {
-    "chat.promptFilesRecommendations": {
-        "speckit.constitution": true,
-        "speckit.specify": true,
-        "speckit.plan": true,
-        "speckit.tasks": true,
-        "speckit.implement": true
-    },
-    "chat.tools.terminal.autoApprove": {
-        ".specify/scripts/bash/": true,
-        ".specify/scripts/powershell/": true
-    },
-    "css.lint.unknownAtRules": "ignore",
-    "css.customData": [".vscode/css-data.json"],
-    "files.associations": {
+  "chat.promptFilesRecommendations": {
+    "speckit.constitution": true,
+    "speckit.specify": true,
+    "speckit.plan": true,
+    "speckit.tasks": true,
+    "speckit.implement": true
+  },
+  "chat.tools.terminal.autoApprove": {
+    ".specify/scripts/bash/": true,
+    ".specify/scripts/powershell/": true
+  },
+  "css.lint.unknownAtRules": "ignore",
+  "css.customData": [".vscode/css-data.json"],
+  "files.associations": {
     ".env*": "dotenv"
-    },
-    "github.copilot.enable": {
-        "*": true,
-        // ...
-        "dotenv": false,
-    }
+  },
+  "github.copilot.enable": {
+    "*": true,
+    // ...
+    "dotenv": false
+  }
 }
-
