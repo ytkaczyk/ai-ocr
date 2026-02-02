@@ -31,6 +31,7 @@ vi.mock('lucide-react', () => ({
   AlertTriangle: () => React.createElement('svg', { 'data-testid': 'alert-triangle-icon' }),
   FileText: () => React.createElement('svg', { 'data-testid': 'file-text-icon' }),
   Monitor: () => React.createElement('svg', { 'data-testid': 'monitor-icon' }),
+  FileQuestion: () => React.createElement('svg', { 'data-testid': 'file-question-icon' }),
 }));
 
 // Suppress React 19 act() warnings from async child component updates
