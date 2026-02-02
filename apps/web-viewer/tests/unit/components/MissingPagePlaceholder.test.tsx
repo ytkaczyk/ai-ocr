@@ -267,6 +267,7 @@ describe('MissingPagePlaceholder', () => {
     it('applies custom background color to card', () => {
       const { container } = render(<MissingPagePlaceholder pageNumber={1} languageCode="en-US" />);
       
+      // Component uses inline style for specific gray background color
       const card = container.querySelector('.w-full.max-w-md');
       expect(card).toBeInTheDocument();
       expect(card).toHaveStyle({ backgroundColor: '#F3F4F6' });
@@ -369,6 +370,10 @@ describe('MissingPagePlaceholder', () => {
   });
 
   describe('Edge Cases', () => {
+    // These edge case tests verify the component doesn't crash with invalid inputs
+    // The component is display-only and doesn't validate inputs, which is acceptable
+    // since validation should happen at the API/data layer
+    
     it('handles page number 0', () => {
       render(<MissingPagePlaceholder pageNumber={0} languageCode="en-US" />);
       
@@ -393,11 +398,13 @@ describe('MissingPagePlaceholder', () => {
       expect(screen.getByText(/\be\b/i)).toBeInTheDocument();
     });
 
-    it('handles empty language code', () => {
+    it('handles empty language code gracefully', () => {
       render(<MissingPagePlaceholder pageNumber={1} languageCode="" />);
       
-      // Component should still render
+      // Component should still render without crashing
       expect(screen.getByText(/page 1 not available/i)).toBeInTheDocument();
+      // Empty language code results in message with extra spacing, but doesn't break
+      expect(screen.getByText(/this page was not found in the\s+translation/i)).toBeInTheDocument();
     });
 
     it('handles language code with special characters', () => {
