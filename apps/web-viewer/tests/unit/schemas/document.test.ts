@@ -117,6 +117,18 @@ describe('languageVersionSchema', () => {
     expect(result.success).toBe(false);
   });
 
+  it('should reject pageFiles with non-integer pageNumber', () => {
+    const mock = createMockLanguageVersion({
+      pageFiles: [
+        // @ts-expect-error - Testing invalid data
+        { ...createMockPageFile(), pageNumber: 1.5 },
+      ],
+    });
+    
+    const result = languageVersionSchema.safeParse(mock);
+    expect(result.success).toBe(false);
+  });
+
   it('should allow pageFiles with optional sizeBytes', () => {
     const withSize = createMockLanguageVersion({
       pageFiles: [createMockPageFile({ sizeBytes: 1024 })],
