@@ -68,6 +68,12 @@ describe('viewport utility', () => {
       mockWindowSize(3840, 2160);
       expect(getViewportWidth()).toBe(3840);
     });
+
+    it('returns 1920 for SSR when window is undefined', () => {
+      vi.stubGlobal('window', undefined);
+      expect(getViewportWidth()).toBe(1920);
+      vi.unstubAllGlobals();
+    });
   });
 
   describe('getViewportHeight', () => {
@@ -87,6 +93,12 @@ describe('viewport utility', () => {
     it('handles portrait orientation', () => {
       mockWindowSize(768, 1024);
       expect(getViewportHeight()).toBe(1024);
+    });
+
+    it('returns 1080 for SSR when window is undefined', () => {
+      vi.stubGlobal('window', undefined);
+      expect(getViewportHeight()).toBe(1080);
+      vi.unstubAllGlobals();
     });
   });
 
@@ -389,6 +401,22 @@ describe('viewport utility', () => {
         cleanupFn!();
       }).not.toThrow();
 
+      cleanupFn = null;
+    });
+
+    it('returns no-op function for SSR when window is undefined', () => {
+      vi.stubGlobal('window', undefined);
+      const callback = vi.fn();
+      
+      cleanupFn = createViewportListener(callback);
+      
+      // Should not throw when called
+      expect(() => cleanupFn!()).not.toThrow();
+      
+      // Callback should never be called
+      expect(callback).not.toHaveBeenCalled();
+      
+      vi.unstubAllGlobals();
       cleanupFn = null;
     });
   });

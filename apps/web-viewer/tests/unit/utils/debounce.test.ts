@@ -155,6 +155,21 @@ describe('debounce', () => {
       cancel();
       expect(func).not.toHaveBeenCalled();
     });
+
+    it('should reset timer on subsequent calls in debounceWithCancel', () => {
+      const func = vi.fn();
+      const { debounced } = debounceWithCancel(func, 100);
+
+      debounced('first');
+      vi.advanceTimersByTime(50);
+      debounced('second');
+      vi.advanceTimersByTime(50);
+      expect(func).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(50);
+      expect(func).toHaveBeenCalledTimes(1);
+      expect(func).toHaveBeenCalledWith('second');
+    });
   });
 
   describe('Debounce Constants (FR-024)', () => {

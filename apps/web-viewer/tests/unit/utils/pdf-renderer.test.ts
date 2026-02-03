@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { pdfjs } from 'react-pdf';
 
 /**
  * Unit tests for PDF renderer utilities
@@ -18,10 +19,14 @@ vi.mock('react-pdf', () => ({
 import {
   configurePdfWorker,
   calculatePdfScale,
+  getPdfPageDimensions,
   formatPdfDimensions,
   isNonStandardPdfSize,
   getPdfOrientation,
 } from '@/lib/utils/pdf-renderer';
+
+// Type for mocking PDF page proxy
+type MockPDFPageProxy = Pick<pdfjs.PDFPageProxy, 'getViewport'>;
 
 describe('pdf-renderer', () => {
   describe('configurePdfWorker', () => {
@@ -30,6 +35,37 @@ describe('pdf-renderer', () => {
       
       const { pdfjs } = await import('react-pdf');
       expect(pdfjs.GlobalWorkerOptions.workerSrc).toBe('/pdf.worker.mjs');
+    });
+  });
+
+  describe('getPdfPageDimensions', () => {
+    it('should get page dimensions from PDF page proxy', () => {
+      const mockPage: MockPDFPageProxy = {
+        getViewport: vi.fn(({ scale }: { scale: number }) => ({
+          width: 612 * scale,
+          height: 792 * scale,
+        })) as pdfjs.PDFPageProxy['getViewport'],
+      };
+
+      const dimensions = getPdfPageDimensions(mockPage as pdfjs.PDFPageProxy);
+
+      expect(mockPage.getViewport).toHaveBeenCalledWith({ scale: 1 });
+      expect(dimensions.width).toBe(612);
+      expect(dimensions.height).toBe(792);
+    });
+
+    it('should get dimensions for landscape page', () => {
+      const mockPage: MockPDFPageProxy = {
+        getViewport: vi.fn(({ scale }: { scale: number }) => ({
+          width: 792 * scale,
+          height: 612 * scale,
+        })) as pdfjs.PDFPageProxy['getViewport'],
+      };
+
+      const dimensions = getPdfPageDimensions(mockPage as pdfjs.PDFPageProxy);
+
+      expect(dimensions.width).toBe(792);
+      expect(dimensions.height).toBe(612);
     });
   });
 
