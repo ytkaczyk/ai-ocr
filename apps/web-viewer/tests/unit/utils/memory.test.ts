@@ -186,6 +186,30 @@ describe('memory', () => {
       consoleWarnSpy.mockRestore();
     });
 
+    it('should handle monitoring when performance.memory is unavailable', () => {
+      vi.useFakeTimers();
+      
+      // Create a performance object without memory property
+      const mockPerformance = {} as Performance;
+      vi.stubGlobal('window', { performance: mockPerformance });
+      vi.stubGlobal('performance', mockPerformance);
+      
+      manager = new MemoryManager();
+      
+      // This should start monitoring successfully (window and performance exist)
+      // but checkMemory() should exit early because getStats() returns null
+      manager.startMonitoring();
+      
+      // Advance timer to trigger checkMemory
+      vi.advanceTimersByTime(30000);
+      
+      // Should not crash and should be able to stop monitoring
+      manager.stopMonitoring();
+      
+      vi.restoreAllMocks();
+      vi.useRealTimers();
+    });
+
     it('should handle cleanup callback errors gracefully', () => {
       vi.useFakeTimers();
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
