@@ -90,7 +90,10 @@ describe('PdfPane', () => {
       unobserve: vi.fn(),
       disconnect: vi.fn(),
     };
-    global.ResizeObserver = vi.fn(() => resizeObserverMock) as unknown as typeof ResizeObserver;
+    global.ResizeObserver = vi.fn(function ResizeObserverMock(callback: ResizeObserverCallback) {
+      resizeObserverMock.callback = callback;
+      return resizeObserverMock as unknown as ResizeObserver;
+    }) as unknown as typeof ResizeObserver;
 
     // Mock window.addEventListener for resize
     const originalAddEventListener = window.addEventListener;
@@ -711,11 +714,10 @@ describe('PdfPane', () => {
     it('should update dimensions when container resizes via ResizeObserver', async () => {
       // Track ResizeObserver callbacks
       const resizeCallbacks: Array<(entries: Array<{ contentRect: { width: number; height: number } }>) => void> = [];
-      global.ResizeObserver = vi
-        .fn(function ResizeObserver(callback) {
-          resizeCallbacks.push(callback);
-          return resizeObserverMock;
-        }) as unknown as typeof ResizeObserver;
+      global.ResizeObserver = vi.fn(function ResizeObserver(callback: ResizeObserverCallback) {
+        resizeCallbacks.push(callback);
+        return resizeObserverMock as unknown as ResizeObserver;
+      }) as unknown as typeof ResizeObserver;
 
       // Provide initial size
       Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
@@ -743,7 +745,7 @@ describe('PdfPane', () => {
 
       // Simulate resize observer callback with new size
       resizeCallbacks.forEach((cb) =>
-        cb([{ contentRect: { width: 1000, height: 700 } } as any])
+        cb([{ contentRect: { width: 1000, height: 700 } } as ResizeObserverEntry])
       );
 
       // Expect a re-render (mockPage called again) reflecting new scale calculation path
