@@ -48,9 +48,7 @@ describe('ViewportWarning', () => {
       vi.spyOn(viewportUtils, 'getViewportSize').mockReturnValue('mobile');
       vi.spyOn(viewportUtils, 'getViewportSizeName').mockReturnValue('Mobile');
       
-      let listenerCallback: ((size: ReturnType<typeof viewportUtils.getViewportSize>) => void) | undefined;
       vi.spyOn(viewportUtils, 'createViewportListener').mockImplementation((callback) => {
-        listenerCallback = callback;
         // Call the callback immediately to set the viewport size
         callback('mobile');
         return mockCleanup;
