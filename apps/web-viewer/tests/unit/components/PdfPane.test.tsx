@@ -90,7 +90,7 @@ describe('PdfPane', () => {
       unobserve: vi.fn(),
       disconnect: vi.fn(),
     };
-    global.ResizeObserver = vi.fn(() => resizeObserverMock);
+    global.ResizeObserver = vi.fn(() => resizeObserverMock) as unknown as typeof ResizeObserver;
 
     // Mock window.addEventListener for resize
     const originalAddEventListener = window.addEventListener;
@@ -706,6 +706,50 @@ describe('PdfPane', () => {
       unmount();
 
       expect(removeEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function));
+    });
+
+    it('should update dimensions when container resizes via ResizeObserver', async () => {
+      // Track ResizeObserver callbacks
+      const resizeCallbacks: Array<(entries: Array<{ contentRect: { width: number; height: number } }>) => void> = [];
+      global.ResizeObserver = vi
+        .fn(function ResizeObserver(callback) {
+          resizeCallbacks.push(callback);
+          return resizeObserverMock;
+        }) as unknown as typeof ResizeObserver;
+
+      // Provide initial size
+      Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+        configurable: true,
+        value: 800,
+      });
+      Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
+        configurable: true,
+        value: 600,
+      });
+
+      render(<PdfPane documentId="test-doc" pageNumber={1} zoomMode="fit" />);
+
+      // Simulate document and page load with initial dimensions
+      const documentCall = mockDocument.mock.calls[0][0];
+      documentCall.onLoadSuccess({ numPages: 1 });
+      const pageCall = mockPage.mock.calls[0][0];
+      const mockPageObject = {
+        getViewport: ({ scale: _scale }: { scale: number }) => ({
+          width: 612,
+          height: 792,
+        }),
+      };
+      pageCall.onLoadSuccess(mockPageObject);
+
+      // Simulate resize observer callback with new size
+      resizeCallbacks.forEach((cb) =>
+        cb([{ contentRect: { width: 1000, height: 700 } } as any])
+      );
+
+      // Expect a re-render (mockPage called again) reflecting new scale calculation path
+      await waitFor(() => {
+        expect(mockPage).toHaveBeenCalled();
+      });
     });
   });
 

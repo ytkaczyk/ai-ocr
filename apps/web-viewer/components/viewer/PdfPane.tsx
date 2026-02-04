@@ -88,8 +88,26 @@ function PdfPaneComponent({
     };
 
     updateDimensions();
+
+    // Listen for window resizes (e.g., viewport changes)
     window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+
+    // Listen for container resizes (e.g., splitter drag)
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && containerRef.current) {
+      resizeObserver = new ResizeObserver((entries) => {
+        const entry = entries[0];
+        const { width, height } = entry?.contentRect ?? { width: 0, height: 0 };
+        setContainerWidth(width || containerRef.current?.clientWidth || 0);
+        setContainerHeight(height || containerRef.current?.clientHeight || 0);
+      });
+      resizeObserver.observe(containerRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateDimensions);
+      resizeObserver?.disconnect();
+    };
   }, []);
 
   // Handle document load success
