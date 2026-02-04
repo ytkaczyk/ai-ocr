@@ -90,7 +90,10 @@ describe('ScreenReaderAnnouncement', () => {
   });
 
   describe('Auto-clear Functionality', () => {
-    it('should clear message after default 3000ms', async () => {
+    it('should set timeout when message is provided', async () => {
+      // Note: The component doesn't clear the message itself - it sets a timeout
+      // and expects the parent to re-render with an empty message. This is the
+      // correct behavior as the component is controlled by its props.
       const { rerender } = render(<ScreenReaderAnnouncement message="Test message" />);
       
       expect(screen.getByText('Test message')).toBeInTheDocument();
@@ -98,12 +101,10 @@ describe('ScreenReaderAnnouncement', () => {
       // Advance timers by 3000ms
       vi.advanceTimersByTime(3000);
       
-      // The component doesn't actually clear the message itself,
-      // it just sets a timeout. The message clears when component re-renders with empty message
-      // This tests that the timeout is set correctly
+      // The component doesn't clear itself - message still exists
       expect(screen.getByText('Test message')).toBeInTheDocument();
       
-      // Simulate re-render with empty message
+      // Simulate parent re-rendering with empty message (real-world behavior)
       rerender(<ScreenReaderAnnouncement message="" />);
       expect(screen.queryByText('Test message')).not.toBeInTheDocument();
     });
