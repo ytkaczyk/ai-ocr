@@ -1,7 +1,6 @@
 'use client';
 
-import { ZoomIn, ZoomOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -20,8 +19,6 @@ import type { ZoomMode } from '@/lib/schemas/viewer';
 interface ZoomControlsProps {
   zoomLevel: number;
   zoomMode: ZoomMode;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
   onZoomChange: (level: number, mode: ZoomMode) => void;
   className?: string;
   disabled?: boolean;
@@ -41,8 +38,6 @@ const ZOOM_PRESETS = [
 export function ZoomControls({
   zoomLevel,
   zoomMode,
-  onZoomIn,
-  onZoomOut,
   onZoomChange,
   className = '',
   disabled = false,
@@ -76,22 +71,12 @@ export function ZoomControls({
   return (
     <div
       data-testid="zoom-controls"
-      className={`flex items-center gap-1 ${className}`}
+      className={`flex items-center gap-2 ${className}`}
       role="group"
       aria-label="PDF zoom controls"
     >
-      {/* Zoom Out Button */}
-      <Button
-        data-testid="zoom-out"
-        variant="ghost"
-        size="icon"
-        onClick={onZoomOut}
-        disabled={disabled || zoomMode !== 'percentage' || zoomLevel <= 0.1}
-        aria-label="Zoom out"
-        title="Zoom out (decrease by 10%)"
-      >
-        <ZoomOut className="h-4 w-4" />
-      </Button>
+      {/* Magnifier Icon */}
+      <Search className="h-3.5 w-3.5 text-muted-foreground" />
 
       {/* Zoom Level Dropdown */}
       <Select
@@ -114,19 +99,6 @@ export function ZoomControls({
           ))}
         </SelectContent>
       </Select>
-
-      {/* Zoom In Button */}
-      <Button
-        data-testid="zoom-in"
-        variant="ghost"
-        size="icon"
-        onClick={onZoomIn}
-        disabled={disabled || zoomMode !== 'percentage' || zoomLevel >= 5}
-        aria-label="Zoom in"
-        title="Zoom in (increase by 10%)"
-      >
-        <ZoomIn className="h-4 w-4" />
-      </Button>
     </div>
   );
 }

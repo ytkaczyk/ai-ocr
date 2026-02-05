@@ -56,7 +56,7 @@ export function PaneContainer({
   availableLanguages = [],
   className = '',
 }: PaneContainerProps) {
-  const { panes, updatePaneWidth, setPaneLanguage, setPaneZoom, zoomIn, zoomOut } = useViewerStore();
+  const { panes, updatePaneWidth, setPaneLanguage, setPaneZoom } = useViewerStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const [resizing, setResizing] = useState(false);
   const [resizeStartX, setResizeStartX] = useState(0);
@@ -122,9 +122,7 @@ export function PaneContainer({
   // Render pane content based on type
   const renderPane = useCallback((pane: typeof panes[0]) => {
     if (pane.contentType === 'pdf') {
-      // Zoom handlers for PDF pane
-      const handleZoomIn = () => zoomIn(pane.id);
-      const handleZoomOut = () => zoomOut(pane.id);
+      // Zoom handler for PDF pane
       const handleZoomChange = (level: number, mode: ZoomMode) => {
         setPaneZoom(pane.id, level, mode);
       };
@@ -136,8 +134,6 @@ export function PaneContainer({
             pageNumber={currentPage}
             zoomLevel={pane.zoomLevel}
             zoomMode={pane.zoomMode}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
             onZoomChange={handleZoomChange}
             className="h-full"
           />

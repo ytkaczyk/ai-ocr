@@ -11,8 +11,6 @@ describe('PdfToolbar', () => {
   const mockProps = {
     zoomLevel: 1,
     zoomMode: 'percentage' as const,
-    onZoomIn: vi.fn(),
-    onZoomOut: vi.fn(),
     onZoomChange: vi.fn(),
   };
 
@@ -28,8 +26,6 @@ describe('PdfToolbar', () => {
       render(<PdfToolbar {...mockProps} />);
       
       expect(screen.getByTestId('zoom-controls')).toBeInTheDocument();
-      expect(screen.getByTestId('zoom-in')).toBeInTheDocument();
-      expect(screen.getByTestId('zoom-out')).toBeInTheDocument();
       expect(screen.getByTestId('zoom-select')).toBeInTheDocument();
     });
 
@@ -68,18 +64,14 @@ describe('PdfToolbar', () => {
     it('should forward disabled state to ZoomControls', () => {
       render(<PdfToolbar {...mockProps} disabled={true} />);
       
-      const zoomInButton = screen.getByTestId('zoom-in');
-      const zoomOutButton = screen.getByTestId('zoom-out');
+      const zoomSelect = screen.getByTestId('zoom-select');
       
-      expect(zoomInButton).toBeDisabled();
-      expect(zoomOutButton).toBeDisabled();
+      expect(zoomSelect).toBeDisabled();
     });
 
     it('should forward event handlers to ZoomControls', () => {
       const handlers = {
         ...mockProps,
-        onZoomIn: vi.fn(),
-        onZoomOut: vi.fn(),
         onZoomChange: vi.fn(),
       };
       
@@ -95,8 +87,8 @@ describe('PdfToolbar', () => {
     it('should use default disabled value of false', () => {
       render(<PdfToolbar {...mockProps} />);
       
-      const zoomInButton = screen.getByTestId('zoom-in');
-      expect(zoomInButton).not.toBeDisabled();
+      const zoomSelect = screen.getByTestId('zoom-select');
+      expect(zoomSelect).not.toBeDisabled();
     });
 
     it('should use default className value of empty string', () => {

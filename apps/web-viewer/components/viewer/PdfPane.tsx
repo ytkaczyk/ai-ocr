@@ -33,8 +33,6 @@ interface PdfPaneProps {
   pageNumber: number;
   zoomLevel?: number;
   zoomMode?: ZoomMode;
-  onZoomIn?: () => void;
-  onZoomOut?: () => void;
   onZoomChange?: (level: number, mode: ZoomMode) => void;
   onLoadSuccess?: (pageCount: number) => void;
   onLoadError?: (error: Error) => void;
@@ -46,8 +44,6 @@ function PdfPaneComponent({
   pageNumber,
   zoomLevel = 1,
   zoomMode = 'fit',
-  onZoomIn,
-  onZoomOut,
   onZoomChange,
   onLoadSuccess,
   onLoadError,
@@ -188,12 +184,10 @@ function PdfPaneComponent({
   return (
     <div className={`pdf-pane relative flex flex-col h-full bg-background ${className}`} role="region" aria-label="PDF viewer pane">
       {/* Toolbar with zoom controls */}
-      {onZoomIn && onZoomOut && onZoomChange && (
+      {onZoomChange && (
         <PdfToolbar
           zoomLevel={zoomLevel}
           zoomMode={zoomMode}
-          onZoomIn={onZoomIn}
-          onZoomOut={onZoomOut}
           onZoomChange={onZoomChange}
           disabled={loading || !!error}
         />
@@ -296,8 +290,6 @@ export const PdfPane = memo(PdfPaneComponent, (prevProps, nextProps) => {
     prevProps.pageNumber === nextProps.pageNumber &&
     prevProps.zoomLevel === nextProps.zoomLevel &&
     prevProps.zoomMode === nextProps.zoomMode &&
-    prevProps.onZoomIn === nextProps.onZoomIn &&
-    prevProps.onZoomOut === nextProps.onZoomOut &&
     prevProps.onZoomChange === nextProps.onZoomChange
   );
 });
