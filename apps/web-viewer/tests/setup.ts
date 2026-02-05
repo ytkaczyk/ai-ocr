@@ -25,6 +25,7 @@ vi.mock('lucide-react', () => ({
   ChevronUp: () => React.createElement('svg', { 'data-testid': 'chevron-up-icon' }),
   Check: () => React.createElement('svg', { 'data-testid': 'check-icon' }),
   Globe: () => React.createElement('svg', { 'data-testid': 'globe-icon' }),
+  Search: () => React.createElement('svg', { 'data-testid': 'search-icon' }),
   ZoomIn: () => React.createElement('svg', { 'data-testid': 'zoom-in-icon' }),
   ZoomOut: () => React.createElement('svg', { 'data-testid': 'zoom-out-icon' }),
   Info: () => React.createElement('svg', { 'data-testid': 'info-icon' }),

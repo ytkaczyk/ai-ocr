@@ -310,8 +310,8 @@ describe('PdfPane', () => {
       );
 
       // During loading, toolbar should be disabled
-      const zoomInBtn = screen.getByTestId('toolbar-zoom-in');
-      expect(zoomInBtn).toBeDisabled();
+      const zoomChangeBtn = screen.getByTestId('toolbar-zoom-change');
+      expect(zoomChangeBtn).toBeDisabled();
     });
 
     it('should disable toolbar when error occurs', async () => {
@@ -330,8 +330,8 @@ describe('PdfPane', () => {
       documentCall.onLoadError(new Error('Test error'));
 
       await waitFor(() => {
-        const zoomInBtn = screen.getByTestId('toolbar-zoom-in');
-        expect(zoomInBtn).toBeDisabled();
+        const zoomChangeBtn = screen.getByTestId('toolbar-zoom-change');
+        expect(zoomChangeBtn).toBeDisabled();
       });
     });
   });

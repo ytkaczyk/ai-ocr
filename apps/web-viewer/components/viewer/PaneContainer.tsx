@@ -179,7 +179,7 @@ export function PaneContainer({
       );
     }
     return null;
-  }, [documentId, currentPage, languageCode, sourceLanguageCode, targetLanguageCode, availableLanguages, setPaneLanguage, setPaneZoom, zoomIn, zoomOut]);
+  }, [documentId, currentPage, languageCode, sourceLanguageCode, targetLanguageCode, availableLanguages, setPaneLanguage, setPaneZoom]);
 
   return (
     <div
