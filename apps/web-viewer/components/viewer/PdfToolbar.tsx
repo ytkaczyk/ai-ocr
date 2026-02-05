@@ -12,6 +12,8 @@ import type { ZoomMode } from '@/lib/schemas/viewer';
 interface PdfToolbarProps {
   zoomLevel: number;
   zoomMode: ZoomMode;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
   onZoomChange: (level: number, mode: ZoomMode) => void;
   disabled?: boolean;
   className?: string;
@@ -20,6 +22,8 @@ interface PdfToolbarProps {
 export function PdfToolbar({
   zoomLevel,
   zoomMode,
+  onZoomIn,
+  onZoomOut,
   onZoomChange,
   disabled = false,
   className = '',
@@ -29,6 +33,8 @@ export function PdfToolbar({
       <ZoomControls
         zoomLevel={zoomLevel}
         zoomMode={zoomMode}
+        onZoomIn={onZoomIn}
+        onZoomOut={onZoomOut}
         onZoomChange={onZoomChange}
         disabled={disabled}
       />

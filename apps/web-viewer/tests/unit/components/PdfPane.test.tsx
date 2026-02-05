@@ -28,8 +28,14 @@ vi.mock('react-pdf', () => ({
 // Mock PdfToolbar
 vi.mock('@/components/viewer/PdfToolbar', () => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  PdfToolbar: ({ zoomLevel, zoomMode, onZoomChange, disabled }: any) => (
+  PdfToolbar: ({ zoomLevel, zoomMode, onZoomIn, onZoomOut, onZoomChange, disabled }: any) => (
     <div data-testid="pdf-toolbar">
+      <button data-testid="toolbar-zoom-in" onClick={onZoomIn} disabled={disabled}>
+        Zoom In
+      </button>
+      <button data-testid="toolbar-zoom-out" onClick={onZoomOut} disabled={disabled}>
+        Zoom Out
+      </button>
       <button
         data-testid="toolbar-zoom-change"
         onClick={() => onZoomChange(1.5, 'percentage')}
@@ -261,6 +267,8 @@ describe('PdfPane', () => {
 
   describe('Zoom Functionality', () => {
     it('should render toolbar when zoom callbacks are provided', () => {
+      const onZoomIn = vi.fn();
+      const onZoomOut = vi.fn();
       const onZoomChange = vi.fn();
 
       render(
@@ -269,6 +277,8 @@ describe('PdfPane', () => {
           pageNumber={1}
           zoomLevel={1}
           zoomMode="fit"
+          onZoomIn={onZoomIn}
+          onZoomOut={onZoomOut}
           onZoomChange={onZoomChange}
         />
       );
@@ -283,6 +293,8 @@ describe('PdfPane', () => {
     });
 
     it('should pass correct zoom props to toolbar', () => {
+      const onZoomIn = vi.fn();
+      const onZoomOut = vi.fn();
       const onZoomChange = vi.fn();
 
       render(
@@ -291,6 +303,8 @@ describe('PdfPane', () => {
           pageNumber={1}
           zoomLevel={1.5}
           zoomMode="percentage"
+          onZoomIn={onZoomIn}
+          onZoomOut={onZoomOut}
           onZoomChange={onZoomChange}
         />
       );
@@ -299,28 +313,36 @@ describe('PdfPane', () => {
     });
 
     it('should disable toolbar during loading', () => {
+      const onZoomIn = vi.fn();
+      const onZoomOut = vi.fn();
       const onZoomChange = vi.fn();
 
       render(
         <PdfPane
           documentId="test-doc"
           pageNumber={1}
+          onZoomIn={onZoomIn}
+          onZoomOut={onZoomOut}
           onZoomChange={onZoomChange}
         />
       );
 
       // During loading, toolbar should be disabled
-      const zoomChangeBtn = screen.getByTestId('toolbar-zoom-change');
-      expect(zoomChangeBtn).toBeDisabled();
+      const zoomInBtn = screen.getByTestId('toolbar-zoom-in');
+      expect(zoomInBtn).toBeDisabled();
     });
 
     it('should disable toolbar when error occurs', async () => {
+      const onZoomIn = vi.fn();
+      const onZoomOut = vi.fn();
       const onZoomChange = vi.fn();
 
       render(
         <PdfPane
           documentId="test-doc"
           pageNumber={1}
+          onZoomIn={onZoomIn}
+          onZoomOut={onZoomOut}
           onZoomChange={onZoomChange}
         />
       );
@@ -330,8 +352,8 @@ describe('PdfPane', () => {
       documentCall.onLoadError(new Error('Test error'));
 
       await waitFor(() => {
-        const zoomChangeBtn = screen.getByTestId('toolbar-zoom-change');
-        expect(zoomChangeBtn).toBeDisabled();
+        const zoomInBtn = screen.getByTestId('toolbar-zoom-in');
+        expect(zoomInBtn).toBeDisabled();
       });
     });
   });
@@ -346,6 +368,8 @@ describe('PdfPane', () => {
     });
 
     it('should accept width zoom mode', () => {
+      const onZoomIn = vi.fn();
+      const onZoomOut = vi.fn();
       const onZoomChange = vi.fn();
 
       render(
@@ -354,6 +378,8 @@ describe('PdfPane', () => {
           pageNumber={1}
           zoomLevel={1}
           zoomMode="width"
+          onZoomIn={onZoomIn}
+          onZoomOut={onZoomOut}
           onZoomChange={onZoomChange}
         />
       );
@@ -362,6 +388,8 @@ describe('PdfPane', () => {
     });
 
     it('should accept percentage zoom mode', () => {
+      const onZoomIn = vi.fn();
+      const onZoomOut = vi.fn();
       const onZoomChange = vi.fn();
 
       render(
@@ -370,6 +398,8 @@ describe('PdfPane', () => {
           pageNumber={1}
           zoomLevel={2}
           zoomMode="percentage"
+          onZoomIn={onZoomIn}
+          onZoomOut={onZoomOut}
           onZoomChange={onZoomChange}
         />
       );
@@ -563,6 +593,8 @@ describe('PdfPane', () => {
     });
 
     it('should re-render when zoomLevel changes', () => {
+      const onZoomIn = vi.fn();
+      const onZoomOut = vi.fn();
       const onZoomChange = vi.fn();
 
       const { rerender } = render(
@@ -571,6 +603,8 @@ describe('PdfPane', () => {
           pageNumber={1}
           zoomLevel={1}
           zoomMode="percentage"
+          onZoomIn={onZoomIn}
+          onZoomOut={onZoomOut}
           onZoomChange={onZoomChange}
         />
       );
@@ -581,6 +615,8 @@ describe('PdfPane', () => {
           pageNumber={1}
           zoomLevel={1.5}
           zoomMode="percentage"
+          onZoomIn={onZoomIn}
+          onZoomOut={onZoomOut}
           onZoomChange={onZoomChange}
         />
       );
@@ -589,6 +625,8 @@ describe('PdfPane', () => {
     });
 
     it('should re-render when zoomMode changes', () => {
+      const onZoomIn = vi.fn();
+      const onZoomOut = vi.fn();
       const onZoomChange = vi.fn();
 
       const { rerender } = render(
@@ -597,6 +635,8 @@ describe('PdfPane', () => {
           pageNumber={1}
           zoomLevel={1}
           zoomMode="fit"
+          onZoomIn={onZoomIn}
+          onZoomOut={onZoomOut}
           onZoomChange={onZoomChange}
         />
       );
@@ -607,6 +647,8 @@ describe('PdfPane', () => {
           pageNumber={1}
           zoomLevel={1}
           zoomMode="width"
+          onZoomIn={onZoomIn}
+          onZoomOut={onZoomOut}
           onZoomChange={onZoomChange}
         />
       );
