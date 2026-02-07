@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ViewportWarning } from '@/components/viewer/ViewportWarning';
 import { Viewer } from '@/components/viewer/Viewer';
 import { Button } from '@/components/ui/button';
@@ -14,15 +14,19 @@ import { useRouter } from 'next/navigation';
  * Shows the multipane view for a specific translation
  * Route: /translation/[id]
  */
-export default function TranslationDetailPage({ params }: { params: { id: string } }) {
+export default function TranslationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { setCurrentDocument } = useDocumentStore();
   const { setPaneMode } = useViewerStore();
+  const [documentId, setDocumentId] = useState<string | null>(null);
 
-  // Set the document ID from the URL param
+  // Set the document ID from the URL param (params is a Promise in Next.js 15+)
   useEffect(() => {
-    setCurrentDocument(params.id);
-  }, [params.id, setCurrentDocument]);
+    params.then(({ id }) => {
+      setDocumentId(id);
+      setCurrentDocument(id);
+    });
+  }, [params, setCurrentDocument]);
 
   // Initialize mode from URL on mount (before Viewer renders)
   useEffect(() => {
@@ -38,6 +42,19 @@ export default function TranslationDetailPage({ params }: { params: { id: string
   const handleBackToList = () => {
     router.push('/translation');
   };
+
+  if (!documentId) {
+    return (
+      <>
+        <ViewportWarning />
+        <main className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
@@ -57,13 +74,13 @@ export default function TranslationDetailPage({ params }: { params: { id: string
               </Button>
               <div className="flex-1">
                 <h1 className="text-lg font-semibold">
-                  {params.id}
+                  {documentId}
                 </h1>
               </div>
             </div>
           </div>
           <div className="flex-1 overflow-hidden">
-            <Viewer documentId={params.id} />
+            <Viewer documentId={documentId} />
           </div>
         </div>
       </main>
