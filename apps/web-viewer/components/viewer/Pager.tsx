@@ -146,7 +146,7 @@ export function Pager({
   return (
     <div
       data-testid="pager"
-      className={`pager flex items-center justify-center gap-4 px-4 py-3 border-b bg-background ${className}`}
+      className={`pager flex items-center justify-center gap-4 px-4 py-3 bg-background ${className}`}
       role="navigation"
       aria-label="Page navigation"
     >
