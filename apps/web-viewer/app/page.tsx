@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { DocumentSelector } from '@/components/viewer/DocumentSelector';
 import { ViewportWarning } from '@/components/viewer/ViewportWarning';
 import { Viewer } from '@/components/viewer/Viewer';
@@ -9,8 +10,14 @@ import { useDocumentStore } from '@/lib/stores/useDocumentStore';
 import { useViewerStore } from '@/lib/stores/useViewerStore';
 import { ArrowLeft } from 'lucide-react';
 
+/**
+ * Home Page
+ * Maintains backward compatibility with the original single-page interface
+ * New routes are available at /translation and /translation/[id]
+ */
 export default function Home() {
-  const { currentDocumentId, setCurrentDocument } = useDocumentStore();
+  const router = useRouter();
+  const { currentDocumentId } = useDocumentStore();
   const { setPaneMode } = useViewerStore();
 
   // Initialize mode from URL on mount (before Viewer renders)
@@ -25,11 +32,13 @@ export default function Home() {
   }, [setPaneMode]);
 
   const handleDocumentSelect = (documentId: string) => {
-    setCurrentDocument(documentId);
+    // Use router navigation for better URL structure
+    router.push(`/translation/${documentId}`);
   };
 
   const handleBackToSelection = () => {
-    setCurrentDocument(null);
+    // Use router navigation for better URL structure
+    router.push('/translation');
   };
 
   return (
