@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { use } from 'react';
 import { ViewportWarning } from '@/components/viewer/ViewportWarning';
 import { Viewer } from '@/components/viewer/Viewer';
 import { Button } from '@/components/ui/button';
@@ -18,15 +19,14 @@ export default function TranslationDetailPage({ params }: { params: Promise<{ id
   const router = useRouter();
   const { setCurrentDocument } = useDocumentStore();
   const { setPaneMode } = useViewerStore();
-  const [documentId, setDocumentId] = useState<string | null>(null);
+  
+  // Unwrap params Promise using React's use() hook
+  const { id: documentId } = use(params);
 
-  // Set the document ID from the URL param (params is a Promise in Next.js 15+)
+  // Set the document in the store
   useEffect(() => {
-    params.then(({ id }) => {
-      setDocumentId(id);
-      setCurrentDocument(id);
-    });
-  }, [params, setCurrentDocument]);
+    setCurrentDocument(documentId);
+  }, [documentId, setCurrentDocument]);
 
   // Initialize mode from URL on mount (before Viewer renders)
   useEffect(() => {
@@ -42,19 +42,6 @@ export default function TranslationDetailPage({ params }: { params: Promise<{ id
   const handleBackToList = () => {
     router.push('/translation');
   };
-
-  if (!documentId) {
-    return (
-      <>
-        <ViewportWarning />
-        <main className="min-h-screen bg-background flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-muted-foreground">Loading...</p>
-          </div>
-        </main>
-      </>
-    );
-  }
 
   return (
     <>
