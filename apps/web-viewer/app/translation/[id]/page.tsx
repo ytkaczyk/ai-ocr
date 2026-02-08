@@ -57,7 +57,7 @@ export default function TranslationDetailPage({ params }: { params: Promise<{ id
                 className="gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Back to Translations
+                Back to Documents
               </Button>
               <div className="flex-1">
                 <h1 className="text-lg font-semibold">
