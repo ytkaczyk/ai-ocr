@@ -1,6 +1,4 @@
 import nextPlugin from "eslint-config-next";
-import tseslint from "@typescript-eslint/eslint-plugin";
-import tsParser from "@typescript-eslint/parser";
 
 const eslintConfig = [
   {
@@ -20,25 +18,17 @@ const eslintConfig = [
   ...nextPlugin,
   {
     files: ["**/*.ts", "**/*.tsx"],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
-        ecmaFeatures: {
-          jsx: true
-        }
-      }
-    },
-    plugins: {
-      "@typescript-eslint": tseslint
-    },
     rules: {
       "@typescript-eslint/no-unused-vars": ["error", {
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_"
       }],
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "warn"
+    }
+  },
+  {
+    files: ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx"],
+    rules: {
       "prefer-const": "error",
       "no-console": ["warn", { "allow": ["warn", "error"] }]
     }
