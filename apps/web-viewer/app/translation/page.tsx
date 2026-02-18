@@ -1,33 +1,18 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { DocumentSelector } from '@/components/viewer/DocumentSelector';
 import { ViewportWarning } from '@/components/viewer/ViewportWarning';
-import { useViewerStore } from '@/lib/stores/useViewerStore';
+import { useRouter } from 'next/navigation';
 
 /**
- * Home Page
- * Maintains backward compatibility with the original single-page interface
- * New routes are available at /translation and /translation/[id]
+ * Translation List Page
+ * Displays all available translations/documents
+ * Route: /translation
  */
-export default function Home() {
+export default function TranslationListPage() {
   const router = useRouter();
-  const { setPaneMode } = useViewerStore();
-
-  // Initialize mode from URL on mount (before Viewer renders)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    const params = new URLSearchParams(window.location.search);
-    const modeParam = params.get('mode');
-    if (modeParam === 'two-pane' || modeParam === 'three-pane') {
-      setPaneMode(modeParam);
-    }
-  }, [setPaneMode]);
 
   const handleDocumentSelect = (documentId: string) => {
-    // Use router navigation for better URL structure
     router.push(`/translation/${documentId}`);
   };
 
