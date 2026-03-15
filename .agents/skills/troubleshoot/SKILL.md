@@ -1,3 +1,12 @@
+---
+name: troubleshoot
+description: Diagnoses and fixes runtime issues using browser automation and observation rather than guesswork. Treats the running application as the source of truth to reproduce issues, gather diagnostic evidence, and validate fixes empirically.
+license: MIT
+metadata:
+  author: Yves Tkaczyk
+  version: "0.1"
+---
+
 # Troubleshooting with MCP Servers
 
 Use browser automation MCP servers to diagnose and fix runtime issues through observation and experimentation rather than guesswork.
