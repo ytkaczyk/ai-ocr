@@ -19,5 +19,6 @@
     "*": true,
     // ...
     "dotenv": false
-  }
+  },
+  "snyk.advanced.autoSelectOrganization": true
 }
