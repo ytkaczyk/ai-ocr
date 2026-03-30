@@ -10,7 +10,7 @@ import { ScreenReaderAnnouncement } from '@/components/viewer/ScreenReaderAnnoun
 
 describe('ScreenReaderAnnouncement', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
   });
 
   afterEach(() => {
