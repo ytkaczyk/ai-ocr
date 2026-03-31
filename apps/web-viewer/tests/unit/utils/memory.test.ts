@@ -160,7 +160,7 @@ describe('memory', () => {
     });
 
     it('should start and stop monitoring', () => {
-      vi.useFakeTimers();
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       
       manager = new MemoryManager(125);
@@ -187,7 +187,7 @@ describe('memory', () => {
     });
 
     it('should handle monitoring when performance.memory is unavailable', () => {
-      vi.useFakeTimers();
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       
       // Create a performance object without memory property
       const mockPerformance = {} as Performance;
@@ -211,7 +211,7 @@ describe('memory', () => {
     });
 
     it('should handle cleanup callback errors gracefully', () => {
-      vi.useFakeTimers();
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       

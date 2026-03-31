@@ -1,23 +1,24 @@
 {
-	"folders": [
-		{
-			"path": "apps/web-viewer"
-		},
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"chat.tools.terminal.autoApprove": {
-			".specify/scripts/bash/": true,
-			".specify/scripts/powershell/": true
-		},
-		"files.associations": {
-			".env*": "dotenv"
-		},
-		"github.copilot.enable": {
-			"*": true,
-			"dotenv": false
-		}
-	}
+  "folders": [
+    {
+      "path": "apps/web-viewer",
+    },
+    {
+      "path": ".",
+    },
+  ],
+  "settings": {
+    "chat.tools.terminal.autoApprove": {
+      ".specify/scripts/bash/": true,
+      ".specify/scripts/powershell/": true,
+      "npx vitest": true,
+    },
+    "files.associations": {
+      ".env*": "dotenv",
+    },
+    "github.copilot.enable": {
+      "*": true,
+      "dotenv": false,
+    },
+  },
 }

@@ -54,7 +54,7 @@ describe('prefetch', () => {
 
     it('should use timeout fallback when requestIdleCallback not available', async () => {
       vi.stubGlobal('window', {});
-      vi.useFakeTimers();
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       
       const url = '/api/test';
       
@@ -76,7 +76,7 @@ describe('prefetch', () => {
 
     it('should use custom timeout', async () => {
       vi.stubGlobal('window', {});
-      vi.useFakeTimers();
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       
       const url = '/api/test';
       
@@ -124,7 +124,7 @@ describe('prefetch', () => {
         requestIdleCallback: vi.fn(() => 123),
         cancelIdleCallback,
       });
-      vi.useFakeTimers();
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       
       const url = '/api/test';
       
