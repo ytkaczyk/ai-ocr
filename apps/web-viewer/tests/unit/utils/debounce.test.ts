@@ -9,7 +9,7 @@ import { debounce, debounceWithCancel, DEBOUNCE_NAVIGATION, DEBOUNCE_URL_PERSIST
 
 describe('debounce', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
   });
 
   afterEach(() => {

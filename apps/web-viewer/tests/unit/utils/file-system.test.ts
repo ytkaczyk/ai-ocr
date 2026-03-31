@@ -34,7 +34,7 @@ describe('isSymlink', () => {
     const result = await isSymlink('/path/to/symlink');
     expect(result).toBe(true);
     expect(mockLstat).toHaveBeenCalledWith('/path/to/symlink');
-    
+
     mockLstat.mockRestore();
   });
 
@@ -45,7 +45,7 @@ describe('isSymlink', () => {
 
     const result = await isSymlink('/path/to/file');
     expect(result).toBe(false);
-    
+
     mockLstat.mockRestore();
   });
 
@@ -54,7 +54,7 @@ describe('isSymlink', () => {
 
     const result = await isSymlink('/path/to/nonexistent');
     expect(result).toBe(false);
-    
+
     mockLstat.mockRestore();
   });
 
@@ -63,7 +63,7 @@ describe('isSymlink', () => {
 
     const result = await isSymlink('/path/to/nopermission');
     expect(result).toBe(false);
-    
+
     mockLstat.mockRestore();
   });
 });
@@ -81,7 +81,7 @@ describe('isSymlinkSync', () => {
     const result = isSymlinkSync('/path/to/symlink');
     expect(result).toBe(true);
     expect(mockLstatSync).toHaveBeenCalledWith('/path/to/symlink');
-    
+
     mockLstatSync.mockRestore();
   });
 
@@ -92,7 +92,7 @@ describe('isSymlinkSync', () => {
 
     const result = isSymlinkSync('/path/to/file');
     expect(result).toBe(false);
-    
+
     mockLstatSync.mockRestore();
   });
 
@@ -103,7 +103,7 @@ describe('isSymlinkSync', () => {
 
     const result = isSymlinkSync('/path/to/nonexistent');
     expect(result).toBe(false);
-    
+
     mockLstatSync.mockRestore();
   });
 });
@@ -119,7 +119,7 @@ describe('rejectSymlink', () => {
     } as unknown as ReturnType<typeof fs.lstat>);
 
     await expect(rejectSymlink('/path/to/file', 'test file')).resolves.toBeUndefined();
-    
+
     mockLstat.mockRestore();
   });
 
@@ -127,7 +127,7 @@ describe('rejectSymlink', () => {
     const mockLstat = vi.spyOn(fs, 'lstat').mockResolvedValue({
       isSymbolicLink: () => true,
     } as unknown as ReturnType<typeof fs.lstat>);
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
     await expect(rejectSymlink('/path/to/symlink', 'test file'))
       .rejects
@@ -136,7 +136,7 @@ describe('rejectSymlink', () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining('[SECURITY] Symlink access attempt blocked')
     );
-    
+
     mockLstat.mockRestore();
     consoleErrorSpy.mockRestore();
   });
@@ -145,7 +145,7 @@ describe('rejectSymlink', () => {
     const mockLstat = vi.spyOn(fs, 'lstat').mockResolvedValue({
       isSymbolicLink: () => true,
     } as unknown as ReturnType<typeof fs.lstat>);
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
     await expect(rejectSymlink('/path/to/symlink', 'PDF file'))
       .rejects
@@ -157,7 +157,7 @@ describe('rejectSymlink', () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining('/path/to/symlink')
     );
-    
+
     mockLstat.mockRestore();
     consoleErrorSpy.mockRestore();
   });
@@ -174,7 +174,7 @@ describe('exists', () => {
     const result = await exists('/path/to/file');
     expect(result).toBe(true);
     expect(mockAccess).toHaveBeenCalledWith('/path/to/file');
-    
+
     mockAccess.mockRestore();
   });
 
@@ -183,7 +183,7 @@ describe('exists', () => {
 
     const result = await exists('/path/to/nonexistent');
     expect(result).toBe(false);
-    
+
     mockAccess.mockRestore();
   });
 
@@ -192,7 +192,7 @@ describe('exists', () => {
 
     const result = await exists('/path/to/nopermission');
     expect(result).toBe(false);
-    
+
     mockAccess.mockRestore();
   });
 });
@@ -208,7 +208,7 @@ describe('existsSync', () => {
     const result = existsSync('/path/to/file');
     expect(result).toBe(true);
     expect(mockAccessSync).toHaveBeenCalledWith('/path/to/file');
-    
+
     mockAccessSync.mockRestore();
   });
 
@@ -219,7 +219,7 @@ describe('existsSync', () => {
 
     const result = existsSync('/path/to/nonexistent');
     expect(result).toBe(false);
-    
+
     mockAccessSync.mockRestore();
   });
 });
@@ -237,7 +237,7 @@ describe('getFileSize', () => {
     const result = await getFileSize('/path/to/file');
     expect(result).toBe(1024);
     expect(mockStat).toHaveBeenCalledWith('/path/to/file');
-    
+
     mockStat.mockRestore();
   });
 
@@ -248,7 +248,7 @@ describe('getFileSize', () => {
 
     const result = await getFileSize('/path/to/largefile');
     expect(result).toBe(1024 * 1024 * 100);
-    
+
     mockStat.mockRestore();
   });
 
@@ -258,7 +258,7 @@ describe('getFileSize', () => {
     );
 
     await expect(getFileSize('/path/to/nonexistent')).rejects.toThrow();
-    
+
     mockStat.mockRestore();
   });
 });
@@ -278,7 +278,7 @@ describe('readDirectory', () => {
     const result = await readDirectory('/path/to/dir');
     expect(result).toEqual(['file1.txt', 'file2.pdf', 'subfolder']);
     expect(mockReaddir).toHaveBeenCalledWith('/path/to/dir');
-    
+
     mockReaddir.mockRestore();
   });
 
@@ -287,7 +287,7 @@ describe('readDirectory', () => {
 
     const result = await readDirectory('/path/to/emptydir');
     expect(result).toEqual([]);
-    
+
     mockReaddir.mockRestore();
   });
 
@@ -297,7 +297,7 @@ describe('readDirectory', () => {
     );
 
     await expect(readDirectory('/path/to/nonexistent')).rejects.toThrow();
-    
+
     mockReaddir.mockRestore();
   });
 });
@@ -327,14 +327,18 @@ describe('scanDataFolder', () => {
     ] as unknown as Awaited<ReturnType<typeof fs.readdir>>);
 
     const result = await scanDataFolder();
-    
+
     expect(result).toHaveLength(3);
-    expect(result).toEqual([
-      { fileName: 'document1', pdfPath: path.join('/mock/data', 'document1.pdf') },
-      { fileName: 'document2', pdfPath: path.join('/mock/data', 'document2.pdf') },
-      { fileName: 'document3.PDF', pdfPath: path.join('/mock/data', 'document3.PDF') },
-    ]);
-    
+    // Use array matchers to be platform-independent (Windows vs Unix paths)
+    expect(result[0].fileName).toBe('document1');
+    expect(result[0].pdfPath).toContain('document1.pdf');
+    expect(result[0].pdfPath).toContain('mock');
+    expect(result[0].pdfPath).toContain('data');
+    expect(result[1].fileName).toBe('document2');
+    expect(result[1].pdfPath).toContain('document2.pdf');
+    expect(result[2].fileName).toBe('document3.PDF');
+    expect(result[2].pdfPath).toContain('document3.PDF');
+
     mockReaddir.mockRestore();
     mockExistsSync.mockRestore();
     mockStatSync.mockRestore();
@@ -352,7 +356,7 @@ describe('scanDataFolder', () => {
 
     const result = await scanDataFolder();
     expect(result).toEqual([]);
-    
+
     mockReaddir.mockRestore();
     mockExistsSync.mockRestore();
     mockStatSync.mockRestore();
@@ -372,7 +376,7 @@ describe('scanDataFolder', () => {
 
     const result = await scanDataFolder();
     expect(result).toHaveLength(4);
-    
+
     mockReaddir.mockRestore();
     mockExistsSync.mockRestore();
     mockStatSync.mockRestore();
@@ -387,8 +391,9 @@ describe('scanDataFolder', () => {
       Object.assign(new Error('ENOENT'), { code: 'ENOENT' })
     );
 
-    await expect(scanDataFolder()).rejects.toThrow('Data folder not found: /mock/data');
-    
+    await expect(scanDataFolder()).rejects.toThrow('Data folder not found');
+    await expect(scanDataFolder()).rejects.toThrow(/mock.*data/i);
+
     mockReaddir.mockRestore();
     mockExistsSync.mockRestore();
     mockStatSync.mockRestore();
@@ -404,7 +409,7 @@ describe('scanDataFolder', () => {
     );
 
     await expect(scanDataFolder()).rejects.toThrow('Permission denied');
-    
+
     mockReaddir.mockRestore();
     mockExistsSync.mockRestore();
     mockStatSync.mockRestore();
@@ -562,14 +567,14 @@ describe('findLanguageFolders', () => {
     });
 
     const result = await findLanguageFolders('/path/to/document');
-    
+
     expect(result).toContain('en-US');
     expect(result).toContain('es-ES');
     expect(result).toContain('raw.en-US');
     expect(result).toContain('raw.fr-FR');
     expect(result).not.toContain('readme.txt');
     expect(result).not.toContain('images');
-    
+
     mockReaddir.mockRestore();
     mockStatSync.mockRestore();
   });
@@ -588,10 +593,10 @@ describe('findLanguageFolders', () => {
     });
 
     const result = await findLanguageFolders('/path/to/document');
-    
+
     expect(result).toContain('en-US');
     expect(result).not.toContain('file.txt');
-    
+
     mockReaddir.mockRestore();
     mockStatSync.mockRestore();
   });
@@ -612,7 +617,7 @@ describe('findLanguageFolders', () => {
     } as unknown as ReturnType<typeof fs.lstat>);
 
     const result = await findLanguageFolders('/path/to/document');
-    
+
     expect(result).toContain('en-US');
     expect(result).toContain('raw.en-US');
     expect(result).toContain('eng-US');
@@ -620,7 +625,7 @@ describe('findLanguageFolders', () => {
     expect(result).not.toContain('EN-US');
     expect(result).not.toContain('en_US');
     expect(result).not.toContain('english');
-    
+
     mockReaddir.mockRestore();
     mockStatSync.mockRestore();
   });
@@ -632,7 +637,7 @@ describe('findLanguageFolders', () => {
 
     const result = await findLanguageFolders('/path/to/nonexistent');
     expect(result).toEqual([]);
-    
+
     mockReaddir.mockRestore();
   });
 
@@ -642,7 +647,7 @@ describe('findLanguageFolders', () => {
     );
 
     await expect(findLanguageFolders('/path/to/nopermission')).rejects.toThrow('Permission denied');
-    
+
     mockReaddir.mockRestore();
   });
 });
@@ -661,13 +666,13 @@ describe('findPageFiles', () => {
     ] as unknown as Awaited<ReturnType<typeof fs.readdir>>);
 
     const result = await findPageFiles('/path/to/en-US', 'document', 'en-US', false);
-    
+
     expect(result).toHaveLength(3);
     expect(result[0].pageNumber).toBe(1);
     expect(result[1].pageNumber).toBe(2);
     expect(result[2].pageNumber).toBe(3);
     expect(result[0].fileName).toBe('document.en-US_page_1.md');
-    
+
     mockReaddir.mockRestore();
   });
 
@@ -678,12 +683,12 @@ describe('findPageFiles', () => {
     ] as unknown as Awaited<ReturnType<typeof fs.readdir>>);
 
     const result = await findPageFiles('/path/to/raw.en-US', 'document', 'en-US', true);
-    
+
     expect(result).toHaveLength(2);
     expect(result[0].pageNumber).toBe(1);
     expect(result[1].pageNumber).toBe(2);
     expect(result[0].fileName).toBe('document.raw.en-US_page_1.md');
-    
+
     mockReaddir.mockRestore();
   });
 
@@ -696,10 +701,10 @@ describe('findPageFiles', () => {
     ] as unknown as Awaited<ReturnType<typeof fs.readdir>>);
 
     const result = await findPageFiles('/path/to/en-US', 'document', 'en-US', false);
-    
+
     expect(result).toHaveLength(1);
     expect(result[0].fileName).toBe('document.en-US_page_1.md');
-    
+
     mockReaddir.mockRestore();
   });
 
@@ -709,9 +714,9 @@ describe('findPageFiles', () => {
     ] as unknown as Awaited<ReturnType<typeof fs.readdir>>);
 
     const result = await findPageFiles('/path/to/lang', 'doc', 'en-US', false);
-    
+
     expect(result[0].filePath).toBe(path.join('/path/to/lang', 'doc.en-US_page_1.md'));
-    
+
     mockReaddir.mockRestore();
   });
 
@@ -723,12 +728,12 @@ describe('findPageFiles', () => {
     ] as unknown as Awaited<ReturnType<typeof fs.readdir>>);
 
     const result = await findPageFiles('/path/to/lang', 'doc', 'en-US', false);
-    
+
     expect(result).toHaveLength(3);
     expect(result[0].pageNumber).toBe(1);
     expect(result[1].pageNumber).toBe(100);
     expect(result[2].pageNumber).toBe(999);
-    
+
     mockReaddir.mockRestore();
   });
 
@@ -739,7 +744,7 @@ describe('findPageFiles', () => {
 
     const result = await findPageFiles('/path/to/nonexistent', 'doc', 'en-US', false);
     expect(result).toEqual([]);
-    
+
     mockReaddir.mockRestore();
   });
 
@@ -750,7 +755,7 @@ describe('findPageFiles', () => {
 
     await expect(findPageFiles('/path/to/nopermission', 'doc', 'en-US', false))
       .rejects.toThrow('Permission denied');
-    
+
     mockReaddir.mockRestore();
   });
 
@@ -761,10 +766,10 @@ describe('findPageFiles', () => {
     ] as unknown as Awaited<ReturnType<typeof fs.readdir>>);
 
     const result = await findPageFiles('/path/to/lang', 'doc', 'en-US', false);
-    
+
     expect(result).toHaveLength(1);
     expect(result[0].fileName).toBe('doc.en-US_page_1.md');
-    
+
     mockReaddir.mockRestore();
   });
 
@@ -775,10 +780,10 @@ describe('findPageFiles', () => {
     ] as unknown as Awaited<ReturnType<typeof fs.readdir>>);
 
     const result = await findPageFiles('/path/to/lang', 'doc', 'en-US', true);
-    
+
     expect(result).toHaveLength(1);
     expect(result[0].fileName).toBe('doc.raw.en-US_page_1.md');
-    
+
     mockReaddir.mockRestore();
   });
 });
@@ -792,10 +797,10 @@ describe('readFileAsString', () => {
     const mockReadFile = vi.spyOn(fs, 'readFile').mockResolvedValue('file contents');
 
     const result = await readFileAsString('/path/to/file.txt');
-    
+
     expect(result).toBe('file contents');
     expect(mockReadFile).toHaveBeenCalledWith('/path/to/file.txt', 'utf-8');
-    
+
     mockReadFile.mockRestore();
   });
 
@@ -804,9 +809,9 @@ describe('readFileAsString', () => {
     const mockReadFile = vi.spyOn(fs, 'readFile').mockResolvedValue(mockContent);
 
     const result = await readFileAsString('/path/to/file.md');
-    
+
     expect(result).toBe(mockContent);
-    
+
     mockReadFile.mockRestore();
   });
 
@@ -814,9 +819,9 @@ describe('readFileAsString', () => {
     const mockReadFile = vi.spyOn(fs, 'readFile').mockResolvedValue('');
 
     const result = await readFileAsString('/path/to/empty.txt');
-    
+
     expect(result).toBe('');
-    
+
     mockReadFile.mockRestore();
   });
 
@@ -826,7 +831,7 @@ describe('readFileAsString', () => {
     );
 
     await expect(readFileAsString('/path/to/nonexistent')).rejects.toThrow();
-    
+
     mockReadFile.mockRestore();
   });
 });
@@ -841,10 +846,10 @@ describe('readFileAsBuffer', () => {
     const mockReadFile = vi.spyOn(fs, 'readFile').mockResolvedValue(mockBuffer);
 
     const result = await readFileAsBuffer('/path/to/file.pdf');
-    
+
     expect(result).toEqual(mockBuffer);
     expect(mockReadFile).toHaveBeenCalledWith('/path/to/file.pdf');
-    
+
     mockReadFile.mockRestore();
   });
 
@@ -853,9 +858,9 @@ describe('readFileAsBuffer', () => {
     const mockReadFile = vi.spyOn(fs, 'readFile').mockResolvedValue(mockBuffer);
 
     const result = await readFileAsBuffer('/path/to/binary.dat');
-    
+
     expect(result).toEqual(mockBuffer);
-    
+
     mockReadFile.mockRestore();
   });
 
@@ -864,10 +869,10 @@ describe('readFileAsBuffer', () => {
     const mockReadFile = vi.spyOn(fs, 'readFile').mockResolvedValue(mockBuffer);
 
     const result = await readFileAsBuffer('/path/to/empty.dat');
-    
+
     expect(result).toEqual(mockBuffer);
     expect(result.length).toBe(0);
-    
+
     mockReadFile.mockRestore();
   });
 
@@ -877,7 +882,7 @@ describe('readFileAsBuffer', () => {
     );
 
     await expect(readFileAsBuffer('/path/to/nonexistent')).rejects.toThrow();
-    
+
     mockReadFile.mockRestore();
   });
 });

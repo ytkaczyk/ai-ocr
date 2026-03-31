@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useViewerStore } from '@/lib/stores/useViewerStore';
 
@@ -20,9 +20,13 @@ describe('Concurrent Navigation Integration Tests', () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   describe('Debounced Navigation (FR-024a)', () => {
     it('should debounce rapid page changes', async () => {
-      vi.useFakeTimers();
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
 
       const { result } = renderHook(() => useViewerStore());
 
@@ -51,7 +55,7 @@ describe('Concurrent Navigation Integration Tests', () => {
     });
 
     it('should reset debounce timer on each navigation', async () => {
-      vi.useFakeTimers();
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
 
       const { result } = renderHook(() => useViewerStore());
 
@@ -89,7 +93,7 @@ describe('Concurrent Navigation Integration Tests', () => {
     });
 
     it('should handle navigation during component unmount', async () => {
-      vi.useFakeTimers();
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
 
       const { result, unmount } = renderHook(() => useViewerStore());
 
@@ -115,7 +119,7 @@ describe('Concurrent Navigation Integration Tests', () => {
 
   describe('URL Persistence Debouncing (FR-024c)', () => {
     it('should debounce URL updates separately from navigation', async () => {
-      vi.useFakeTimers();
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
 
       const { result } = renderHook(() => useViewerStore());
 
@@ -140,7 +144,7 @@ describe('Concurrent Navigation Integration Tests', () => {
     });
 
     it('should allow navigation debounce to trigger before URL debounce', async () => {
-      vi.useFakeTimers();
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
 
       const { result } = renderHook(() => useViewerStore());
 
@@ -256,7 +260,7 @@ describe('Concurrent Navigation Integration Tests', () => {
       });
 
       // All panes should show page 2 (FR-004: pane synchronization)
-      result.current.panes.forEach(pane => {
+      result.current.panes.forEach((pane) => {
         expect(pane.currentPage).toBe(2);
       });
     });
@@ -302,7 +306,7 @@ describe('Concurrent Navigation Integration Tests', () => {
     });
 
     it('should handle very rapid navigation (stress test)', async () => {
-      vi.useFakeTimers();
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
 
       const { result } = renderHook(() => useViewerStore());
 
@@ -345,7 +349,7 @@ describe('Concurrent Navigation Integration Tests', () => {
 
   describe('Performance', () => {
     it('should not accumulate pending operations', async () => {
-      vi.useFakeTimers();
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
 
       const { result } = renderHook(() => useViewerStore());
 
