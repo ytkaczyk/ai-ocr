@@ -16,7 +16,7 @@ describe('Pager', () => {
 
   beforeEach(() => {
     mockOnPageChange = vi.fn();
-    vi.useFakeTimers();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
   });
 
   afterEach(() => {
@@ -187,7 +187,7 @@ describe('Pager', () => {
       render(<Pager currentPage={5} totalPages={10} onPageChange={mockOnPageChange} />);
 
       const input = screen.getByLabelText(/jump to page/i) as HTMLInputElement;
-      
+
       fireEvent.change(input, { target: { value: '15' } });
       fireEvent.blur(input);
 
@@ -199,7 +199,7 @@ describe('Pager', () => {
       render(<Pager currentPage={5} totalPages={10} onPageChange={mockOnPageChange} />);
 
       const input = screen.getByLabelText(/jump to page/i) as HTMLInputElement;
-      
+
       fireEvent.change(input, { target: { value: '-1' } });
       fireEvent.blur(input);
 
@@ -211,7 +211,7 @@ describe('Pager', () => {
       render(<Pager currentPage={5} totalPages={10} onPageChange={mockOnPageChange} />);
 
       const input = screen.getByLabelText(/jump to page/i) as HTMLInputElement;
-      
+
       fireEvent.change(input, { target: { value: 'abc' } });
       fireEvent.blur(input);
 
@@ -310,7 +310,7 @@ describe('Pager', () => {
 
       const input = screen.getByLabelText(/jump to page/i);
       input.focus();
-      
+
       fireEvent.keyDown(input, { key: 'ArrowRight' });
       vi.advanceTimersByTime(100);
 
@@ -323,22 +323,22 @@ describe('Pager', () => {
       render(<Pager currentPage={1} totalPages={10} onPageChange={mockOnPageChange} />);
 
       const nextButton = screen.getByLabelText(/go to next page/i);
-      
+
       // First click at t=0 should execute immediately with throttle
       fireEvent.click(nextButton);
       expect(mockOnPageChange).toHaveBeenCalledTimes(1);
       expect(mockOnPageChange).toHaveBeenCalledWith(2);
-      
+
       mockOnPageChange.mockClear();
-      
+
       // Advance time but stay within throttle window
       act(() => vi.advanceTimersByTime(30)); // t=30ms
-      
+
       // Second click at t=30ms (30ms < 100ms throttle window)
       // This schedules a trailing call for (100-30) = 70ms later (at t=100ms)
       fireEvent.click(nextButton);
       expect(mockOnPageChange).not.toHaveBeenCalled(); // Not called yet
-      
+
       // Third click at t=60ms (still within window, updates trailing call)
       act(() => vi.advanceTimersByTime(30)); // t=60ms
       fireEvent.click(nextButton);
@@ -361,17 +361,17 @@ describe('Pager', () => {
       fireEvent.keyDown(window, { key: 'ArrowRight' });
       expect(mockOnPageChange).toHaveBeenCalledTimes(1);
       expect(mockOnPageChange).toHaveBeenCalledWith(2);
-      
+
       mockOnPageChange.mockClear();
-      
+
       // Advance time but stay within throttle window
       act(() => vi.advanceTimersByTime(30)); // t=30ms
-      
+
       // Second key press at t=30ms (30ms < 100ms throttle window)
       // This schedules a trailing call for (100-30) = 70ms later (at t=100ms)
       fireEvent.keyDown(window, { key: 'ArrowRight' });
       expect(mockOnPageChange).not.toHaveBeenCalled(); // Not called yet
-      
+
       // Third key press at t=60ms (still within window, updates trailing call)
       act(() => vi.advanceTimersByTime(30)); // t=60ms
       fireEvent.keyDown(window, { key: 'ArrowRight' });
@@ -403,7 +403,7 @@ describe('Pager', () => {
       const { rerender } = render(<Pager currentPage={5} totalPages={10} onPageChange={mockOnPageChange} />);
 
       expect(screen.getByLabelText(/go to previous page/i)).not.toBeDisabled();
-      
+
       rerender(<Pager currentPage={1} totalPages={10} onPageChange={mockOnPageChange} />);
       expect(screen.getByLabelText(/go to previous page/i)).toBeDisabled();
     });
