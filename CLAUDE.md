@@ -25,8 +25,8 @@ npm run type-check   # TypeScript (no emit)
 npm run test         # Vitest unit + integration tests
 npm run test:watch   # Vitest watch mode
 npm run test:coverage # Vitest with V8 coverage (70% lines required)
-npm run test:e2e     # Playwright E2E against production build (4 workers)
-npm run test:e2e:single  # Playwright E2E with dev server, 1 worker (for debugging)
+npm run test:e2e     # Playwright E2E against production build (workers per Playwright config: 4 local, 1 in CI)
+npm run test:e2e:single  # Playwright E2E with dev server, single worker (for debugging)
 ```
 
 ### apps/mistral-ocr/
@@ -64,7 +64,7 @@ Language codes must be IETF BCP 47 (e.g. `en-US`, `es-ES`). Using `en` instead o
 ### web-viewer Internal Architecture
 
 - **API routes** (`app/api/`) read from `DATA_FOLDER_PATH` and serve documents, pages, images, and PDFs
-- **Zod schemas** (`lib/schemas/`) validate all API request/response shapes at runtime
+- **Zod schemas** (`lib/schemas/`) validate API request/response shapes at runtime where applicable
 - **Zustand stores** (`lib/stores/`): `useViewerStore` manages pane config, page navigation, zoom, and mode switching; `useDocumentStore` manages the document list and selection
 - **PDF rendering** is entirely client-side via React-PDF/PDF.js; the server only serves the raw binary at `/api/documents/[id]/pdf`. Worker file must exist at `public/pdf.worker.mjs` (copied by `postinstall`)
 - **Security** (`lib/utils/security.ts`): all API inputs are validated with strict regex before filesystem access; path traversal is prevented using `path.resolve` + `startsWith`
@@ -81,11 +81,11 @@ MEMORY_LIMIT_MB=500                   # Optional, default 500
 
 ### mistral-ocr Pipeline
 
-`main.py` runs four sequential steps with smart caching (skips completed steps unless forced):
+`main.py` currently runs three sequential steps with smart caching (skips completed steps unless forced):
 
-1. **OCR**: PDF → `raw.<lang>/` (JSON + per-page MD + images)
-2. **Post-process**: `raw.<lang>/` → `<lang>/` (LLM markdown cleanup)
-3. **Translate**: `<lang>/` → `raw.<target>/` → `<target>/`
+1. **OCR**: PDF → `raw.<source>/` (JSON + per-page MD + images)
+2. **Post-process source OCR**: `raw.<source>/` → `<source>/` (LLM markdown cleanup)
+3. **Translate**: `<source>/` → `raw.<target>/` (LLM translation; outputs are written to `raw.<target>/`)
 
 Override flags: `--force_ocr`, `--force_ocr_post_process`, `--force_translate`, `--limit_to_pages`.
 

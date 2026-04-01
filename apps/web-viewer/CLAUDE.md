@@ -17,16 +17,18 @@ npm run type-check   # TypeScript (no emit)
 npm run test         # Vitest unit + integration tests
 npm run test:watch   # Vitest watch mode
 npm run test:coverage # Vitest with V8 coverage (70% lines required)
-npm run test:e2e     # Playwright E2E against production build (4 workers)
-npm run test:e2e:single  # Playwright E2E with dev server, 1 worker (for debugging)
+npm run test:e2e     # Playwright E2E against production build (4 workers locally, 1 worker when CI=true)
+npm run test:e2e:single  # Playwright E2E with dev server, forces 1 worker (for debugging)
 ```
 
 Run a single Vitest test file:
+
 ```bash
 npx vitest run tests/unit/utils/security.test.ts
 ```
 
 Run a single Playwright spec:
+
 ```bash
 npx playwright test tests/e2e/viewer-navigation.spec.ts --reporter=list
 ```
@@ -38,6 +40,7 @@ npx playwright test tests/e2e/viewer-navigation.spec.ts --reporter=list
 API routes in `app/api/` read markdown and PDF files from the filesystem path set by `DATA_FOLDER_PATH`. They serve data to the React frontend. There are no external services or databases.
 
 Required data layout:
+
 ```
 <DATA_FOLDER_PATH>/
 └── document.pdf
@@ -61,16 +64,17 @@ Mode switching supports rollback: `setPaneModeWithRollback` saves previous state
 ### API Routes (`app/api/`)
 
 All routes follow the same pattern:
-1. Call `validateEnv()` from `lib/utils/env.ts` — never read `process.env` directly
-2. Validate path parameters using `validateFilename` / `validateLanguageCode` from `lib/utils/security.ts`
-3. Access filesystem only after validation
-4. Throw custom error classes from `lib/utils/errors.ts`; never throw plain `Error`
 
-Error classes: `AppError`, `ValidationError`, `NotFoundError`, `FileSystemError`, `PdfProcessingError`, `ConfigurationError`, `PayloadTooLargeError`. Use `toErrorResponse` and `getStatusCode` when building `NextResponse` error payloads.
+1. Call `validateEnv()` from `lib/utils/env.ts` — never read `process.env` directly.
+2. Validate and parse route parameters with the appropriate Zod schemas in `lib/schemas/` (for example `languageCodeSchema` from `lib/schemas/common.ts` for language codes) and safe helpers from `lib/utils/security.ts` (for example `validateFilename` for filenames and `sanitizeLanguageCode` when turning a validated language into a path segment).
+3. Access the filesystem only after validation and normalization.
+4. Throw custom error classes from `lib/utils/errors.ts`; never throw plain `Error`.
+
+Error classes: `AppError`, `ValidationError`, `NotFoundError`, `FileSystemError`, `PdfProcessingError`, `ConfigurationError`, `PayloadTooLargeError`. API routes may either map these to HTTP responses directly or use helper functions such as `toErrorResponse` and `getStatusCode` from `lib/utils/errors.ts` when building `NextResponse` error payloads.
 
 ### Zod Schemas (`lib/schemas/`)
 
-All API request/response shapes are validated at runtime with Zod. Add new schemas in `lib/schemas/` following the existing pattern; export both the schema and the inferred TypeScript type.
+API request/response shapes should be validated at runtime with Zod wherever practical. When adding or updating routes, define schemas in `lib/schemas/` following the existing pattern and export both the schema and the inferred TypeScript type.
 
 ### PDF Rendering
 
