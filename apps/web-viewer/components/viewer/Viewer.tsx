@@ -48,10 +48,11 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   // Must be before early returns to comply with Rules of Hooks
   // Compute both values in single useMemo to avoid overhead and group related logic
   const [availableLanguagesForSelector, availableLanguageCodes] = useMemo(() => {
-    const languages = document?.availableLanguages.map((lang) => ({
-      languageCode: lang.languageCode,
-      isRaw: lang.isRaw,
-    })) || [];
+    const languages =
+      document?.availableLanguages.map((lang) => ({
+        languageCode: lang.languageCode,
+        isRaw: lang.isRaw,
+      })) || [];
     const codes = languages.map((lang) => lang.languageCode);
     return [languages, codes];
   }, [document?.availableLanguages]);
@@ -59,17 +60,17 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   // Initialize page from URL query parameter when document loads
   useEffect(() => {
     if (typeof window === 'undefined' || !document) return;
-    
+
     const params = new URLSearchParams(window.location.search);
     const pageParam = params.get('page');
-    
+
     if (pageParam) {
       const pageNum = parseInt(pageParam, 10);
       if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= document.pageCount) {
         setCurrentPage(pageNum);
       }
     }
-    
+
     // Initialize per-pane language selections from URL (FR-034e, T097h)
     const pane1Lang = params.get('pane1Lang');
     const pane1Raw = params.get('pane1Raw') === 'true';
@@ -77,10 +78,10 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
     const pane2Raw = params.get('pane2Raw') === 'true';
     const pane3Lang = params.get('pane3Lang');
     const pane3Raw = params.get('pane3Raw') === 'true';
-    
+
     // Apply language selections if valid
     const { setPaneLanguage, panes } = useViewerStore.getState();
-    
+
     if (pane1Lang && panes[0]?.contentType === 'markdown') {
       setPaneLanguage(panes[0].id, pane1Lang, pane1Raw);
     }
@@ -95,65 +96,64 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   // Update URL when page, mode, or pane languages change (FR-034e, T097h)
   useEffect(() => {
     if (typeof window === 'undefined' || !document) return;
-    
+
     // Update URL to match current page, mode, and language selections
-    const updateURL = () => {
-      const url = new URL(window.location.href);
-      const currentPageParam = url.searchParams.get('page');
-      const currentModeParam = url.searchParams.get('mode');
-      const newPageValue = currentPage.toString();
-      const newModeValue = paneMode;
-      
-      // Only update if the parameters are different
-      let changed = false;
-      
-      if (currentPageParam !== newPageValue) {
-        url.searchParams.set('page', newPageValue);
-        changed = true;
-      }
-      
-      if (currentModeParam !== newModeValue) {
-        url.searchParams.set('mode', newModeValue);
-        changed = true;
-      }
-      
-      // Track language selections for markdown panes (T097h)
-      const markdownPanes = panes.filter(p => p.contentType === 'markdown');
-      markdownPanes.forEach((pane, idx) => {
-        const paneNum = idx + 1;
-        const langParam = `pane${paneNum}Lang`;
-        const rawParam = `pane${paneNum}Raw`;
-        
-        if (pane.languageCode) {
-          const currentLang = url.searchParams.get(langParam);
-          const currentRaw = url.searchParams.get(rawParam);
-          
-          if (currentLang !== pane.languageCode) {
-            url.searchParams.set(langParam, pane.languageCode);
-            changed = true;
-          }
-          
-          const rawValue = pane.isRaw ? 'true' : 'false';
-          if (currentRaw !== rawValue) {
-            url.searchParams.set(rawParam, rawValue);
-            changed = true;
-          }
+    const url = new URL(window.location.href);
+    const currentPageParam = url.searchParams.get('page');
+    const currentModeParam = url.searchParams.get('mode');
+    const newPageValue = currentPage.toString();
+    const newModeValue = paneMode;
+
+    let changed = false;
+
+    if (currentPageParam !== newPageValue) {
+      url.searchParams.set('page', newPageValue);
+      changed = true;
+    }
+
+    if (currentModeParam !== newModeValue) {
+      url.searchParams.set('mode', newModeValue);
+      changed = true;
+    }
+
+    // Track language selections for markdown panes (T097h)
+    const markdownPanes = panes.filter((p) => p.contentType === 'markdown');
+    markdownPanes.forEach((pane, idx) => {
+      const paneNum = idx + 1;
+      const langParam = `pane${paneNum}Lang`;
+      const rawParam = `pane${paneNum}Raw`;
+
+      if (pane.languageCode) {
+        const currentLang = url.searchParams.get(langParam);
+        const currentRaw = url.searchParams.get(rawParam);
+
+        if (currentLang !== pane.languageCode) {
+          url.searchParams.set(langParam, pane.languageCode);
+          changed = true;
         }
-      });
-      
-      // Use replaceState to avoid creating too many history entries
-      if (changed) {
-        window.history.replaceState({}, '', url.toString());
+
+        const rawValue = pane.isRaw ? 'true' : 'false';
+        if (currentRaw !== rawValue) {
+          url.searchParams.set(rawParam, rawValue);
+          changed = true;
+        }
       }
-    };
-    
-    updateURL();
-    
-    // Handle browser back/forward navigation
+    });
+
+    if (changed) {
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [currentPage, paneMode, panes, document]);
+
+  // Attach popstate listener once per document — independent of pane widths
+  // (client-event-listeners: deduplicate global event listeners)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !document) return;
+
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
       const pageParam = params.get('page');
-      
+
       if (pageParam) {
         const pageNum = parseInt(pageParam, 10);
         if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= document.pageCount) {
@@ -161,10 +161,10 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
         }
       }
     };
-    
+
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [currentPage, paneMode, panes, document, setCurrentPage]);
+  }, [document, setCurrentPage]);
 
   // Initialize viewer with document data
   useEffect(() => {
@@ -185,13 +185,13 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
 
     // Reset to page 1 when document changes (unless URL has a page param)
     const documentChanged = previousDocumentIdRef.current !== activeDocumentId;
-    
+
     if (documentChanged) {
       previousDocumentIdRef.current = activeDocumentId || null;
-      
+
       const params = new URLSearchParams(window.location.search);
       const pageParam = params.get('page');
-      
+
       if (!pageParam) {
         setCurrentPage(1);
       }
@@ -205,9 +205,10 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   useEffect(() => {
     if (!document) return;
 
-    const languageVersion = document.availableLanguages.find((lang: { isRaw: boolean }) => !lang.isRaw) || 
-                           document.availableLanguages[0];
-    
+    const languageVersion =
+      document.availableLanguages.find((lang: { isRaw: boolean }) => !lang.isRaw) ||
+      document.availableLanguages[0];
+
     if (!languageVersion) return;
 
     // Prefetch N-1 and N+1 pages
@@ -238,16 +239,24 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   }, [paneMode]);
 
   // Handle page change
-  const handlePageChange = useCallback((page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  }, [totalPages, setCurrentPage]);
+  const handlePageChange = useCallback(
+    (page: number) => {
+      if (page >= 1 && page <= totalPages) {
+        setCurrentPage(page);
+      }
+    },
+    [totalPages, setCurrentPage]
+  );
 
   // Loading state
   if (loading && !document) {
     return (
-      <div className={`viewer flex h-full items-center justify-center ${className}`} role="status" aria-live="polite" aria-label="Loading document">
+      <div
+        className={`viewer flex h-full items-center justify-center ${className}`}
+        role="status"
+        aria-live="polite"
+        aria-label="Loading document"
+      >
         <div className="text-center">
           <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" aria-hidden="true" />
           <p className="mt-4 text-sm text-muted-foreground">Loading document...</p>
@@ -259,7 +268,11 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   // Error state
   if (error || !document) {
     return (
-      <div className={`viewer flex h-full items-center justify-center ${className}`} role="alert" aria-live="assertive">
+      <div
+        className={`viewer flex h-full items-center justify-center ${className}`}
+        role="alert"
+        aria-live="assertive"
+      >
         <div className="text-center max-w-md">
           <AlertCircle className="mx-auto h-16 w-16 text-destructive" aria-hidden="true" />
           <p className="mt-4 text-lg font-medium text-destructive">Error loading document</p>
@@ -272,12 +285,17 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   }
 
   // Get first available language (prefer processed over raw per FR-021)
-  const languageVersion = document.availableLanguages.find((lang: { isRaw: boolean }) => !lang.isRaw) || 
-                         document.availableLanguages[0];
+  const languageVersion =
+    document.availableLanguages.find((lang: { isRaw: boolean }) => !lang.isRaw) ||
+    document.availableLanguages[0];
 
   if (!languageVersion) {
     return (
-      <div className={`viewer flex h-full items-center justify-center ${className}`} role="status" aria-label="No content available">
+      <div
+        className={`viewer flex h-full items-center justify-center ${className}`}
+        role="status"
+        aria-label="No content available"
+      >
         <div className="text-center max-w-md">
           <AlertCircle className="mx-auto h-16 w-16 text-muted-foreground" aria-hidden="true" />
           <p className="mt-4 text-lg font-medium">No content available</p>
@@ -292,29 +310,39 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
   // For 3-pane mode, determine source and target language codes
   // Strategy: Use raw version as source, processed version as target
   const rawVersion = document.availableLanguages.find((lang: { isRaw: boolean }) => lang.isRaw);
-  const processedVersion = document.availableLanguages.find((lang: { isRaw: boolean }) => !lang.isRaw);
-  
+  const processedVersion = document.availableLanguages.find(
+    (lang: { isRaw: boolean }) => !lang.isRaw
+  );
+
   const sourceLanguageCode = rawVersion?.languageCode || languageVersion.languageCode;
   const targetLanguageCode = processedVersion?.languageCode || languageVersion.languageCode;
 
   return (
-    <div data-testid="viewer-container" className={`viewer flex h-full flex-col ${className}`} aria-label="Document viewer">
+    <div
+      data-testid="viewer-container"
+      className={`viewer flex h-full flex-col ${className}`}
+      aria-label="Document viewer"
+    >
       {/* Screen reader announcements for page changes (T106, FR-018) */}
       <ScreenReaderAnnouncement message={announcement} priority="polite" />
 
       {/* Pager navigation with mode toggle */}
-      <div className="flex items-center justify-between gap-4 px-4 py-2 border-b bg-background" role="toolbar" aria-label="Document navigation and display controls">
+      <div
+        className="flex items-center justify-between gap-4 px-4 py-2 border-b bg-background"
+        role="toolbar"
+        aria-label="Document navigation and display controls"
+      >
         <ModeToggle availableLanguages={availableLanguageCodes} />
-        
-        <Pager
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+
+        <Pager currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
       </div>
 
       {/* Pane container */}
-      <div className="viewer-content flex-1 overflow-hidden" role="region" aria-label="Document content panes">
+      <div
+        className="viewer-content flex-1 overflow-hidden"
+        role="region"
+        aria-label="Document content panes"
+      >
         <PaneContainer
           documentId={document.id}
           currentPage={currentPage}

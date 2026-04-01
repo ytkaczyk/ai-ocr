@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server';
 import path from 'path';
 import { validateEnv } from '@/lib/utils/env';
-import {
-  readDirectory,
-  exists,
-  getFileSize,
-} from '@/lib/utils/file-system';
+import { readDirectory, exists, getFileSize } from '@/lib/utils/file-system';
 import { validateFilename } from '@/lib/utils/security';
 import { ValidationError, FileSystemError } from '@/lib/utils/errors';
 
@@ -44,89 +40,96 @@ export async function GET() {
       return NextResponse.json({ documents: [] }, { status: 200 });
     }
 
-    // Process each PDF file to create DocumentSet entries
-    const documents = [];
-    for (const pdfFileName of pdfFiles) {
-      try {
-        const pdfPath = path.join(dataFolderPath, pdfFileName);
-        const baseName = path.basename(pdfFileName, '.pdf');
+    // Process each PDF file to create DocumentSet entries (async-parallel)
+    const documentResults = await Promise.all(
+      pdfFiles.map(async (pdfFileName) => {
+        try {
+          const pdfPath = path.join(dataFolderPath, pdfFileName);
+          const baseName = path.basename(pdfFileName, '.pdf');
 
-        // Validate filename (FR-033b)
-        validateFilename(baseName);
+          // Validate filename (FR-033b)
+          validateFilename(baseName);
 
-        // Check PDF size (FR-020)
-        const pdfSize = await getFileSize(pdfPath);
-        const maxSizeBytes = env.MAX_PDF_SIZE_MB * 1024 * 1024;
-        
-        if (pdfSize > maxSizeBytes) {
-          // Skip PDFs that exceed size limit but log warning
-          continue;
-        }
+          // Check PDF size (FR-020)
+          const pdfSize = await getFileSize(pdfPath);
+          const maxSizeBytes = env.MAX_PDF_SIZE_MB * 1024 * 1024;
 
-        // Check for corresponding language folder
-        const languageFolderPath = path.join(dataFolderPath, baseName);
-        const languageFolderExists = await exists(languageFolderPath);
+          if (pdfSize > maxSizeBytes) {
+            return null;
+          }
 
-        if (!languageFolderExists) {
-          continue;
-        }
+          // Check for corresponding language folder
+          const languageFolderPath = path.join(dataFolderPath, baseName);
+          const languageFolderExists = await exists(languageFolderPath);
 
-        // Scan for language version folders (FR-019)
-        const languageFolders = await readDirectory(languageFolderPath);
-        const languageVersions = [];
+          if (!languageFolderExists) {
+            return null;
+          }
 
-        for (const folder of languageFolders) {
-          // Match pattern: <lang-COUNTRY> or raw.<lang-COUNTRY>
-          const rawMatch = folder.match(/^raw\.([a-z]{2}-[A-Z]{2})$/);
-          const processedMatch = folder.match(/^([a-z]{2}-[A-Z]{2})$/);
+          // Scan for language version folders (FR-019)
+          const languageFolders = await readDirectory(languageFolderPath);
 
-          if (rawMatch || processedMatch) {
-            const languageCode = rawMatch ? rawMatch[1] : processedMatch![1];
-            const isRaw = !!rawMatch;
+          // Scan all language version folders in parallel (async-parallel)
+          const languageVersionResults = await Promise.all(
+            languageFolders.map(async (folder) => {
+              // Match pattern: <lang-COUNTRY> or raw.<lang-COUNTRY>
+              const rawMatch = folder.match(/^raw\.([a-z]{2}-[A-Z]{2})$/);
+              const processedMatch = folder.match(/^([a-z]{2}-[A-Z]{2})$/);
 
-            // Count markdown files in the language folder
-            const languageVersionPath = path.join(languageFolderPath, folder);
-            const languageFiles = await readDirectory(languageVersionPath);
-            const markdownFiles = languageFiles.filter((file: string) =>
-              file.match(new RegExp(`^${baseName}\\.(raw\\.)?${languageCode}_page_\\d+\\.md$`))
-            );
+              if (!rawMatch && !processedMatch) return null;
 
-            if (markdownFiles.length > 0) {
-              languageVersions.push({
+              const languageCode = rawMatch ? rawMatch[1] : processedMatch![1];
+              const isRaw = !!rawMatch;
+
+              // Count markdown files in the language folder
+              const languageVersionPath = path.join(languageFolderPath, folder);
+              const languageFiles = await readDirectory(languageVersionPath);
+              const markdownFiles = languageFiles.filter((file: string) =>
+                file.match(new RegExp(`^${baseName}\\.(raw\\.)?${languageCode}_page_\\d+\\.md$`))
+              );
+
+              if (markdownFiles.length === 0) return null;
+
+              return {
                 languageCode,
                 isRaw,
                 folderName: folder,
                 pageCount: markdownFiles.length,
-              });
-            }
+              };
+            })
+          );
+
+          const languageVersions = languageVersionResults.filter(Boolean) as NonNullable<
+            (typeof languageVersionResults)[number]
+          >[];
+
+          if (languageVersions.length === 0) {
+            return null;
           }
+
+          // Determine page count (from first language version)
+          const pageCount = languageVersions[0].pageCount;
+
+          // Create simplified DocumentSet entry for API response
+          return {
+            id: baseName,
+            fileName: pdfFileName,
+            pdfPath: pdfFileName,
+            availableLanguages: languageVersions.map((v) => ({
+              languageCode: v.languageCode,
+              isRaw: v.isRaw,
+              folderName: v.folderName,
+            })),
+            pageCount,
+            pdfSizeBytes: pdfSize,
+          };
+        } catch {
+          return null;
         }
+      })
+    );
 
-        if (languageVersions.length === 0) {
-          continue;
-        }
-
-        // Determine page count (from first language version)
-        const pageCount = languageVersions[0].pageCount;
-
-        // Create simplified DocumentSet entry for API response
-        documents.push({
-          id: baseName,
-          fileName: pdfFileName,
-          pdfPath: pdfFileName,
-          availableLanguages: languageVersions.map((v) => ({
-            languageCode: v.languageCode,
-            isRaw: v.isRaw,
-            folderName: v.folderName,
-          })),
-          pageCount,
-          pdfSizeBytes: pdfSize,
-        });
-      } catch {
-        // Log error but continue processing other documents
-        continue;
-      }
-    }
+    const documents = documentResults.filter(Boolean);
 
     return NextResponse.json({ documents }, { status: 200 });
   } catch (error) {
