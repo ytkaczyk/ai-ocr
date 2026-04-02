@@ -18,8 +18,23 @@ vi.mock('@/lib/stores/useViewerStore');
 
 // Mock child components
 vi.mock('@/components/viewer/Pager', () => ({
-  Pager: ({ currentPage, totalPages }: { currentPage: number; totalPages: number }) => (
-    <div data-testid="pager">Page {currentPage} of {totalPages}</div>
+  Pager: ({
+    currentPage,
+    totalPages,
+    onPageChange,
+  }: {
+    currentPage: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
+  }) => (
+    <div data-testid="pager">
+      <span>
+        Page {currentPage} of {totalPages}
+      </span>
+      <button data-testid="pager-go-page-2" onClick={() => onPageChange(2)}>
+        Go page 2
+      </button>
+    </div>
   ),
 }));
 
@@ -58,6 +73,7 @@ describe('Viewer', () => {
     setError: vi.fn(),
     error: null,
     paneMode: 'two-pane' as const,
+    setPaneMode: vi.fn(),
     panes: [
       { id: 'pane-1', contentType: 'pdf' as const },
       { id: 'pane-2', contentType: 'markdown' as const, languageCode: 'en', isRaw: false },
@@ -67,7 +83,7 @@ describe('Viewer', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Reset window.location mock
     delete (global.window as Partial<Window>).location;
     (global.window as Partial<Window> & { location: Partial<Location> }).location = {
@@ -75,7 +91,7 @@ describe('Viewer', () => {
       search: '',
       pathname: '/',
     } as Location;
-    
+
     // Mock history API
     global.window.history = {
       replaceState: vi.fn(),
@@ -83,15 +99,19 @@ describe('Viewer', () => {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
     } as unknown as History;
-    
+
     // Setup default store mocks
     (useDocumentStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       documents: [mockDocument],
       currentDocumentId: 'doc-1',
     });
-    
+
     (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockViewerStore);
-    (useViewerStore as unknown as typeof useViewerStore & { getState: () => typeof mockViewerStore }).getState = vi.fn().mockReturnValue(mockViewerStore);
+    (
+      useViewerStore as unknown as typeof useViewerStore & {
+        getState: () => typeof mockViewerStore;
+      }
+    ).getState = vi.fn().mockReturnValue(mockViewerStore);
   });
 
   describe('Loading State', () => {
@@ -194,7 +214,9 @@ describe('Viewer', () => {
       render(<Viewer />);
 
       expect(screen.getByLabelText(/document viewer/i)).toBeInTheDocument();
-      expect(screen.getByRole('toolbar', { name: /document navigation and display controls/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('toolbar', { name: /document navigation and display controls/i })
+      ).toBeInTheDocument();
       expect(screen.getByRole('region', { name: /document content panes/i })).toBeInTheDocument();
     });
 
@@ -319,6 +341,20 @@ describe('Viewer', () => {
         expect(window.history.replaceState).toHaveBeenCalled();
       });
     });
+
+    it('should remove stale pane params for non-markdown panes', async () => {
+      (global.window as Partial<Window> & { location: Partial<Location> }).location = {
+        href: 'http://localhost:3000?page=1&mode=two-pane&pane1Lang=es&pane1Raw=true',
+        search: '?page=1&mode=two-pane&pane1Lang=es&pane1Raw=true',
+        pathname: '/',
+      } as Location;
+
+      render(<Viewer />);
+
+      await waitFor(() => {
+        expect(window.history.replaceState).toHaveBeenCalled();
+      });
+    });
   });
 
   describe('Language Selection', () => {
@@ -359,7 +395,11 @@ describe('Viewer', () => {
 
       // Re-create the mock to track calls
       const setPaneLanguage = vi.fn();
-      (useViewerStore as unknown as typeof useViewerStore & { getState: () => typeof mockViewerStore }).getState = vi.fn().mockReturnValue({
+      (
+        useViewerStore as unknown as typeof useViewerStore & {
+          getState: () => typeof mockViewerStore;
+        }
+      ).getState = vi.fn().mockReturnValue({
         ...mockViewerStore,
         setPaneLanguage,
         panes: [
@@ -374,6 +414,88 @@ describe('Viewer', () => {
       await waitFor(() => {
         // Check that the viewer rendered successfully
         expect(screen.getByTestId('viewer-container')).toBeInTheDocument();
+      });
+    });
+
+    it('should restore pane mode and apply per-pane language params from URL', async () => {
+      (global.window as Partial<Window> & { location: Partial<Location> }).location = {
+        href: 'http://localhost:3000?mode=three-pane&pane1Lang=en&pane1Raw=false&pane2Lang=fr&pane2Raw=true&pane3Lang=es&pane3Raw=false',
+        search:
+          '?mode=three-pane&pane1Lang=en&pane1Raw=false&pane2Lang=fr&pane2Raw=true&pane3Lang=es&pane3Raw=false',
+        pathname: '/',
+      } as Location;
+
+      const setPaneMode = vi.fn();
+      const setPaneLanguage = vi.fn();
+
+      (useViewerStore as unknown as typeof useViewerStore & { getState: () => unknown }).getState =
+        vi.fn().mockReturnValue({
+          ...mockViewerStore,
+          setPaneMode,
+          setPaneLanguage,
+          panes: [
+            { id: 'm1', contentType: 'markdown' as const, isRaw: false },
+            { id: 'm2', contentType: 'markdown' as const, isRaw: true },
+            { id: 'm3', contentType: 'markdown' as const, isRaw: false },
+          ],
+        });
+
+      render(<Viewer />);
+
+      await waitFor(() => {
+        expect(setPaneMode).toHaveBeenCalledWith('three-pane');
+        expect(setPaneLanguage).toHaveBeenCalledWith('m1', 'en', false);
+        expect(setPaneLanguage).toHaveBeenCalledWith('m2', 'fr', true);
+        expect(setPaneLanguage).toHaveBeenCalledWith('m3', 'es', false);
+      });
+    });
+  });
+
+  describe('Interactions', () => {
+    it('should set current page from pager callback when in range', async () => {
+      render(<Viewer />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pager')).toHaveTextContent('of 10');
+      });
+
+      screen.getByTestId('pager-go-page-2').click();
+
+      await waitFor(() => {
+        expect(mockViewerStore.setCurrentPage).toHaveBeenCalledWith(2);
+      });
+    });
+
+    it('should update pane mode and page on popstate navigation', async () => {
+      const setPaneMode = vi.fn();
+      const setCurrentPage = vi.fn();
+
+      (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        ...mockViewerStore,
+        paneMode: 'two-pane' as const,
+        setCurrentPage,
+      });
+
+      (useViewerStore as unknown as typeof useViewerStore & { getState: () => unknown }).getState =
+        vi.fn().mockReturnValue({
+          ...mockViewerStore,
+          paneMode: 'two-pane' as const,
+          setPaneMode,
+        });
+
+      render(<Viewer />);
+
+      (global.window as Partial<Window> & { location: Partial<Location> }).location = {
+        href: 'http://localhost:3000?mode=three-pane&page=4',
+        search: '?mode=three-pane&page=4',
+        pathname: '/',
+      } as Location;
+
+      window.dispatchEvent(new PopStateEvent('popstate'));
+
+      await waitFor(() => {
+        expect(setPaneMode).toHaveBeenCalledWith('three-pane');
+        expect(setCurrentPage).toHaveBeenCalledWith(4);
       });
     });
   });
