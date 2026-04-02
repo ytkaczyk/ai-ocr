@@ -61,13 +61,13 @@ export function PaneContainer({
   const containerRef = useRef<HTMLDivElement>(null);
   const [resizing, setResizing] = useState(false);
   const resizeStartXRef = useRef(0);
-  const panesRef = useRef(panes);
+  const panesRef = useRef(panes.map((pane) => ({ ...pane })));
   const [resizePaneIndex, setResizePaneIndex] = useState<number | null>(null);
 
   // Keep panesRef in sync so the resize effect always reads the latest widths
   // without needing panes as a dependency (rerender-use-ref-transient-values)
   useEffect(() => {
-    panesRef.current = panes;
+    panesRef.current = panes.map((pane) => ({ ...pane }));
   }, [panes]);
 
   // Handle resize start
