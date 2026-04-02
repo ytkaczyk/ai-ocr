@@ -98,13 +98,15 @@ export function PaneContainer({
 
       if (!currentPane || !nextPane) return;
 
-      // Calculate new widths
-      let newCurrentWidth = currentPane.widthPercent + deltaPercent;
-      let newNextWidth = nextPane.widthPercent - deltaPercent;
-
-      // Enforce minimum width of 10% (FR-017)
-      newCurrentWidth = Math.max(10, Math.min(80, newCurrentWidth));
-      newNextWidth = Math.max(10, Math.min(80, newNextWidth));
+      // Clamp within the pair total so both panes stay within bounds and keep a stable sum.
+      const pairTotal = currentPane.widthPercent + nextPane.widthPercent;
+      const minCurrentWidth = Math.max(10, pairTotal - 80);
+      const maxCurrentWidth = Math.min(80, pairTotal - 10);
+      const newCurrentWidth = Math.max(
+        minCurrentWidth,
+        Math.min(maxCurrentWidth, currentPane.widthPercent + deltaPercent)
+      );
+      const newNextWidth = pairTotal - newCurrentWidth;
 
       // Update pane widths
       updatePaneWidth(currentPane.id, newCurrentWidth);

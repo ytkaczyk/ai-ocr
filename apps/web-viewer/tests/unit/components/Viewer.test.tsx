@@ -74,6 +74,7 @@ describe('Viewer', () => {
     error: null,
     paneMode: 'two-pane' as const,
     setPaneMode: vi.fn(),
+    updatePane: vi.fn(),
     panes: [
       { id: 'pane-1', contentType: 'pdf' as const },
       { id: 'pane-2', contentType: 'markdown' as const, languageCode: 'en', isRaw: false },
@@ -344,8 +345,8 @@ describe('Viewer', () => {
 
     it('should remove stale pane params for non-markdown panes', async () => {
       (global.window as Partial<Window> & { location: Partial<Location> }).location = {
-        href: 'http://localhost:3000?page=1&mode=two-pane&pane1Lang=es&pane1Raw=true',
-        search: '?page=1&mode=two-pane&pane1Lang=es&pane1Raw=true',
+        href: 'http://localhost:3000?page=1&mode=two-pane&pane1Lang=es&pane1Raw=true&pane3Lang=fr&pane3Raw=false',
+        search: '?page=1&mode=two-pane&pane1Lang=es&pane1Raw=true&pane3Lang=fr&pane3Raw=false',
         pathname: '/',
       } as Location;
 
@@ -353,6 +354,9 @@ describe('Viewer', () => {
 
       await waitFor(() => {
         expect(window.history.replaceState).toHaveBeenCalled();
+        const lastCall = vi.mocked(window.history.replaceState).mock.calls.at(-1);
+        expect(lastCall?.[2]).not.toContain('pane1Lang');
+        expect(lastCall?.[2]).not.toContain('pane3Lang');
       });
     });
   });
@@ -410,33 +414,33 @@ describe('Viewer', () => {
 
       render(<Viewer />);
 
-      // The component calls getState().setPaneLanguage, so we need to verify it's called
       await waitFor(() => {
-        // Check that the viewer rendered successfully
         expect(screen.getByTestId('viewer-container')).toBeInTheDocument();
+        expect(setPaneLanguage).toHaveBeenCalledWith('pane-2', 'en', false);
       });
     });
 
     it('should restore pane mode and apply per-pane language params from URL', async () => {
       (global.window as Partial<Window> & { location: Partial<Location> }).location = {
-        href: 'http://localhost:3000?mode=three-pane&pane1Lang=en&pane1Raw=false&pane2Lang=fr&pane2Raw=true&pane3Lang=es&pane3Raw=false',
-        search:
-          '?mode=three-pane&pane1Lang=en&pane1Raw=false&pane2Lang=fr&pane2Raw=true&pane3Lang=es&pane3Raw=false',
+        href: 'http://localhost:3000?mode=three-pane&pane2Lang=fr&pane2Raw=true&pane3Lang=es&pane3Raw=false',
+        search: '?mode=three-pane&pane2Lang=fr&pane2Raw=true&pane3Lang=es&pane3Raw=false',
         pathname: '/',
       } as Location;
 
       const setPaneMode = vi.fn();
       const setPaneLanguage = vi.fn();
+      const updatePane = vi.fn();
 
       (useViewerStore as unknown as typeof useViewerStore & { getState: () => unknown }).getState =
         vi.fn().mockReturnValue({
           ...mockViewerStore,
           setPaneMode,
           setPaneLanguage,
+          updatePane,
           panes: [
-            { id: 'm1', contentType: 'markdown' as const, isRaw: false },
-            { id: 'm2', contentType: 'markdown' as const, isRaw: true },
-            { id: 'm3', contentType: 'markdown' as const, isRaw: false },
+            { id: 'pdf-pane', contentType: 'pdf' as const },
+            { id: 'raw-pane', contentType: 'markdown' as const, isRaw: true },
+            { id: 'processed-pane', contentType: 'markdown' as const, isRaw: false },
           ],
         });
 
@@ -444,9 +448,9 @@ describe('Viewer', () => {
 
       await waitFor(() => {
         expect(setPaneMode).toHaveBeenCalledWith('three-pane');
-        expect(setPaneLanguage).toHaveBeenCalledWith('m1', 'en', false);
-        expect(setPaneLanguage).toHaveBeenCalledWith('m2', 'fr', true);
-        expect(setPaneLanguage).toHaveBeenCalledWith('m3', 'es', false);
+        expect(setPaneLanguage).toHaveBeenCalledWith('raw-pane', 'fr', true);
+        expect(setPaneLanguage).toHaveBeenCalledWith('processed-pane', 'es', false);
+        expect(updatePane).not.toHaveBeenCalledWith('pdf-pane', expect.anything());
       });
     });
   });
@@ -469,6 +473,8 @@ describe('Viewer', () => {
     it('should update pane mode and page on popstate navigation', async () => {
       const setPaneMode = vi.fn();
       const setCurrentPage = vi.fn();
+      const setPaneLanguage = vi.fn();
+      const updatePane = vi.fn();
 
       (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         ...mockViewerStore,
@@ -481,13 +487,20 @@ describe('Viewer', () => {
           ...mockViewerStore,
           paneMode: 'two-pane' as const,
           setPaneMode,
+          setPaneLanguage,
+          updatePane,
+          panes: [
+            { id: 'pdf-pane', contentType: 'pdf' as const },
+            { id: 'raw-pane', contentType: 'markdown' as const, isRaw: true },
+            { id: 'processed-pane', contentType: 'markdown' as const, isRaw: false },
+          ],
         });
 
       render(<Viewer />);
 
       (global.window as Partial<Window> & { location: Partial<Location> }).location = {
-        href: 'http://localhost:3000?mode=three-pane&page=4',
-        search: '?mode=three-pane&page=4',
+        href: 'http://localhost:3000?mode=three-pane&page=4&pane2Lang=fr&pane2Raw=true&pane3Lang=es&pane3Raw=false',
+        search: '?mode=three-pane&page=4&pane2Lang=fr&pane2Raw=true&pane3Lang=es&pane3Raw=false',
         pathname: '/',
       } as Location;
 
@@ -495,6 +508,8 @@ describe('Viewer', () => {
 
       await waitFor(() => {
         expect(setPaneMode).toHaveBeenCalledWith('three-pane');
+        expect(setPaneLanguage).toHaveBeenCalledWith('raw-pane', 'fr', true);
+        expect(setPaneLanguage).toHaveBeenCalledWith('processed-pane', 'es', false);
         expect(setCurrentPage).toHaveBeenCalledWith(4);
       });
     });

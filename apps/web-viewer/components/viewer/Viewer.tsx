@@ -3,12 +3,44 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useDocumentStore } from '@/lib/stores/useDocumentStore';
 import { useViewerStore } from '@/lib/stores/useViewerStore';
+import type { Pane } from '@/lib/schemas/viewer';
 import { Pager } from './Pager';
 import { PaneContainer } from './PaneContainer';
 import { ModeToggle } from './ModeToggle';
 import { ScreenReaderAnnouncement } from './ScreenReaderAnnouncement';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { prefetchAdjacentPagesWithCache } from '@/lib/utils/prefetch';
+
+const MAX_URL_PANES = 3;
+
+function applyPaneLanguagesFromUrl(
+  params: URLSearchParams,
+  panes: Pane[],
+  setPaneLanguage: (paneId: string, languageCode: string, isRaw: boolean) => void,
+  updatePane: (paneId: string, updates: Partial<Pane>) => void
+) {
+  for (let index = 0; index < MAX_URL_PANES; index += 1) {
+    const pane = panes[index];
+
+    if (!pane || pane.contentType !== 'markdown') {
+      continue;
+    }
+
+    const paneNum = index + 1;
+    const languageCode = params.get(`pane${paneNum}Lang`);
+    const isRaw = params.get(`pane${paneNum}Raw`) === 'true';
+
+    if (languageCode) {
+      setPaneLanguage(pane.id, languageCode, isRaw);
+      continue;
+    }
+
+    updatePane(pane.id, {
+      languageCode: undefined,
+      isRaw: pane.isRaw,
+    });
+  }
+}
 
 /**
  * Viewer component
@@ -66,7 +98,7 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
     const pageParam = params.get('page');
 
     // Restore pane mode before applying pane language params so pane indexes match URL.
-    const { setPaneMode, setPaneLanguage } = useViewerStore.getState();
+    const { setPaneMode, setPaneLanguage, updatePane } = useViewerStore.getState();
     if (modeParam === 'two-pane' || modeParam === 'three-pane') {
       setPaneMode(modeParam);
     }
@@ -78,26 +110,10 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
       }
     }
 
-    // Initialize per-pane language selections from URL (FR-034e, T097h)
-    const pane1Lang = params.get('pane1Lang');
-    const pane1Raw = params.get('pane1Raw') === 'true';
-    const pane2Lang = params.get('pane2Lang');
-    const pane2Raw = params.get('pane2Raw') === 'true';
-    const pane3Lang = params.get('pane3Lang');
-    const pane3Raw = params.get('pane3Raw') === 'true';
-
     // Apply language selections against the active mode's pane layout.
     const panes = useViewerStore.getState().panes;
 
-    if (pane1Lang && panes[0]?.contentType === 'markdown') {
-      setPaneLanguage(panes[0].id, pane1Lang, pane1Raw);
-    }
-    if (pane2Lang && panes[1]?.contentType === 'markdown') {
-      setPaneLanguage(panes[1].id, pane2Lang, pane2Raw);
-    }
-    if (pane3Lang && panes[2]?.contentType === 'markdown') {
-      setPaneLanguage(panes[2].id, pane3Lang, pane3Raw);
-    }
+    applyPaneLanguagesFromUrl(params, panes, setPaneLanguage, updatePane);
   }, [document, setCurrentPage]);
 
   // Update URL when page, mode, or pane languages change (FR-034e, T097h)
@@ -124,12 +140,13 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
     }
 
     // Track language selections per absolute pane index for stable round-tripping.
-    panes.forEach((pane, index) => {
+    for (let index = 0; index < MAX_URL_PANES; index += 1) {
+      const pane = panes[index];
       const paneNum = index + 1;
       const langParam = `pane${paneNum}Lang`;
       const rawParam = `pane${paneNum}Raw`;
 
-      if (pane.contentType === 'markdown' && pane.languageCode) {
+      if (pane?.contentType === 'markdown' && pane.languageCode) {
         const currentLang = url.searchParams.get(langParam);
         const currentRaw = url.searchParams.get(rawParam);
 
@@ -148,7 +165,7 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
         url.searchParams.delete(rawParam);
         changed = true;
       }
-    });
+    }
 
     if (changed) {
       window.history.replaceState({}, '', url.toString());
@@ -171,6 +188,9 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
           setPaneMode(modeParam);
         }
       }
+
+      const { panes, setPaneLanguage, updatePane } = useViewerStore.getState();
+      applyPaneLanguagesFromUrl(params, panes, setPaneLanguage, updatePane);
 
       if (pageParam) {
         const pageNum = parseInt(pageParam, 10);
