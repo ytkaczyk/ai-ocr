@@ -57,55 +57,91 @@ function PdfPaneComponent({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
-  const [pageDimensions, setPageDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [pageDimensions, setPageDimensions] = useState<{ width: number; height: number } | null>(
+    null
+  );
   const [highResReady, setHighResReady] = useState(false);
   const [containerHeight, setContainerHeight] = useState<number>(600);
   const containerRef = useRef<HTMLDivElement>(null);
+  const highResTimeoutRef = useRef<number | null>(null);
+
+  const clearHighResTimeout = () => {
+    if (highResTimeoutRef.current !== null) {
+      window.clearTimeout(highResTimeoutRef.current);
+      highResTimeoutRef.current = null;
+    }
+  };
 
   // Reset high-res state when page changes
   useEffect(() => {
+    clearHighResTimeout();
+
     // Use queueMicrotask to avoid React's setState-in-effect warning
     queueMicrotask(() => setHighResReady(false));
   }, [pageNumber]);
+
+  // Ensure no pending timeout updates state after unmount
+  useEffect(() => {
+    return () => {
+      clearHighResTimeout();
+    };
+  }, []);
 
   // PDF URL - same for all pages, enabling efficient browser caching
   const pdfUrl = `/api/documents/${documentId}/pdf`;
 
   // Handle HTTP errors (e.g., 422 for corrupted PDFs)
-  const httpSource = useMemo(() => ({
-    url: pdfUrl,
-    httpHeaders: {},
-    withCredentials: false,
-  }), [pdfUrl]);
+  const httpSource = useMemo(
+    () => ({
+      url: pdfUrl,
+      httpHeaders: {},
+      withCredentials: false,
+    }),
+    [pdfUrl]
+  );
 
   // Update container dimensions on resize
   useEffect(() => {
+    let frameId: number | null = null;
+
     const updateDimensions = () => {
+      frameId = null;
+
       if (containerRef.current) {
         setContainerWidth(containerRef.current.clientWidth);
         setContainerHeight(containerRef.current.clientHeight);
       }
     };
 
+    const scheduleDimensionsUpdate = () => {
+      if (frameId !== null) {
+        return;
+      }
+
+      frameId = window.requestAnimationFrame(updateDimensions);
+    };
+
+    // Initial measurement
     updateDimensions();
 
-    // Listen for window resizes (e.g., viewport changes)
-    window.addEventListener('resize', updateDimensions);
+    // Keep a window resize listener for environments where ResizeObserver is
+    // unavailable or delayed, but funnel both paths through the same scheduler.
+    window.addEventListener('resize', scheduleDimensionsUpdate);
 
-    // Listen for container resizes (e.g., splitter drag)
     let resizeObserver: ResizeObserver | null = null;
     if (typeof ResizeObserver !== 'undefined' && containerRef.current) {
-      resizeObserver = new ResizeObserver((entries) => {
-        const entry = entries[0];
-        const { width, height } = entry?.contentRect ?? { width: 0, height: 0 };
-        setContainerWidth(width || containerRef.current?.clientWidth || 0);
-        setContainerHeight(height || containerRef.current?.clientHeight || 0);
+      resizeObserver = new ResizeObserver(() => {
+        scheduleDimensionsUpdate();
       });
       resizeObserver.observe(containerRef.current);
     }
 
     return () => {
-      window.removeEventListener('resize', updateDimensions);
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+
+      window.removeEventListener('resize', scheduleDimensionsUpdate);
       resizeObserver?.disconnect();
     };
   }, []);
@@ -124,7 +160,9 @@ function PdfPaneComponent({
   function onDocumentLoadError(err: Error) {
     console.error('PDF load error:', err);
 
-    setError('Cannot render PDF (file may be corrupted). Please verify the PDF file and re-scan if necessary.');
+    setError(
+      'Cannot render PDF (file may be corrupted). Please verify the PDF file and re-scan if necessary.'
+    );
     setLoading(false);
     if (onLoadError) {
       onLoadError(err);
@@ -133,14 +171,19 @@ function PdfPaneComponent({
 
   // Handle page load success
   function onPageLoadSuccess(page: PageCallback) {
+    clearHighResTimeout();
+
     const viewport = page.getViewport({ scale: 1 });
     setPageDimensions({
       width: viewport.width,
       height: viewport.height,
     });
-    
+
     // Mark high-res as ready after low-res loads (FR-029d)
-    setTimeout(() => setHighResReady(true), 100);
+    highResTimeoutRef.current = window.setTimeout(() => {
+      setHighResReady(true);
+      highResTimeoutRef.current = null;
+    }, 100);
   }
 
   // Calculate scale based on zoom mode (FR-016)
@@ -186,7 +229,11 @@ function PdfPaneComponent({
     : null;
 
   return (
-    <div className={`pdf-pane relative flex flex-col h-full bg-background ${className}`} role="region" aria-label="PDF viewer pane">
+    <div
+      className={`pdf-pane relative flex flex-col h-full bg-background ${className}`}
+      role="region"
+      aria-label="PDF viewer pane"
+    >
       {/* Toolbar with zoom controls */}
       {onZoomIn && onZoomOut && onZoomChange && (
         <PdfToolbar
@@ -201,88 +248,107 @@ function PdfPaneComponent({
 
       {/* Scrollable PDF container */}
       <div ref={containerRef} className="flex-1 overflow-auto">
-      {/* Loading state */}
-      {loading && !error && (
-        <div className="flex h-full items-center justify-center" role="status" aria-live="polite" aria-label="Loading PDF">
-          <div className="text-center">
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" aria-hidden="true" />
-            <p className="mt-2 text-sm text-muted-foreground">Loading PDF...</p>
-          </div>
-        </div>
-      )}
-
-      {/* Error state */}
-      {error && (
-        <div data-testid="error-message" className="flex h-full items-center justify-center p-4" role="alert" aria-live="assertive">
-          <div className="text-center max-w-md">
-            <AlertCircle className="mx-auto h-12 w-12 text-destructive" aria-hidden="true" />
-            <p className="mt-4 text-sm text-destructive font-medium">Error loading PDF</p>
-            <p className="mt-2 text-xs text-muted-foreground">{error}</p>
-            <button
-              onClick={() => {
-                setError(null);
-                setLoading(true);
-              }}
-              className="mt-4 text-sm text-primary hover:underline"
-              aria-label="Retry loading PDF"
-            >
-              Try again
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* PDF Document */}
-      {!error && (
-        <Document
-          key={documentId}
-          file={httpSource}
-          onLoadSuccess={onDocumentLoadSuccess}
-          onLoadError={onDocumentLoadError}
-          loading={null}
-          error={null}
-          className="pdf-document"
-        >
-          {/* Non-standard PDF warning (FR-029a) */}
-          {isNonStandard && pageDimensions && (
-            <div className="sticky top-0 z-10 bg-amber-50 border-b border-amber-200 px-4 py-2" role="status" aria-label="Non-standard page size warning">
-              <div className="flex items-center gap-2 text-xs text-amber-900">
-                <Info className="h-4 w-4" aria-hidden="true" />
-                <span>
-                  Non-standard page size: {formatPdfDimensions(pageDimensions.width, pageDimensions.height)}
-                  {orientation && ` (${orientation})`}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* PDF Page with dimension tooltip (FR-029a) */}
-          <div 
-            title={pageDimensions ? formatPdfDimensions(pageDimensions.width, pageDimensions.height) : undefined}
-            aria-label={`PDF page ${pageNumber}`}
+        {/* Loading state */}
+        {loading && !error && (
+          <div
+            className="flex h-full items-center justify-center"
+            role="status"
+            aria-live="polite"
+            aria-label="Loading PDF"
           >
-            <Page
-              pageNumber={pageNumber}
-              scale={scale}
-              onLoadSuccess={onPageLoadSuccess}
-              loading={
-                <div className="flex items-center justify-center p-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-            }
-            error={
-              <div className="flex items-center justify-center p-8 text-destructive">
-                <AlertCircle className="mr-2 h-5 w-5" />
-                <span className="text-sm">Failed to render page {pageNumber}</span>
-              </div>
-            }
-            renderTextLayer={true}
-            renderAnnotationLayer={true}
-            className="pdf-page mx-auto"
-          />
+            <div className="text-center">
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" aria-hidden="true" />
+              <p className="mt-2 text-sm text-muted-foreground">Loading PDF...</p>
+            </div>
           </div>
-        </Document>
-      )}
+        )}
+
+        {/* Error state */}
+        {error && (
+          <div
+            data-testid="error-message"
+            className="flex h-full items-center justify-center p-4"
+            role="alert"
+            aria-live="assertive"
+          >
+            <div className="text-center max-w-md">
+              <AlertCircle className="mx-auto h-12 w-12 text-destructive" aria-hidden="true" />
+              <p className="mt-4 text-sm text-destructive font-medium">Error loading PDF</p>
+              <p className="mt-2 text-xs text-muted-foreground">{error}</p>
+              <button
+                onClick={() => {
+                  setError(null);
+                  setLoading(true);
+                }}
+                className="mt-4 text-sm text-primary hover:underline"
+                aria-label="Retry loading PDF"
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* PDF Document */}
+        {!error && (
+          <Document
+            key={documentId}
+            file={httpSource}
+            onLoadSuccess={onDocumentLoadSuccess}
+            onLoadError={onDocumentLoadError}
+            loading={null}
+            error={null}
+            className="pdf-document"
+          >
+            {/* Non-standard PDF warning (FR-029a) */}
+            {isNonStandard && pageDimensions && (
+              <div
+                className="sticky top-0 z-10 bg-amber-50 border-b border-amber-200 px-4 py-2"
+                role="status"
+                aria-label="Non-standard page size warning"
+              >
+                <div className="flex items-center gap-2 text-xs text-amber-900">
+                  <Info className="h-4 w-4" aria-hidden="true" />
+                  <span>
+                    Non-standard page size:{' '}
+                    {formatPdfDimensions(pageDimensions.width, pageDimensions.height)}
+                    {orientation && ` (${orientation})`}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* PDF Page with dimension tooltip (FR-029a) */}
+            <div
+              title={
+                pageDimensions
+                  ? formatPdfDimensions(pageDimensions.width, pageDimensions.height)
+                  : undefined
+              }
+              aria-label={`PDF page ${pageNumber}`}
+            >
+              <Page
+                pageNumber={pageNumber}
+                scale={scale}
+                onLoadSuccess={onPageLoadSuccess}
+                loading={
+                  <div className="flex items-center justify-center p-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                }
+                error={
+                  <div className="flex items-center justify-center p-8 text-destructive">
+                    <AlertCircle className="mr-2 h-5 w-5" />
+                    <span className="text-sm">Failed to render page {pageNumber}</span>
+                  </div>
+                }
+                renderTextLayer={true}
+                renderAnnotationLayer={true}
+                className="pdf-page mx-auto"
+              />
+            </div>
+          </Document>
+        )}
       </div>
     </div>
   );

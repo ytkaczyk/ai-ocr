@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import { PdfPane } from '@/components/viewer/PdfPane';
 
 // Mock react-pdf
@@ -19,7 +19,9 @@ vi.mock('react-pdf', () => ({
       <div data-testid="mock-page">
         {loading}
         {error}
-        <div data-testid="page-content">Page {pageNumber} at scale {scale?.toFixed(2) || '1.00'}</div>
+        <div data-testid="page-content">
+          Page {pageNumber} at scale {scale?.toFixed(2) || '1.00'}
+        </div>
       </div>
     );
   },
@@ -108,6 +110,7 @@ describe('PdfPane', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -427,7 +430,9 @@ describe('PdfPane', () => {
       pageCall.onLoadSuccess(mockPageObject);
 
       await waitFor(() => {
-        expect(screen.getByRole('status', { name: /non-standard page size warning/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('status', { name: /non-standard page size warning/i })
+        ).toBeInTheDocument();
         expect(screen.getByText(/non-standard page size/i)).toBeInTheDocument();
       });
     });
@@ -495,7 +500,9 @@ describe('PdfPane', () => {
       pageCall.onLoadSuccess(mockPageObject);
 
       await waitFor(() => {
-        expect(screen.queryByRole('status', { name: /non-standard page size warning/i })).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('status', { name: /non-standard page size warning/i })
+        ).not.toBeInTheDocument();
       });
     });
   });
@@ -548,13 +555,27 @@ describe('PdfPane', () => {
   describe('Component Memoization', () => {
     it('should not re-render when unrelated props change', () => {
       const { rerender } = render(
-        <PdfPane documentId="test-doc" pageNumber={1} zoomLevel={1} zoomMode="fit" className="class-1" />
+        <PdfPane
+          documentId="test-doc"
+          pageNumber={1}
+          zoomLevel={1}
+          zoomMode="fit"
+          className="class-1"
+        />
       );
 
       const initialCallCount = mockDocument.mock.calls.length;
 
       // Re-render with same key props but different className
-      rerender(<PdfPane documentId="test-doc" pageNumber={1} zoomLevel={1} zoomMode="fit" className="class-2" />);
+      rerender(
+        <PdfPane
+          documentId="test-doc"
+          pageNumber={1}
+          zoomLevel={1}
+          zoomMode="fit"
+          className="class-2"
+        />
+      );
 
       // Should re-render because className changed (not part of memo comparison)
       // But document should still be the same
@@ -562,7 +583,9 @@ describe('PdfPane', () => {
     });
 
     it('should re-render when documentId changes', () => {
-      const { rerender } = render(<PdfPane documentId="doc-1" pageNumber={1} zoomLevel={1} zoomMode="fit" />);
+      const { rerender } = render(
+        <PdfPane documentId="doc-1" pageNumber={1} zoomLevel={1} zoomMode="fit" />
+      );
 
       mockDocument.mockClear();
 
@@ -713,7 +736,9 @@ describe('PdfPane', () => {
 
     it('should update dimensions when container resizes via ResizeObserver', async () => {
       // Track ResizeObserver callbacks
-      const resizeCallbacks: Array<(entries: Array<{ contentRect: { width: number; height: number } }>) => void> = [];
+      const resizeCallbacks: Array<
+        (entries: Array<{ contentRect: { width: number; height: number } }>) => void
+      > = [];
       global.ResizeObserver = vi.fn(function ResizeObserver(callback: ResizeObserverCallback) {
         resizeCallbacks.push(callback);
         return resizeObserverMock as unknown as ResizeObserver;
@@ -919,6 +944,37 @@ describe('PdfPane', () => {
           scale: 1,
         })
       );
+    });
+
+    it('should switch to high-res scale after timeout elapses', async () => {
+      vi.useFakeTimers();
+
+      Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+        configurable: true,
+        value: 1000,
+      });
+
+      render(<PdfPane documentId="test-doc" pageNumber={1} zoomMode="width" />);
+
+      const documentCall = mockDocument.mock.calls[0][0];
+      documentCall.onLoadSuccess({ numPages: 1 });
+
+      const pageCall = mockPage.mock.calls[0][0];
+      const mockPageObject = {
+        getViewport: ({ scale: _scale }: { scale: number }) => ({
+          width: 612,
+          height: 792,
+        }),
+      };
+
+      pageCall.onLoadSuccess(mockPageObject);
+
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+
+      const latestCall = mockPage.mock.calls.at(-1)?.[0];
+      expect(latestCall?.scale).toBeGreaterThan(1);
     });
   });
 

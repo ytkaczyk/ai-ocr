@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 import path from 'path';
 import { validateEnv } from '@/lib/utils/env';
 import { documentSetSchema } from '@/lib/schemas/document';
-import {
-  readDirectory,
-  exists,
-  getFileSize,
-} from '@/lib/utils/file-system';
+import { readDirectory, exists, getFileSize } from '@/lib/utils/file-system';
 import { validateFilename } from '@/lib/utils/security';
 import { ValidationError, FileSystemError, NotFoundError } from '@/lib/utils/errors';
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 /**
  * GET /api/documents/[documentId]
@@ -22,7 +22,7 @@ export async function GET(
 ) {
   try {
     const { documentId } = await params;
-    
+
     // Validate environment configuration (FR-008)
     const env = validateEnv();
     const dataFolderPath = path.resolve(env.DATA_FOLDER_PATH);
@@ -61,25 +61,28 @@ export async function GET(
       throw new NotFoundError(`Language folder not found for document: ${documentId}`);
     }
 
-    // Scan for language version folders (FR-019)
+    // Scan for language version folders in parallel (FR-019, async-parallel)
     const languageFolders = await readDirectory(languageFolderPath);
-    const languageVersions = [];
+    const languageVersionResults = await Promise.all(
+      languageFolders.map(async (folder) => {
+        // Match pattern: <lang-COUNTRY> or raw.<lang-COUNTRY>
+        const rawMatch = folder.match(/^raw\.([a-z]{2}-[A-Z]{2})$/);
+        const processedMatch = folder.match(/^([a-z]{2}-[A-Z]{2})$/);
 
-    for (const folder of languageFolders) {
-      // Match pattern: <lang-COUNTRY> or raw.<lang-COUNTRY>
-      const rawMatch = folder.match(/^raw\.([a-z]{2}-[A-Z]{2})$/);
-      const processedMatch = folder.match(/^([a-z]{2}-[A-Z]{2})$/);
+        if (!rawMatch && !processedMatch) return null;
 
-      if (rawMatch || processedMatch) {
         const languageCode = rawMatch ? rawMatch[1] : processedMatch![1];
         const isRaw = !!rawMatch;
+        const escapedDocumentId = escapeRegExp(documentId);
 
         // Get all markdown files in the language folder
         const languageVersionPath = path.join(languageFolderPath, folder);
         const languageFiles = await readDirectory(languageVersionPath);
         const markdownFiles = languageFiles
           .filter((file: string) =>
-            file.match(new RegExp(`^${documentId}\\.(raw\\.)?${languageCode}_page_\\d+\\.md$`))
+            file.match(
+              new RegExp(`^${escapedDocumentId}\\.(raw\\.)?${languageCode}_page_\\d+\\.md$`)
+            )
           )
           .sort((a, b) => {
             // Sort by page number
@@ -88,28 +91,32 @@ export async function GET(
             return pageA - pageB;
           });
 
-        if (markdownFiles.length > 0) {
-          // Build page file details
-          const pageFiles = markdownFiles.map((file: string) => {
-            const pageMatch = file.match(/_page_(\d+)\.md$/);
-            const pageNumber = pageMatch ? parseInt(pageMatch[1]) : 0;
-            const filePath = path.join(folder, file);
+        if (markdownFiles.length === 0) return null;
 
-            return {
-              pageNumber,
-              filePath,
-            };
-          });
+        // Build page file details
+        const pageFiles = markdownFiles.map((file: string) => {
+          const pageMatch = file.match(/_page_(\d+)\.md$/);
+          const pageNumber = pageMatch ? parseInt(pageMatch[1]) : 0;
+          const filePath = path.join(folder, file);
 
-          languageVersions.push({
-            languageCode,
-            isRaw,
-            folderName: folder,
-            pageFiles,
-          });
-        }
-      }
-    }
+          return {
+            pageNumber,
+            filePath,
+          };
+        });
+
+        return {
+          languageCode,
+          isRaw,
+          folderName: folder,
+          pageFiles,
+        };
+      })
+    );
+
+    const languageVersions = languageVersionResults.filter(Boolean) as NonNullable<
+      (typeof languageVersionResults)[number]
+    >[];
 
     if (languageVersions.length === 0) {
       throw new NotFoundError(`No valid language versions found for document: ${documentId}`);

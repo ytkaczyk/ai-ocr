@@ -56,17 +56,25 @@ export function PaneContainer({
   availableLanguages = [],
   className = '',
 }: PaneContainerProps) {
-  const { panes, updatePaneWidth, setPaneLanguage, setPaneZoom, zoomIn, zoomOut } = useViewerStore();
+  const { panes, updatePaneWidth, setPaneLanguage, setPaneZoom, zoomIn, zoomOut } =
+    useViewerStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const [resizing, setResizing] = useState(false);
-  const [resizeStartX, setResizeStartX] = useState(0);
+  const resizeStartXRef = useRef(0);
+  const panesRef = useRef(panes.map((pane) => ({ ...pane })));
   const [resizePaneIndex, setResizePaneIndex] = useState<number | null>(null);
+
+  // Keep panesRef in sync so the resize effect always reads the latest widths
+  // without needing panes as a dependency (rerender-use-ref-transient-values)
+  useEffect(() => {
+    panesRef.current = panes.map((pane) => ({ ...pane }));
+  }, [panes]);
 
   // Handle resize start
   const handleResizeStart = useCallback((e: React.MouseEvent, paneIndex: number) => {
     e.preventDefault();
     setResizing(true);
-    setResizeStartX(e.clientX);
+    resizeStartXRef.current = e.clientX;
     setResizePaneIndex(paneIndex);
   }, []);
 
@@ -81,28 +89,40 @@ export function PaneContainer({
       if (!container) return;
 
       const containerWidth = container.clientWidth;
-      const deltaX = e.clientX - resizeStartX;
+      const deltaX = e.clientX - resizeStartXRef.current;
       const deltaPercent = (deltaX / containerWidth) * 100;
 
-      // Get current pane widths
-      const currentPane = panes[resizePaneIndex];
-      const nextPane = panes[resizePaneIndex + 1];
+      // Get current pane widths from ref (avoids re-registering listeners on every drag tick)
+      const currentPane = panesRef.current[resizePaneIndex];
+      const nextPane = panesRef.current[resizePaneIndex + 1];
 
       if (!currentPane || !nextPane) return;
 
-      // Calculate new widths
-      let newCurrentWidth = currentPane.widthPercent + deltaPercent;
-      let newNextWidth = nextPane.widthPercent - deltaPercent;
-
-      // Enforce minimum width of 10% (FR-017)
-      newCurrentWidth = Math.max(10, Math.min(80, newCurrentWidth));
-      newNextWidth = Math.max(10, Math.min(80, newNextWidth));
+      // Clamp within the pair total so both panes stay within bounds and keep a stable sum.
+      const pairTotal = currentPane.widthPercent + nextPane.widthPercent;
+      const minCurrentWidth = Math.max(10, pairTotal - 80);
+      const maxCurrentWidth = Math.min(80, pairTotal - 10);
+      const newCurrentWidth = Math.max(
+        minCurrentWidth,
+        Math.min(maxCurrentWidth, currentPane.widthPercent + deltaPercent)
+      );
+      const newNextWidth = pairTotal - newCurrentWidth;
 
       // Update pane widths
       updatePaneWidth(currentPane.id, newCurrentWidth);
       updatePaneWidth(nextPane.id, newNextWidth);
 
-      setResizeStartX(e.clientX);
+      // Keep drag math in sync between renders to avoid stale width accumulation.
+      panesRef.current[resizePaneIndex] = {
+        ...currentPane,
+        widthPercent: newCurrentWidth,
+      };
+      panesRef.current[resizePaneIndex + 1] = {
+        ...nextPane,
+        widthPercent: newNextWidth,
+      };
+
+      resizeStartXRef.current = e.clientX;
     };
 
     const handleMouseUp = () => {
@@ -117,73 +137,87 @@ export function PaneContainer({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [resizing, resizePaneIndex, resizeStartX, panes, updatePaneWidth]);
+  }, [resizing, resizePaneIndex, updatePaneWidth]);
 
   // Render pane content based on type
-  const renderPane = useCallback((pane: typeof panes[0]) => {
-    if (pane.contentType === 'pdf') {
-      // Zoom handlers for PDF pane
-      const handleZoomIn = () => zoomIn(pane.id);
-      const handleZoomOut = () => zoomOut(pane.id);
-      const handleZoomChange = (level: number, mode: ZoomMode) => {
-        setPaneZoom(pane.id, level, mode);
-      };
+  const renderPane = useCallback(
+    (pane: (typeof panes)[0]) => {
+      if (pane.contentType === 'pdf') {
+        // Zoom handlers for PDF pane
+        const handleZoomIn = () => zoomIn(pane.id);
+        const handleZoomOut = () => zoomOut(pane.id);
+        const handleZoomChange = (level: number, mode: ZoomMode) => {
+          setPaneZoom(pane.id, level, mode);
+        };
 
-      return (
-        <div key={pane.id} data-testid="pdf-pane" className="h-full">
-          <PdfPane
-            documentId={documentId}
-            pageNumber={currentPage}
-            zoomLevel={pane.zoomLevel}
-            zoomMode={pane.zoomMode}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            onZoomChange={handleZoomChange}
-            className="h-full"
-          />
-        </div>
-      );
-    } else if (pane.contentType === 'markdown') {
-      // Determine which language code to use based on pane configuration
-      // Priority: user-selected language > 3-pane defaults > fallback language
-      let paneLanguageCode: string;
-      const paneIsRaw = pane.isRaw || false;
-      
-      if (pane.languageCode) {
-        // User has explicitly selected a language for this pane
-        paneLanguageCode = pane.languageCode;
-      } else if (pane.isRaw && sourceLanguageCode) {
-        // For 3-pane mode raw pane, use source language as default
-        paneLanguageCode = sourceLanguageCode;
-      } else if (!pane.isRaw && targetLanguageCode) {
-        // For 3-pane mode processed pane, use target language as default
-        paneLanguageCode = targetLanguageCode;
-      } else {
-        // Fallback to default language
-        paneLanguageCode = languageCode;
+        return (
+          <div key={pane.id} data-testid="pdf-pane" className="h-full">
+            <PdfPane
+              documentId={documentId}
+              pageNumber={currentPage}
+              zoomLevel={pane.zoomLevel}
+              zoomMode={pane.zoomMode}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onZoomChange={handleZoomChange}
+              className="h-full"
+            />
+          </div>
+        );
+      } else if (pane.contentType === 'markdown') {
+        // Determine which language code to use based on pane configuration
+        // Priority: user-selected language > 3-pane defaults > fallback language
+        let paneLanguageCode: string;
+        const paneIsRaw = pane.isRaw || false;
+
+        if (pane.languageCode) {
+          // User has explicitly selected a language for this pane
+          paneLanguageCode = pane.languageCode;
+        } else if (pane.isRaw && sourceLanguageCode) {
+          // For 3-pane mode raw pane, use source language as default
+          paneLanguageCode = sourceLanguageCode;
+        } else if (!pane.isRaw && targetLanguageCode) {
+          // For 3-pane mode processed pane, use target language as default
+          paneLanguageCode = targetLanguageCode;
+        } else {
+          // Fallback to default language
+          paneLanguageCode = languageCode;
+        }
+
+        // Handler for language change
+        const handleLanguageChange = (newLanguageCode: string, newIsRaw: boolean) => {
+          setPaneLanguage(pane.id, newLanguageCode, newIsRaw);
+        };
+
+        return (
+          <div key={pane.id} data-testid="markdown-pane" className="h-full">
+            <MarkdownPane
+              documentId={documentId}
+              pageNumber={currentPage}
+              languageCode={paneLanguageCode}
+              isRaw={paneIsRaw}
+              availableLanguages={availableLanguages}
+              onLanguageChange={handleLanguageChange}
+              className="h-full"
+            />
+          </div>
+        );
       }
-
-      // Handler for language change
-      const handleLanguageChange = (newLanguageCode: string, newIsRaw: boolean) => {
-        setPaneLanguage(pane.id, newLanguageCode, newIsRaw);
-      };
-      
-      return (
-        <div key={pane.id} data-testid="markdown-pane" className="h-full">
-          <MarkdownPane
-            documentId={documentId}
-            pageNumber={currentPage}
-            languageCode={paneLanguageCode}
-            isRaw={paneIsRaw}
-            availableLanguages={availableLanguages}
-            onLanguageChange={handleLanguageChange}
-            className="h-full"
-          />
-        </div>
-      );
-    }
-    return null;
-  }, [documentId, currentPage, languageCode, sourceLanguageCode, targetLanguageCode, availableLanguages, setPaneLanguage, setPaneZoom, zoomIn, zoomOut]);
+      return null;
+    },
+    [
+      documentId,
+      currentPage,
+      languageCode,
+      sourceLanguageCode,
+      targetLanguageCode,
+      availableLanguages,
+      setPaneLanguage,
+      setPaneZoom,
+      zoomIn,
+      zoomOut,
+    ]
+  );
 
   return (
     <div

@@ -11,19 +11,81 @@ vi.mock('@/lib/stores/useViewerStore', () => ({
 
 // Mock PdfPane and MarkdownPane to avoid PDF.js and complex rendering
 vi.mock('@/components/viewer/PdfPane', () => ({
-  PdfPane: ({ documentId, pageNumber }: { documentId: string; pageNumber: number }) => {
-    return React.createElement('div', { 'data-testid': 'pdf-pane' },
+  PdfPane: ({
+    documentId,
+    pageNumber,
+    onZoomIn,
+    onZoomOut,
+    onZoomChange,
+  }: {
+    documentId: string;
+    pageNumber: number;
+    onZoomIn?: () => void;
+    onZoomOut?: () => void;
+    onZoomChange?: (level: number, mode: 'fit' | 'width' | 'percentage') => void;
+  }) => {
+    return React.createElement(
+      'div',
+      { 'data-testid': 'pdf-pane-content' },
       React.createElement('div', null, 'Loading PDF viewer...'),
-      React.createElement('div', null, `Document: ${documentId}, Page: ${pageNumber}`)
+      React.createElement('div', null, `Document: ${documentId}, Page: ${pageNumber}`),
+      React.createElement(
+        'button',
+        {
+          'data-testid': 'pdf-zoom-in',
+          onClick: () => onZoomIn?.(),
+        },
+        'Zoom in'
+      ),
+      React.createElement(
+        'button',
+        {
+          'data-testid': 'pdf-zoom-out',
+          onClick: () => onZoomOut?.(),
+        },
+        'Zoom out'
+      ),
+      React.createElement(
+        'button',
+        {
+          'data-testid': 'pdf-zoom-change',
+          onClick: () => onZoomChange?.(1.2, 'percentage'),
+        },
+        'Zoom change'
+      )
     );
   },
 }));
 
 vi.mock('@/components/viewer/MarkdownPane', () => ({
-  MarkdownPane: ({ documentId, pageNumber, languageCode }: { documentId: string; pageNumber: number; languageCode: string }) => {
-    return React.createElement('div', { 'data-testid': 'markdown-pane' },
+  MarkdownPane: ({
+    documentId,
+    pageNumber,
+    languageCode,
+    onLanguageChange,
+  }: {
+    documentId: string;
+    pageNumber: number;
+    languageCode: string;
+    onLanguageChange?: (languageCode: string, isRaw: boolean) => void;
+  }) => {
+    return React.createElement(
+      'div',
+      { 'data-testid': 'markdown-pane-content' },
       React.createElement('h1', null, 'Test'),
-      React.createElement('div', null, `Document: ${documentId}, Page: ${pageNumber}, Language: ${languageCode}`)
+      React.createElement(
+        'div',
+        null,
+        `Document: ${documentId}, Page: ${pageNumber}, Language: ${languageCode}`
+      ),
+      React.createElement(
+        'button',
+        {
+          'data-testid': 'markdown-change-language',
+          onClick: () => onLanguageChange?.('de-DE', true),
+        },
+        'Change language'
+      )
     );
   },
 }));
@@ -32,34 +94,41 @@ vi.mock('@/components/viewer/MarkdownPane', () => ({
 vi.mock('next/dynamic', () => {
   // Cache for loaded components - shared across all dynamic() calls
   const componentCache = new Map<string, React.ComponentType<unknown>>();
-  
+
   return {
     __esModule: true,
-    default: (fn: () => Promise<{ default: unknown }>) => {
+    default: (fn: () => Promise<unknown>, options?: { loading?: () => React.ReactNode }) => {
       // Generate a cache key from the function string
       const key = fn.toString();
-      
+
       // Return a wrapper component that loads and caches the component
       return (props: Record<string, unknown>) => {
-        const [Component, setComponent] = React.useState<React.ComponentType<unknown> | null>(() => {
-          // Try to get from cache first
-          return componentCache.get(key) || null;
-        });
-        
+        const [Component, setComponent] = React.useState<React.ComponentType<unknown> | null>(
+          () => {
+            // Try to get from cache first
+            return componentCache.get(key) || null;
+          }
+        );
+
         React.useEffect(() => {
           if (!Component) {
             fn().then((mod) => {
-              const comp = mod.default as React.ComponentType<unknown>;
+              const comp =
+                mod && typeof mod === 'object' && 'default' in mod
+                  ? (mod as { default: React.ComponentType<unknown> }).default
+                  : (mod as React.ComponentType<unknown>);
               componentCache.set(key, comp);
               setComponent(() => comp);
             });
           }
         }, [Component]);
-        
+
         if (!Component) {
-          return null;
+          return options?.loading
+            ? React.createElement(React.Fragment, null, options.loading())
+            : null;
         }
-        
+
         return React.createElement(Component, props);
       };
     },
@@ -94,6 +163,10 @@ function createMockResponse(data: unknown, ok = true) {
 
 describe('PaneContainer', () => {
   const mockUpdatePaneWidth = vi.fn();
+  const mockSetPaneLanguage = vi.fn();
+  const mockSetPaneZoom = vi.fn();
+  const mockZoomIn = vi.fn();
+  const mockZoomOut = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -105,9 +178,19 @@ describe('PaneContainer', () => {
       (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         panes: [
           { id: 'pdf', contentType: 'pdf', widthPercent: 50, visible: true, isRaw: false },
-          { id: 'markdown', contentType: 'markdown', widthPercent: 50, visible: true, isRaw: false },
+          {
+            id: 'markdown',
+            contentType: 'markdown',
+            widthPercent: 50,
+            visible: true,
+            isRaw: false,
+          },
         ],
         updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
       });
     });
 
@@ -154,10 +237,20 @@ describe('PaneContainer', () => {
       (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         panes: [
           { id: 'pdf', contentType: 'pdf', widthPercent: 33.33, visible: true, isRaw: false },
-          { id: 'markdown', contentType: 'markdown', widthPercent: 33.33, visible: true, isRaw: false },
+          {
+            id: 'markdown',
+            contentType: 'markdown',
+            widthPercent: 33.33,
+            visible: true,
+            isRaw: false,
+          },
           { id: 'raw', contentType: 'markdown', widthPercent: 33.34, visible: true, isRaw: true },
         ],
         updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
       });
     });
 
@@ -182,14 +275,26 @@ describe('PaneContainer', () => {
       (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         panes: [
           { id: 'pdf', contentType: 'pdf', widthPercent: 50, visible: true, isRaw: false },
-          { id: 'markdown', contentType: 'markdown', widthPercent: 50, visible: true, isRaw: false },
+          {
+            id: 'markdown',
+            contentType: 'markdown',
+            widthPercent: 50,
+            visible: true,
+            isRaw: false,
+          },
         ],
         updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
       });
     });
 
     it('should pass same page number to all panes', async () => {
-      const { rerender } = render(<PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />);
+      const { rerender } = render(
+        <PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />
+      );
 
       // Wait for panes to load
       await waitFor(() => {
@@ -218,7 +323,9 @@ describe('PaneContainer', () => {
     });
 
     it('should update all panes when page changes', async () => {
-      const { rerender } = render(<PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />);
+      const { rerender } = render(
+        <PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />
+      );
 
       // Verify panes load initially
       await waitFor(() => {
@@ -240,9 +347,19 @@ describe('PaneContainer', () => {
       (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         panes: [
           { id: 'pdf', contentType: 'pdf', widthPercent: 100, visible: true, isRaw: false },
-          { id: 'markdown', contentType: 'markdown', widthPercent: 0, visible: false, isRaw: false },
+          {
+            id: 'markdown',
+            contentType: 'markdown',
+            widthPercent: 0,
+            visible: false,
+            isRaw: false,
+          },
         ],
         updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
       });
 
       render(<PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />);
@@ -256,9 +373,19 @@ describe('PaneContainer', () => {
       (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         panes: [
           { id: 'pdf', contentType: 'pdf', widthPercent: 50, visible: true, isRaw: false },
-          { id: 'markdown', contentType: 'markdown', widthPercent: 50, visible: true, isRaw: false },
+          {
+            id: 'markdown',
+            contentType: 'markdown',
+            widthPercent: 50,
+            visible: true,
+            isRaw: false,
+          },
         ],
         updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
       });
 
       render(<PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />);
@@ -273,9 +400,19 @@ describe('PaneContainer', () => {
       (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         panes: [
           { id: 'pdf', contentType: 'pdf', widthPercent: 50, visible: true, isRaw: false },
-          { id: 'markdown', contentType: 'markdown', widthPercent: 50, visible: true, isRaw: false },
+          {
+            id: 'markdown',
+            contentType: 'markdown',
+            widthPercent: 50,
+            visible: true,
+            isRaw: false,
+          },
         ],
         updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
       });
     });
 
@@ -297,7 +434,9 @@ describe('PaneContainer', () => {
     });
 
     it('should update pane widths during resize', () => {
-      const container = render(<PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />);
+      const container = render(
+        <PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />
+      );
       const divider = screen.getByRole('separator');
 
       // Mock container width
@@ -333,12 +472,24 @@ describe('PaneContainer', () => {
       (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         panes: [
           { id: 'pdf', contentType: 'pdf', widthPercent: 15, visible: true, isRaw: false },
-          { id: 'markdown', contentType: 'markdown', widthPercent: 85, visible: true, isRaw: false },
+          {
+            id: 'markdown',
+            contentType: 'markdown',
+            widthPercent: 85,
+            visible: true,
+            isRaw: false,
+          },
         ],
         updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
       });
 
-      const container = render(<PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />);
+      const container = render(
+        <PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />
+      );
       const divider = screen.getByRole('separator');
 
       Object.defineProperty(container.container.querySelector('.pane-container'), 'clientWidth', {
@@ -365,10 +516,12 @@ describe('PaneContainer', () => {
   describe('Dynamic Imports (FR-017)', () => {
     it('should show loading state for PDF pane', async () => {
       (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-        panes: [
-          { id: 'pdf', contentType: 'pdf', widthPercent: 100, visible: true, isRaw: false },
-        ],
+        panes: [{ id: 'pdf', contentType: 'pdf', widthPercent: 100, visible: true, isRaw: false }],
         updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
       });
 
       render(<PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />);
@@ -385,9 +538,19 @@ describe('PaneContainer', () => {
       (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         panes: [
           { id: 'pdf', contentType: 'pdf', widthPercent: 50, visible: true, isRaw: false },
-          { id: 'markdown', contentType: 'markdown', widthPercent: 50, visible: true, isRaw: false },
+          {
+            id: 'markdown',
+            contentType: 'markdown',
+            widthPercent: 50,
+            visible: true,
+            isRaw: false,
+          },
         ],
         updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
       });
 
       render(<PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />);
@@ -404,15 +567,202 @@ describe('PaneContainer', () => {
     it('should pass isRaw prop to markdown panes', () => {
       (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         panes: [
-          { id: 'markdown-raw', contentType: 'markdown', widthPercent: 100, visible: true, isRaw: true },
+          {
+            id: 'markdown-raw',
+            contentType: 'markdown',
+            widthPercent: 100,
+            visible: true,
+            isRaw: true,
+          },
         ],
         updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
       });
 
       render(<PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />);
 
       // Raw markdown pane should render
       expect(screen.getByRole('region', { name: /document viewer panes/i })).toBeInTheDocument();
+    });
+
+    it('should prioritize explicit pane language over defaults', async () => {
+      (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        panes: [
+          {
+            id: 'markdown-explicit',
+            contentType: 'markdown',
+            widthPercent: 100,
+            visible: true,
+            isRaw: true,
+            languageCode: 'it-IT',
+          },
+        ],
+        updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
+      });
+
+      render(
+        <PaneContainer
+          documentId="test-doc"
+          currentPage={1}
+          languageCode="en-US"
+          sourceLanguageCode="fr-FR"
+          targetLanguageCode="es-ES"
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText(/Language: it-IT/)).toBeInTheDocument();
+      });
+    });
+
+    it('should use source language for raw pane default', async () => {
+      (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        panes: [
+          {
+            id: 'markdown-raw',
+            contentType: 'markdown',
+            widthPercent: 100,
+            visible: true,
+            isRaw: true,
+          },
+        ],
+        updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
+      });
+
+      render(
+        <PaneContainer
+          documentId="test-doc"
+          currentPage={1}
+          languageCode="en-US"
+          sourceLanguageCode="fr-FR"
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText(/Language: fr-FR/)).toBeInTheDocument();
+      });
+    });
+
+    it('should use target language for processed pane default', async () => {
+      (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        panes: [
+          {
+            id: 'markdown-processed',
+            contentType: 'markdown',
+            widthPercent: 100,
+            visible: true,
+            isRaw: false,
+          },
+        ],
+        updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
+      });
+
+      render(
+        <PaneContainer
+          documentId="test-doc"
+          currentPage={1}
+          languageCode="en-US"
+          targetLanguageCode="es-ES"
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText(/Language: es-ES/)).toBeInTheDocument();
+      });
+    });
+
+    it('should pass through pane language change callback', async () => {
+      (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        panes: [
+          {
+            id: 'markdown-change',
+            contentType: 'markdown',
+            widthPercent: 100,
+            visible: true,
+            isRaw: false,
+          },
+        ],
+        updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
+      });
+
+      render(<PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />);
+
+      const button = await screen.findByTestId('markdown-change-language');
+      fireEvent.click(button);
+
+      expect(mockSetPaneLanguage).toHaveBeenCalledWith('markdown-change', 'de-DE', true);
+    });
+
+    it('should pass through pdf zoom callbacks', async () => {
+      (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        panes: [
+          {
+            id: 'pdf-zoom',
+            contentType: 'pdf',
+            widthPercent: 100,
+            visible: true,
+            zoomLevel: 1,
+            zoomMode: 'fit',
+          },
+        ],
+        updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
+      });
+
+      render(<PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />);
+
+      fireEvent.click(await screen.findByTestId('pdf-zoom-in'));
+      fireEvent.click(await screen.findByTestId('pdf-zoom-out'));
+      fireEvent.click(await screen.findByTestId('pdf-zoom-change'));
+
+      expect(mockZoomIn).toHaveBeenCalledWith('pdf-zoom');
+      expect(mockZoomOut).toHaveBeenCalledWith('pdf-zoom');
+      expect(mockSetPaneZoom).toHaveBeenCalledWith('pdf-zoom', 1.2, 'percentage');
+    });
+
+    it('should skip rendering unknown pane types', () => {
+      (useViewerStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        panes: [
+          {
+            id: 'unknown-pane',
+            contentType: 'unknown',
+            widthPercent: 100,
+            visible: true,
+          },
+        ],
+        updatePaneWidth: mockUpdatePaneWidth,
+        setPaneLanguage: mockSetPaneLanguage,
+        setPaneZoom: mockSetPaneZoom,
+        zoomIn: mockZoomIn,
+        zoomOut: mockZoomOut,
+      });
+
+      render(<PaneContainer documentId="test-doc" currentPage={1} languageCode="en-US" />);
+
+      expect(screen.queryByTestId('pdf-pane')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('markdown-pane')).not.toBeInTheDocument();
     });
   });
 });
