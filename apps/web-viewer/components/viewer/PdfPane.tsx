@@ -63,12 +63,29 @@ function PdfPaneComponent({
   const [highResReady, setHighResReady] = useState(false);
   const [containerHeight, setContainerHeight] = useState<number>(600);
   const containerRef = useRef<HTMLDivElement>(null);
+  const highResTimeoutRef = useRef<number | null>(null);
+
+  const clearHighResTimeout = () => {
+    if (highResTimeoutRef.current !== null) {
+      window.clearTimeout(highResTimeoutRef.current);
+      highResTimeoutRef.current = null;
+    }
+  };
 
   // Reset high-res state when page changes
   useEffect(() => {
+    clearHighResTimeout();
+
     // Use queueMicrotask to avoid React's setState-in-effect warning
     queueMicrotask(() => setHighResReady(false));
   }, [pageNumber]);
+
+  // Ensure no pending timeout updates state after unmount
+  useEffect(() => {
+    return () => {
+      clearHighResTimeout();
+    };
+  }, []);
 
   // PDF URL - same for all pages, enabling efficient browser caching
   const pdfUrl = `/api/documents/${documentId}/pdf`;
@@ -154,6 +171,8 @@ function PdfPaneComponent({
 
   // Handle page load success
   function onPageLoadSuccess(page: PageCallback) {
+    clearHighResTimeout();
+
     const viewport = page.getViewport({ scale: 1 });
     setPageDimensions({
       width: viewport.width,
@@ -161,7 +180,10 @@ function PdfPaneComponent({
     });
 
     // Mark high-res as ready after low-res loads (FR-029d)
-    setTimeout(() => setHighResReady(true), 100);
+    highResTimeoutRef.current = window.setTimeout(() => {
+      setHighResReady(true);
+      highResTimeoutRef.current = null;
+    }, 100);
   }
 
   // Calculate scale based on zoom mode (FR-016)

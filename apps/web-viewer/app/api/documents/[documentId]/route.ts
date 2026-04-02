@@ -6,6 +6,10 @@ import { readDirectory, exists, getFileSize } from '@/lib/utils/file-system';
 import { validateFilename } from '@/lib/utils/security';
 import { ValidationError, FileSystemError, NotFoundError } from '@/lib/utils/errors';
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /**
  * GET /api/documents/[documentId]
  * Returns detailed information about a specific document set.
@@ -69,13 +73,16 @@ export async function GET(
 
         const languageCode = rawMatch ? rawMatch[1] : processedMatch![1];
         const isRaw = !!rawMatch;
+        const escapedDocumentId = escapeRegExp(documentId);
 
         // Get all markdown files in the language folder
         const languageVersionPath = path.join(languageFolderPath, folder);
         const languageFiles = await readDirectory(languageVersionPath);
         const markdownFiles = languageFiles
           .filter((file: string) =>
-            file.match(new RegExp(`^${documentId}\\.(raw\\.)?${languageCode}_page_\\d+\\.md$`))
+            file.match(
+              new RegExp(`^${escapedDocumentId}\\.(raw\\.)?${languageCode}_page_\\d+\\.md$`)
+            )
           )
           .sort((a, b) => {
             // Sort by page number

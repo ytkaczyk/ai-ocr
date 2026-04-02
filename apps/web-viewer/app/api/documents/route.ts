@@ -5,6 +5,10 @@ import { readDirectory, exists, getFileSize } from '@/lib/utils/file-system';
 import { validateFilename } from '@/lib/utils/security';
 import { ValidationError, FileSystemError } from '@/lib/utils/errors';
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /**
  * GET /api/documents
  * Scans the data folder and returns a list of available document sets.
@@ -84,8 +88,11 @@ export async function GET() {
               // Count markdown files in the language folder
               const languageVersionPath = path.join(languageFolderPath, folder);
               const languageFiles = await readDirectory(languageVersionPath);
+              const escapedBaseName = escapeRegExp(baseName);
               const markdownFiles = languageFiles.filter((file: string) =>
-                file.match(new RegExp(`^${baseName}\\.(raw\\.)?${languageCode}_page_\\d+\\.md$`))
+                file.match(
+                  new RegExp(`^${escapedBaseName}\\.(raw\\.)?${languageCode}_page_\\d+\\.md$`)
+                )
               );
 
               if (markdownFiles.length === 0) return null;
@@ -123,7 +130,8 @@ export async function GET() {
             pageCount,
             pdfSizeBytes: pdfSize,
           };
-        } catch {
+        } catch (err) {
+          console.error(`Error processing document ${pdfFileName}:`, err);
           return null;
         }
       })

@@ -110,6 +110,16 @@ export function PaneContainer({
       updatePaneWidth(currentPane.id, newCurrentWidth);
       updatePaneWidth(nextPane.id, newNextWidth);
 
+      // Keep drag math in sync between renders to avoid stale width accumulation.
+      panesRef.current[resizePaneIndex] = {
+        ...currentPane,
+        widthPercent: newCurrentWidth,
+      };
+      panesRef.current[resizePaneIndex + 1] = {
+        ...nextPane,
+        widthPercent: newNextWidth,
+      };
+
       resizeStartXRef.current = e.clientX;
     };
 

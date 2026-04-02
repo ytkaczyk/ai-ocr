@@ -62,7 +62,14 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
     if (typeof window === 'undefined' || !document) return;
 
     const params = new URLSearchParams(window.location.search);
+    const modeParam = params.get('mode');
     const pageParam = params.get('page');
+
+    // Restore pane mode before applying pane language params so pane indexes match URL.
+    const { setPaneMode, setPaneLanguage } = useViewerStore.getState();
+    if (modeParam === 'two-pane' || modeParam === 'three-pane') {
+      setPaneMode(modeParam);
+    }
 
     if (pageParam) {
       const pageNum = parseInt(pageParam, 10);
@@ -79,8 +86,8 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
     const pane3Lang = params.get('pane3Lang');
     const pane3Raw = params.get('pane3Raw') === 'true';
 
-    // Apply language selections if valid
-    const { setPaneLanguage, panes } = useViewerStore.getState();
+    // Apply language selections against the active mode's pane layout.
+    const panes = useViewerStore.getState().panes;
 
     if (pane1Lang && panes[0]?.contentType === 'markdown') {
       setPaneLanguage(panes[0].id, pane1Lang, pane1Raw);
@@ -116,14 +123,13 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
       changed = true;
     }
 
-    // Track language selections for markdown panes (T097h)
-    const markdownPanes = panes.filter((p) => p.contentType === 'markdown');
-    markdownPanes.forEach((pane, idx) => {
-      const paneNum = idx + 1;
+    // Track language selections per absolute pane index for stable round-tripping.
+    panes.forEach((pane, index) => {
+      const paneNum = index + 1;
       const langParam = `pane${paneNum}Lang`;
       const rawParam = `pane${paneNum}Raw`;
 
-      if (pane.languageCode) {
+      if (pane.contentType === 'markdown' && pane.languageCode) {
         const currentLang = url.searchParams.get(langParam);
         const currentRaw = url.searchParams.get(rawParam);
 
@@ -137,6 +143,10 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
           url.searchParams.set(rawParam, rawValue);
           changed = true;
         }
+      } else if (url.searchParams.has(langParam) || url.searchParams.has(rawParam)) {
+        url.searchParams.delete(langParam);
+        url.searchParams.delete(rawParam);
+        changed = true;
       }
     });
 
@@ -152,7 +162,15 @@ export function Viewer({ documentId, className = '' }: ViewerProps) {
 
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
+      const modeParam = params.get('mode');
       const pageParam = params.get('page');
+
+      if (modeParam === 'two-pane' || modeParam === 'three-pane') {
+        const { paneMode: currentMode, setPaneMode } = useViewerStore.getState();
+        if (currentMode !== modeParam) {
+          setPaneMode(modeParam);
+        }
+      }
 
       if (pageParam) {
         const pageNum = parseInt(pageParam, 10);
