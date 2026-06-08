@@ -90,7 +90,7 @@ jobs:
         run: npm run test:coverage
         working-directory: apps/web-viewer
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           files: ./apps/web-viewer/coverage/coverage-final.json
           flags: unittests
