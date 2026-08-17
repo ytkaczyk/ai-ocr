@@ -488,8 +488,8 @@ describe('MissingPagePlaceholder', () => {
       const { container } = render(<MissingPagePlaceholder pageNumber={1} languageCode="en-US" />);
       
       const alert = container.querySelector('[role="alert"]');
-      const card = container.querySelector('[class*="card"]');
-      
+      const card = container.querySelector<HTMLElement>('[class*="card"]');
+
       // Card should be inside alert
       expect(alert).toContainElement(card!);
     });

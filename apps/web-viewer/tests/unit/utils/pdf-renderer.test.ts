@@ -44,7 +44,7 @@ describe('pdf-renderer', () => {
         getViewport: vi.fn(({ scale }: { scale: number }) => ({
           width: 612 * scale,
           height: 792 * scale,
-        })) as pdfjs.PDFPageProxy['getViewport'],
+        })) as unknown as pdfjs.PDFPageProxy['getViewport'],
       };
 
       const dimensions = getPdfPageDimensions(mockPage as pdfjs.PDFPageProxy);
@@ -59,7 +59,7 @@ describe('pdf-renderer', () => {
         getViewport: vi.fn(({ scale }: { scale: number }) => ({
           width: 792 * scale,
           height: 612 * scale,
-        })) as pdfjs.PDFPageProxy['getViewport'],
+        })) as unknown as pdfjs.PDFPageProxy['getViewport'],
       };
 
       const dimensions = getPdfPageDimensions(mockPage as pdfjs.PDFPageProxy);

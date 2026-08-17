@@ -10,6 +10,7 @@ import {
   createMockLanguageVersion,
   createMockPageFile,
 } from '@/tests/helpers/mocks';
+import type { PageFile } from '@/lib/types/entities';
 
 describe('languageVersionSchema', () => {
   it('should validate a valid language version', () => {
@@ -96,7 +97,7 @@ describe('languageVersionSchema', () => {
   it('should reject pageFiles with invalid pageNumber', () => {
     const mock = createMockLanguageVersion({
       pageFiles: [
-        // @ts-expect-error - Testing invalid data
+        // Type-valid number, rejected at runtime by the schema's positive() check
         { ...createMockPageFile(), pageNumber: 0 },
       ],
     });
@@ -108,7 +109,7 @@ describe('languageVersionSchema', () => {
   it('should reject pageFiles with negative pageNumber', () => {
     const mock = createMockLanguageVersion({
       pageFiles: [
-        // @ts-expect-error - Testing invalid data
+        // Type-valid number, rejected at runtime by the schema's positive() check
         { ...createMockPageFile(), pageNumber: -1 },
       ],
     });
@@ -120,7 +121,7 @@ describe('languageVersionSchema', () => {
   it('should reject pageFiles with non-integer pageNumber', () => {
     const mock = createMockLanguageVersion({
       pageFiles: [
-        // @ts-expect-error - Testing invalid data
+        // Type-valid number, rejected at runtime by the schema's int() check
         { ...createMockPageFile(), pageNumber: 1.5 },
       ],
     });
@@ -134,7 +135,9 @@ describe('languageVersionSchema', () => {
       pageFiles: [createMockPageFile({ sizeBytes: 1024 })],
     });
     const withoutSize = createMockLanguageVersion({
-      pageFiles: [{ ...createMockPageFile(), sizeBytes: undefined }],
+      // sizeBytes is optional in languageVersionSchema but required on the PageFile
+      // type, so the cast is needed to exercise the omitted-field path.
+      pageFiles: [{ ...createMockPageFile(), sizeBytes: undefined } as unknown as PageFile],
     });
     
     expect(languageVersionSchema.safeParse(withSize).success).toBe(true);
@@ -144,7 +147,7 @@ describe('languageVersionSchema', () => {
   it('should reject pageFiles with negative sizeBytes', () => {
     const mock = createMockLanguageVersion({
       pageFiles: [
-        // @ts-expect-error - Testing invalid data
+        // Type-valid number, rejected at runtime by the schema's nonnegative() check
         { ...createMockPageFile(), sizeBytes: -100 },
       ],
     });

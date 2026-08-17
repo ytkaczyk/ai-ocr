@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { Pager } from '@/components/viewer/Pager';
 
@@ -12,7 +12,7 @@ import { Pager } from '@/components/viewer/Pager';
  */
 
 describe('Pager', () => {
-  let mockOnPageChange: ReturnType<typeof vi.fn>;
+  let mockOnPageChange: Mock<(page: number) => void>;
 
   beforeEach(() => {
     mockOnPageChange = vi.fn();

@@ -736,11 +736,10 @@ describe('PdfPane', () => {
 
     it('should update dimensions when container resizes via ResizeObserver', async () => {
       // Track ResizeObserver callbacks
-      const resizeCallbacks: Array<
-        (entries: Array<{ contentRect: { width: number; height: number } }>) => void
-      > = [];
+      // Invoked below with entries only, so the observer argument is dropped from the type
+      const resizeCallbacks: Array<(entries: ResizeObserverEntry[]) => void> = [];
       global.ResizeObserver = vi.fn(function ResizeObserver(callback: ResizeObserverCallback) {
-        resizeCallbacks.push(callback);
+        resizeCallbacks.push(callback as (entries: ResizeObserverEntry[]) => void);
         return resizeObserverMock as unknown as ResizeObserver;
       }) as unknown as typeof ResizeObserver;
 

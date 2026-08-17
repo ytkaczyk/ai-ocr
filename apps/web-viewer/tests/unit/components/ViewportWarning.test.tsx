@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ViewportWarning } from '@/components/viewer/ViewportWarning';
 import * as viewportUtils from '@/lib/utils/viewport';
@@ -10,7 +10,7 @@ import * as viewportUtils from '@/lib/utils/viewport';
  */
 
 describe('ViewportWarning', () => {
-  let mockCleanup: ReturnType<typeof vi.fn>;
+  let mockCleanup: Mock<() => void>;
 
   beforeEach(() => {
     vi.clearAllMocks();

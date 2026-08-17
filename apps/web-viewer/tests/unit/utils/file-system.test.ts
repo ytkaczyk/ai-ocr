@@ -29,7 +29,7 @@ describe('isSymlink', () => {
   it('should return true for symbolic links', async () => {
     const mockLstat = vi.spyOn(fs, 'lstat').mockResolvedValue({
       isSymbolicLink: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     const result = await isSymlink('/path/to/symlink');
     expect(result).toBe(true);
@@ -41,7 +41,7 @@ describe('isSymlink', () => {
   it('should return false for regular files', async () => {
     const mockLstat = vi.spyOn(fs, 'lstat').mockResolvedValue({
       isSymbolicLink: () => false,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     const result = await isSymlink('/path/to/file');
     expect(result).toBe(false);
@@ -76,7 +76,7 @@ describe('isSymlinkSync', () => {
   it('should return true for symbolic links', () => {
     const mockLstatSync = vi.spyOn(fsSync, 'lstatSync').mockReturnValue({
       isSymbolicLink: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     const result = isSymlinkSync('/path/to/symlink');
     expect(result).toBe(true);
@@ -88,7 +88,7 @@ describe('isSymlinkSync', () => {
   it('should return false for regular files', () => {
     const mockLstatSync = vi.spyOn(fsSync, 'lstatSync').mockReturnValue({
       isSymbolicLink: () => false,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     const result = isSymlinkSync('/path/to/file');
     expect(result).toBe(false);
@@ -116,7 +116,7 @@ describe('rejectSymlink', () => {
   it('should pass when path is not a symlink', async () => {
     const mockLstat = vi.spyOn(fs, 'lstat').mockResolvedValue({
       isSymbolicLink: () => false,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     await expect(rejectSymlink('/path/to/file', 'test file')).resolves.toBeUndefined();
 
@@ -126,7 +126,7 @@ describe('rejectSymlink', () => {
   it('should throw error when path is a symlink', async () => {
     const mockLstat = vi.spyOn(fs, 'lstat').mockResolvedValue({
       isSymbolicLink: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
     await expect(rejectSymlink('/path/to/symlink', 'test file'))
@@ -144,7 +144,7 @@ describe('rejectSymlink', () => {
   it('should log the context and path when rejecting symlink', async () => {
     const mockLstat = vi.spyOn(fs, 'lstat').mockResolvedValue({
       isSymbolicLink: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
     await expect(rejectSymlink('/path/to/symlink', 'PDF file'))
@@ -232,7 +232,7 @@ describe('getFileSize', () => {
   it('should return file size in bytes', async () => {
     const mockStat = vi.spyOn(fs, 'stat').mockResolvedValue({
       size: 1024,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     const result = await getFileSize('/path/to/file');
     expect(result).toBe(1024);
@@ -244,7 +244,7 @@ describe('getFileSize', () => {
   it('should handle large files', async () => {
     const mockStat = vi.spyOn(fs, 'stat').mockResolvedValue({
       size: 1024 * 1024 * 100, // 100MB
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     const result = await getFileSize('/path/to/largefile');
     expect(result).toBe(1024 * 1024 * 100);
@@ -283,7 +283,9 @@ describe('readDirectory', () => {
   });
 
   it('should return empty array for empty directory', async () => {
-    const mockReaddir = vi.spyOn(fs, 'readdir').mockResolvedValue([] as unknown as string[]);
+    const mockReaddir = vi
+      .spyOn(fs, 'readdir')
+      .mockResolvedValue([] as unknown as Awaited<ReturnType<typeof fs.readdir>>);
 
     const result = await readDirectory('/path/to/emptydir');
     expect(result).toEqual([]);
@@ -318,7 +320,7 @@ describe('scanDataFolder', () => {
     const mockExistsSync = vi.spyOn(fsSync, 'existsSync').mockReturnValue(true);
     const mockStatSync = vi.spyOn(fsSync, 'statSync').mockReturnValue({
       isDirectory: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
     const mockReaddir = vi.spyOn(fs, 'readdir').mockResolvedValue([
       'document1.pdf',
       'document2.pdf',
@@ -348,7 +350,7 @@ describe('scanDataFolder', () => {
     const mockExistsSync = vi.spyOn(fsSync, 'existsSync').mockReturnValue(true);
     const mockStatSync = vi.spyOn(fsSync, 'statSync').mockReturnValue({
       isDirectory: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
     const mockReaddir = vi.spyOn(fs, 'readdir').mockResolvedValue([
       'readme.txt',
       'image.png',
@@ -366,7 +368,7 @@ describe('scanDataFolder', () => {
     const mockExistsSync = vi.spyOn(fsSync, 'existsSync').mockReturnValue(true);
     const mockStatSync = vi.spyOn(fsSync, 'statSync').mockReturnValue({
       isDirectory: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
     const mockReaddir = vi.spyOn(fs, 'readdir').mockResolvedValue([
       'doc.pdf',
       'doc2.PDF',
@@ -386,7 +388,7 @@ describe('scanDataFolder', () => {
     const mockExistsSync = vi.spyOn(fsSync, 'existsSync').mockReturnValue(true);
     const mockStatSync = vi.spyOn(fsSync, 'statSync').mockReturnValue({
       isDirectory: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
     const mockReaddir = vi.spyOn(fs, 'readdir').mockRejectedValue(
       Object.assign(new Error('ENOENT'), { code: 'ENOENT' })
     );
@@ -403,7 +405,7 @@ describe('scanDataFolder', () => {
     const mockExistsSync = vi.spyOn(fsSync, 'existsSync').mockReturnValue(true);
     const mockStatSync = vi.spyOn(fsSync, 'statSync').mockReturnValue({
       isDirectory: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
     const mockReaddir = vi.spyOn(fs, 'readdir').mockRejectedValue(
       new Error('Permission denied')
     );
@@ -432,7 +434,7 @@ describe('getDocumentFolderPath', () => {
     const mockExistsSync = vi.spyOn(fsSync, 'existsSync').mockReturnValue(true);
     const mockStatSync = vi.spyOn(fsSync, 'statSync').mockReturnValue({
       isDirectory: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     const result = getDocumentFolderPath('my-document');
     expect(result).toContain('mock');
@@ -447,7 +449,7 @@ describe('getDocumentFolderPath', () => {
     const mockExistsSync = vi.spyOn(fsSync, 'existsSync').mockReturnValue(true);
     const mockStatSync = vi.spyOn(fsSync, 'statSync').mockReturnValue({
       isDirectory: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     expect(() => getDocumentFolderPath('../etc/passwd')).toThrow();
 
@@ -459,7 +461,7 @@ describe('getDocumentFolderPath', () => {
     const mockExistsSync = vi.spyOn(fsSync, 'existsSync').mockReturnValue(true);
     const mockStatSync = vi.spyOn(fsSync, 'statSync').mockReturnValue({
       isDirectory: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     expect(() => getDocumentFolderPath('../../etc')).toThrow();
 
@@ -471,7 +473,7 @@ describe('getDocumentFolderPath', () => {
     const mockExistsSync = vi.spyOn(fsSync, 'existsSync').mockReturnValue(true);
     const mockStatSync = vi.spyOn(fsSync, 'statSync').mockReturnValue({
       isDirectory: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     const result = getDocumentFolderPath('my-doc_123');
     expect(result).toContain('my-doc_123');
@@ -497,7 +499,7 @@ describe('getPdfFilePath', () => {
     const mockExistsSync = vi.spyOn(fsSync, 'existsSync').mockReturnValue(true);
     const mockStatSync = vi.spyOn(fsSync, 'statSync').mockReturnValue({
       isDirectory: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     const result = getPdfFilePath('my-document');
     expect(result).toContain('my-document.pdf');
@@ -510,7 +512,7 @@ describe('getPdfFilePath', () => {
     const mockExistsSync = vi.spyOn(fsSync, 'existsSync').mockReturnValue(true);
     const mockStatSync = vi.spyOn(fsSync, 'statSync').mockReturnValue({
       isDirectory: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     expect(() => getPdfFilePath('../etc/passwd')).toThrow();
 
@@ -522,7 +524,7 @@ describe('getPdfFilePath', () => {
     const mockExistsSync = vi.spyOn(fsSync, 'existsSync').mockReturnValue(true);
     const mockStatSync = vi.spyOn(fsSync, 'statSync').mockReturnValue({
       isDirectory: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     expect(() => getPdfFilePath('../../etc')).toThrow();
 
@@ -534,7 +536,7 @@ describe('getPdfFilePath', () => {
     const mockExistsSync = vi.spyOn(fsSync, 'existsSync').mockReturnValue(true);
     const mockStatSync = vi.spyOn(fsSync, 'statSync').mockReturnValue({
       isDirectory: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     const result = getPdfFilePath('document');
     expect(result).toMatch(/document\.pdf$/);
@@ -559,7 +561,7 @@ describe('findLanguageFolders', () => {
       'images',
     ] as unknown as Awaited<ReturnType<typeof fs.readdir>>);
 
-    const mockStatSync = vi.spyOn(fsSync, 'statSync').mockImplementation((filePath: string) => {
+    const mockStatSync = vi.spyOn(fsSync, 'statSync').mockImplementation((filePath: fsSync.PathLike) => {
       const name = path.basename(filePath.toString());
       return {
         isDirectory: () => !name.endsWith('.txt'),
@@ -585,7 +587,7 @@ describe('findLanguageFolders', () => {
       'file.txt',
     ] as unknown as Awaited<ReturnType<typeof fs.readdir>>);
 
-    const mockStatSync = vi.spyOn(fsSync, 'statSync').mockImplementation((filePath: string) => {
+    const mockStatSync = vi.spyOn(fsSync, 'statSync').mockImplementation((filePath: fsSync.PathLike) => {
       const name = path.basename(filePath.toString());
       return {
         isDirectory: () => name === 'en-US',
@@ -614,7 +616,7 @@ describe('findLanguageFolders', () => {
 
     const mockStatSync = vi.spyOn(fsSync, 'statSync').mockReturnValue({
       isDirectory: () => true,
-    } as unknown as ReturnType<typeof fs.lstat>);
+    } as unknown as Awaited<ReturnType<typeof fs.lstat>>);
 
     const result = await findLanguageFolders('/path/to/document');
 
