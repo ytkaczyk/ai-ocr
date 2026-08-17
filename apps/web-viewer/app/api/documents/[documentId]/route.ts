@@ -4,6 +4,7 @@ import { validateEnv } from '@/lib/utils/env';
 import { documentSetSchema } from '@/lib/schemas/document';
 import { readDirectory, exists, getFileSize } from '@/lib/utils/file-system';
 import { validateDocumentId } from '@/lib/utils/security';
+import { getPdfPageCount } from '@/lib/utils/pdf';
 import { ValidationError, FileSystemError, NotFoundError } from '@/lib/utils/errors';
 
 function escapeRegExp(value: string): string {
@@ -135,8 +136,20 @@ export async function GET(
       throw new NotFoundError(`No valid language versions found for document: ${documentId}`);
     }
 
-    // Determine page count (from first language version)
-    const pageCount = languageVersions[0].pageFiles.length;
+    // The PDF is the source of truth for page count. If it cannot be parsed,
+    // fall back to the markdown files and report it rather than failing the
+    // whole request, so a bad PDF still yields usable metadata.
+    const validationErrors: string[] = [];
+    let pageCount: number;
+
+    try {
+      pageCount = await getPdfPageCount(pdfPath);
+    } catch {
+      pageCount = languageVersions[0].pageFiles.length;
+      validationErrors.push(
+        'Unable to read page count from the PDF; page counts are derived from the markdown files instead.'
+      );
+    }
 
     // A version is complete when it has a markdown file for every page (FR-019)
     const completeness = languageVersions.map((v) => {
@@ -158,8 +171,8 @@ export async function GET(
       availableLanguages: completeness,
       pageCount,
       pdfSizeBytes: pdfSize,
-      hasValidStructure: completeness.every((v) => v.isComplete),
-      validationErrors: [],
+      hasValidStructure: validationErrors.length === 0 && completeness.every((v) => v.isComplete),
+      validationErrors,
     };
 
     // Validate against schema

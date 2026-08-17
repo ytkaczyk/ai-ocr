@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { GET as getDocument } from '@/app/api/documents/[documentId]/route';
+import { GET as getDocuments } from '@/app/api/documents/route';
 import { documentSetSchema } from '@/lib/schemas/document';
+import { getPdfPageCount } from '@/lib/utils/pdf';
 import path from 'path';
 
 /**
@@ -87,6 +89,46 @@ describe('Document Detail API Integration Tests', () => {
 
       expect(document.pdfPath).not.toContain(testDataFolder);
       expect(document.folderPath).not.toContain(testDataFolder);
+    });
+
+    it('should take pageCount from the PDF rather than the markdown file count', async () => {
+      const pdfPath = path.join(testDataFolder, 'kombucha.pdf');
+      const expectedPageCount = await getPdfPageCount(pdfPath);
+
+      const request = new Request('http://localhost:3000/api/documents/kombucha');
+      const params = Promise.resolve({ documentId: 'kombucha' });
+
+      const response = await getDocument(request, { params });
+      const { document } = await response.json();
+
+      expect(document.pageCount).toBe(expectedPageCount);
+      expect(document.validationErrors).toEqual([]);
+    });
+
+    it('should fall back to markdown counts when the PDF cannot be parsed', async () => {
+      // test-corrupted-pdf.pdf is an intentionally unparseable fixture
+      const request = new Request('http://localhost:3000/api/documents/test-corrupted-pdf');
+      const params = Promise.resolve({ documentId: 'test-corrupted-pdf' });
+
+      const response = await getDocument(request, { params });
+      const { document } = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(document.pageCount).toBeGreaterThan(0);
+      expect(document.validationErrors.length).toBeGreaterThan(0);
+      expect(document.hasValidStructure).toBe(false);
+    });
+
+    it('should agree with the list endpoint on pageCount', async () => {
+      const listResponse = await getDocuments();
+      const { documents } = await listResponse.json();
+      const listed = documents.find((d: { id: string }) => d.id === 'kombucha');
+
+      const request = new Request('http://localhost:3000/api/documents/kombucha');
+      const params = Promise.resolve({ documentId: 'kombucha' });
+      const { document } = await (await getDocument(request, { params })).json();
+
+      expect(listed.pageCount).toBe(document.pageCount);
     });
 
     it('should return 404 for a non-existent document', async () => {
