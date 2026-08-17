@@ -3,8 +3,14 @@
  * See specs/001-ocr-translation-viewer/data-model.md for canonical definitions.
  */
 
+import type { PageFile } from '@/lib/schemas/page';
+
 // IETF BCP 47 language tag format (e.g., en-US, es-ES, fr-CA)
 export type LanguageCode = string;
+
+// Page File - inferred from pageFileSchema so the type and the runtime
+// validation cannot drift apart (notably sizeBytes, which is optional).
+export type { PageFile };
 
 // Document Set - Collection of files following prescribed folder structure
 export interface DocumentSet {
@@ -29,15 +35,6 @@ export interface LanguageVersion {
   pageFiles: PageFile[]; // Markdown files for each page
   isComplete: boolean; // True if page count matches PDF
   missingPages: number[]; // Page numbers with missing markdown files
-}
-
-// Page File - Individual markdown file for a page
-export interface PageFile {
-  pageNumber: number; // Page number (1-indexed)
-  filePath: string; // Absolute path to markdown file
-  fileName: string; // File name following convention
-  exists: boolean; // Whether file exists on disk
-  sizeBytes: number; // File size in bytes
 }
 
 // Page - Single page view with content

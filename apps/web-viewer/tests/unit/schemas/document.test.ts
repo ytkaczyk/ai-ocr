@@ -10,7 +10,6 @@ import {
   createMockLanguageVersion,
   createMockPageFile,
 } from '@/tests/helpers/mocks';
-import type { PageFile } from '@/lib/types/entities';
 
 describe('languageVersionSchema', () => {
   it('should validate a valid language version', () => {
@@ -135,9 +134,7 @@ describe('languageVersionSchema', () => {
       pageFiles: [createMockPageFile({ sizeBytes: 1024 })],
     });
     const withoutSize = createMockLanguageVersion({
-      // sizeBytes is optional in languageVersionSchema but required on the PageFile
-      // type, so the cast is needed to exercise the omitted-field path.
-      pageFiles: [{ ...createMockPageFile(), sizeBytes: undefined } as unknown as PageFile],
+      pageFiles: [{ ...createMockPageFile(), sizeBytes: undefined }],
     });
     
     expect(languageVersionSchema.safeParse(withSize).success).toBe(true);
