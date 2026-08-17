@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import path from 'path';
 import { validateEnv } from '@/lib/utils/env';
 import { readDirectory, exists } from '@/lib/utils/file-system';
-import { validateFilename } from '@/lib/utils/security';
+import { validateDocumentId } from '@/lib/utils/security';
 import { ValidationError, FileSystemError, NotFoundError } from '@/lib/utils/errors';
 
 /**
@@ -26,7 +26,16 @@ export async function POST(
     const dataFolderPath = path.resolve(env.DATA_FOLDER_PATH);
 
     // Validate document ID (FR-033b)
-    validateFilename(documentId);
+    if (!validateDocumentId(documentId)) {
+      return NextResponse.json(
+        {
+          code: 'INVALID_DOCUMENT_ID',
+          message: 'Invalid document identifier',
+          details: {},
+        },
+        { status: 400 }
+      );
+    }
 
     // Check if PDF exists
     const pdfPath = path.join(dataFolderPath, `${documentId}.pdf`);

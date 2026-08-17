@@ -1,5 +1,6 @@
 import path from 'path';
 import { validateEnv } from './env';
+import { ValidationError } from './errors';
 
 /**
  * Security utilities for path traversal prevention and input validation
@@ -14,7 +15,7 @@ import { validateEnv } from './env';
  * @param inputPath - The user-provided path to validate
  * @param baseDir - The base directory that the path must be within
  * @returns The resolved absolute path if valid
- * @throws Error if path traversal is detected
+ * @throws ValidationError if path traversal is detected
  */
 export function preventPathTraversal(inputPath: string, baseDir: string): string {
   // Resolve both paths to absolute paths
@@ -23,7 +24,7 @@ export function preventPathTraversal(inputPath: string, baseDir: string): string
 
   // Check if the resolved path starts with the base directory
   if (!resolvedPath.startsWith(resolvedBase + path.sep) && resolvedPath !== resolvedBase) {
-    throw new Error('Invalid path: Path traversal detected');
+    throw new ValidationError('Invalid path: Path traversal detected');
   }
 
   return resolvedPath;
@@ -35,22 +36,22 @@ export function preventPathTraversal(inputPath: string, baseDir: string): string
  * 
  * @param filename - The filename to validate (without extension)
  * @returns The validated filename
- * @throws Error if filename is invalid
+ * @throws ValidationError if filename is invalid
  */
 export function validateFilename(filename: string): string {
   // Check length
   if (filename.length === 0) {
-    throw new Error('Invalid filename: Filename cannot be empty');
+    throw new ValidationError('Invalid filename: Filename cannot be empty');
   }
   
   if (filename.length > 255) {
-    throw new Error('Invalid filename: Filename exceeds 255 characters');
+    throw new ValidationError('Invalid filename: Filename exceeds 255 characters');
   }
 
   // Check against allowed characters
   const filenameRegex = /^[a-zA-Z0-9_-]+$/;
   if (!filenameRegex.test(filename)) {
-    throw new Error(
+    throw new ValidationError(
       'Invalid filename: Only alphanumeric characters, hyphens, and underscores are allowed'
     );
   }
@@ -64,7 +65,7 @@ export function validateFilename(filename: string): string {
  * 
  * @param languageCode - The language code to sanitize
  * @returns Sanitized language code
- * @throws Error if language code is invalid
+ * @throws ValidationError if language code is invalid
  */
 export function sanitizeLanguageCode(languageCode: string): string {
   // Trim whitespace
@@ -73,7 +74,7 @@ export function sanitizeLanguageCode(languageCode: string): string {
   // Validate format: language-COUNTRY (e.g., en-US, es-ES)
   const langCodeRegex = /^[a-z]{2,3}-[A-Z]{2}$/;
   if (!langCodeRegex.test(trimmed)) {
-    throw new Error(
+    throw new ValidationError(
       'Invalid language code: Must be in format language-COUNTRY (e.g., en-US, es-ES)'
     );
   }
@@ -88,21 +89,21 @@ export function sanitizeLanguageCode(languageCode: string): string {
  * @param pageNumber - The page number to sanitize (string or number)
  * @param maxPages - Maximum allowed page number
  * @returns Validated page number
- * @throws Error if page number is invalid
+ * @throws ValidationError if page number is invalid
  */
 export function sanitizePageNumber(pageNumber: string | number, maxPages: number): number {
   const num = typeof pageNumber === 'string' ? parseInt(pageNumber, 10) : pageNumber;
 
   if (isNaN(num) || !isFinite(num)) {
-    throw new Error('Invalid page number: Must be a valid number');
+    throw new ValidationError('Invalid page number: Must be a valid number');
   }
 
   if (num < 1) {
-    throw new Error('Invalid page number: Must be at least 1');
+    throw new ValidationError('Invalid page number: Must be at least 1');
   }
 
   if (num > maxPages) {
-    throw new Error(`Invalid page number: Must not exceed ${maxPages}`);
+    throw new ValidationError(`Invalid page number: Must not exceed ${maxPages}`);
   }
 
   return num;
@@ -114,17 +115,17 @@ export function sanitizePageNumber(pageNumber: string | number, maxPages: number
  * 
  * @param widthPercent - The width percentage to sanitize (string or number)
  * @returns Validated width percentage
- * @throws Error if width is invalid
+ * @throws ValidationError if width is invalid
  */
 export function sanitizePaneWidth(widthPercent: string | number): number {
   const num = typeof widthPercent === 'string' ? parseFloat(widthPercent) : widthPercent;
 
   if (isNaN(num) || !isFinite(num)) {
-    throw new Error('Invalid pane width: Must be a valid number');
+    throw new ValidationError('Invalid pane width: Must be a valid number');
   }
 
   if (num < 10 || num > 80) {
-    throw new Error('Invalid pane width: Must be between 10% and 80%');
+    throw new ValidationError('Invalid pane width: Must be between 10% and 80%');
   }
 
   return num;
