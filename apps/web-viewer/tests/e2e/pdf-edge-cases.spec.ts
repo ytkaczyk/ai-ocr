@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 /**
  * E2E tests for non-standard PDF rendering (T085n)
@@ -17,12 +17,34 @@ test.describe('PDF Edge Cases', () => {
     await page.waitForSelector('[data-testid="document-card"]', { timeout: 10000 });
   });
 
+  /**
+   * Open a document by its filename. Most of these tests need a specific
+   * fixture: the edge-case geometry they assert on only exists in
+   * test-edge-cases.pdf and very-large-pages.pdf.
+   */
+  async function openDocument(page: Page, fileName: string) {
+    const card = page
+      .locator('[data-testid="document-card"]')
+      .filter({ hasText: fileName })
+      .first();
+    await card.waitFor({ timeout: 10000 });
+    await card.click();
+    await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
+  }
+
+  /** Advance the pager to a specific 1-indexed page. */
+  async function goToPage(page: Page, pageNumber: number) {
+    const nextButton = page.locator('[data-testid="pager-next"]');
+    for (let i = 1; i < pageNumber; i++) {
+      await nextButton.click();
+      await page.waitForTimeout(300);
+    }
+  }
+
   test.describe('Landscape Pages (FR-029a)', () => {
     test('should display landscape PDF pages correctly', async ({ page }) => {
       // Select document (assumes first document has landscape pages)
-      const firstCard = page.locator('[data-testid="document-card"]').first();
-      await firstCard.click();
-      await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
+      await openDocument(page, 'test-edge-cases.pdf');
 
       const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       await expect(pdfPane).toBeVisible();
@@ -43,9 +65,7 @@ test.describe('PDF Edge Cases', () => {
 
   test.describe('Rotated Pages (FR-029b)', () => {
     test('should handle rotated PDF pages', async ({ page }) => {
-      const firstCard = page.locator('[data-testid="document-card"]').first();
-      await firstCard.click();
-      await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
+      await openDocument(page, 'test-edge-cases.pdf');
 
       // Navigate through pages to find rotated ones
       const nextButton = page.locator('[data-testid="pager-next"]');
@@ -63,9 +83,8 @@ test.describe('PDF Edge Cases', () => {
     });
 
     test('should apply correct rotation to rotated pages', async ({ page }) => {
-      const firstCard = page.locator('[data-testid="document-card"]').first();
-      await firstCard.click();
-      await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
+      await openDocument(page, 'test-edge-cases.pdf');
+      await goToPage(page, 2); // page 2 carries a 90 degree rotation
 
       const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       const pdfCanvas = pdfPane.locator('canvas').first();
@@ -85,9 +104,7 @@ test.describe('PDF Edge Cases', () => {
 
   test.describe('Very Large Pages (FR-029c)', () => {
     test('should handle very large PDF pages', async ({ page }) => {
-      const firstCard = page.locator('[data-testid="document-card"]').first();
-      await firstCard.click();
-      await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
+      await openDocument(page, 'very-large-pages.pdf');
 
       const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       const pdfContent = pdfPane.locator('canvas, iframe').first();
@@ -101,9 +118,7 @@ test.describe('PDF Edge Cases', () => {
     });
 
     test('should scale very large pages to fit viewport', async ({ page }) => {
-      const firstCard = page.locator('[data-testid="document-card"]').first();
-      await firstCard.click();
-      await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
+      await openDocument(page, 'very-large-pages.pdf');
 
       const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       const pdfCanvas = pdfPane.locator('canvas').first();
@@ -132,13 +147,7 @@ test.describe('PDF Edge Cases', () => {
     });
 
     test('should not freeze browser with very large pages', async ({ page }) => {
-      // Select the very-large-pages document
-      const veryLargeCard = page.locator('[data-testid="document-card"]', {
-        hasText: /very-large-pages/i,
-      }).first();
-      await veryLargeCard.waitFor({ timeout: 10000 });
-      await veryLargeCard.click();
-      await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
+      await openDocument(page, 'very-large-pages.pdf');
 
       // Wait for rendering
       await page.waitForTimeout(2000);
@@ -159,9 +168,8 @@ test.describe('PDF Edge Cases', () => {
 
   test.describe('Very Small Pages (FR-029d)', () => {
     test('should handle very small PDF pages', async ({ page }) => {
-      const firstCard = page.locator('[data-testid="document-card"]').first();
-      await firstCard.click();
-      await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
+      await openDocument(page, 'test-edge-cases.pdf');
+      await goToPage(page, 3); // page 3 is smaller than A5
 
       const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       const pdfContent = pdfPane.locator('canvas, iframe').first();
@@ -171,9 +179,8 @@ test.describe('PDF Edge Cases', () => {
     });
 
     test('should scale small pages appropriately', async ({ page }) => {
-      const firstCard = page.locator('[data-testid="document-card"]').first();
-      await firstCard.click();
-      await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
+      await openDocument(page, 'test-edge-cases.pdf');
+      await goToPage(page, 3); // page 3 is smaller than A5
 
       const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       const pdfCanvas = pdfPane.locator('canvas').first();
@@ -192,9 +199,7 @@ test.describe('PDF Edge Cases', () => {
 
   test.describe('Mixed Page Sizes', () => {
     test('should handle documents with mixed page sizes', async ({ page }) => {
-      const firstCard = page.locator('[data-testid="document-card"]').first();
-      await firstCard.click();
-      await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
+      await openDocument(page, 'test-edge-cases.pdf');
 
       const nextButton = page.locator('[data-testid="pager-next"]');
       const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
@@ -216,9 +221,7 @@ test.describe('PDF Edge Cases', () => {
     });
 
     test('should maintain proper layout across different page sizes', async ({ page }) => {
-      const firstCard = page.locator('[data-testid="document-card"]').first();
-      await firstCard.click();
-      await page.waitForSelector('[data-testid="viewer-container"]', { timeout: 10000 });
+      await openDocument(page, 'test-edge-cases.pdf');
 
       const pdfPane = page.locator('[data-pane-id="pdf-pane"]');
       const nextButton = page.locator('[data-testid="pager-next"]');
