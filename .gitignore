@@ -8,3 +8,8 @@ examples/*/
 
 # snyk config
 .snyk
+
+# Node dependencies. apps/web-viewer/.gitignore anchors its rule with a leading
+# slash, so it only covers that app; without this a stray `npm install` at the
+# repo root leaves the whole tree unignored.
+node_modules/
