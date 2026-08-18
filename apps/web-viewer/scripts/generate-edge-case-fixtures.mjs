@@ -12,9 +12,13 @@
  */
 import { writeFile } from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { PDFDocument, StandardFonts, degrees, rgb } from 'pdf-lib';
 
-const DATA_FOLDER = path.resolve(import.meta.dirname, '..', 'data');
+// fileURLToPath rather than import.meta.dirname, which only exists on
+// Node >= 20.11 and would resolve to undefined on earlier 20.x releases.
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const DATA_FOLDER = path.resolve(HERE, '..', 'data');
 
 // A3 is 842x1191pt; FR-029c is about pages larger than that. A0 is comfortably
 // past it without producing a file so big it slows the E2E run.
@@ -61,6 +65,15 @@ async function addPage(doc, font, { width, height }, label, rotation = 0) {
 async function build(id, pages) {
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
+
+  // pdf-lib stamps the current time by default, which would make every run
+  // produce different bytes and show up as a spurious binary diff. Pin the
+  // metadata so regenerating an unchanged fixture is a no-op.
+  const EPOCH = new Date(0);
+  doc.setCreationDate(EPOCH);
+  doc.setModificationDate(EPOCH);
+  doc.setProducer('generate-edge-case-fixtures.mjs');
+  doc.setCreator('generate-edge-case-fixtures.mjs');
 
   for (const { size, label, rotation } of pages) {
     await addPage(doc, font, size, label, rotation);

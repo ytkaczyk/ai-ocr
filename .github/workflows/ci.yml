@@ -42,14 +42,36 @@ jobs:
       - name: Install dependencies
         run: npm ci
         working-directory: apps/web-viewer
+      # Run the CLI directly rather than snyk/actions/node so the output can be
+      # inspected: the action's exit code alone cannot distinguish "found
+      # vulnerabilities" from "the scan never ran".
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@master
-        continue-on-error: false  # Fail build on vulnerabilities
+        id: snyk
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=high --file=apps/web-viewer/package.json
-          command: test
+        run: |
+          set +e
+          npx --yes snyk@1 test --severity-threshold=high --file=apps/web-viewer/package.json 2>&1 | tee "$RUNNER_TEMP/snyk.log"
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+      # Quota exhaustion means no scan was performed, which is not evidence of
+      # a vulnerability - failing on it would block every PR for the rest of the
+      # month. Any other non-zero exit (findings, auth failure, bad usage) still
+      # fails the job.
+      - name: Gate on Snyk result
+        run: |
+          code='${{ steps.snyk.outputs.exit_code }}'
+          log="$RUNNER_TEMP/snyk.log"
+          if [ "$code" = "0" ]; then
+            echo "Snyk reported no high-severity vulnerabilities."
+            exit 0
+          fi
+          if grep -qiE "reached your monthly limit|test limit reached|upgrade your plan to scan" "$log"; then
+            echo "::warning title=Snyk scan skipped::Snyk test quota exhausted - no scan was performed, so this job is not failing. Vulnerabilities remain covered by the npm audit job."
+            exit 0
+          fi
+          echo "::error title=Snyk check failed::snyk exited with code $code"
+          exit 1
 
   lint:
     runs-on: ubuntu-latest

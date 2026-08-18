@@ -28,8 +28,10 @@ export async function GET(
     const env = validateEnv();
     const dataFolderPath = path.resolve(env.DATA_FOLDER_PATH);
 
-    // Validate document ID (FR-033b). validateFilename throws a plain Error,
-    // which the handler below cannot map, so use the boolean form to return 400.
+    // Validate document ID (FR-033b). The boolean form keeps this route's
+    // error code aligned with the pdf and markdown routes, which also answer
+    // INVALID_DOCUMENT_ID rather than the generic VALIDATION_ERROR that the
+    // throwing form would produce.
     if (!validateDocumentId(documentId)) {
       return NextResponse.json(
         {
