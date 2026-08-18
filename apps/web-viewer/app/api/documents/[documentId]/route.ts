@@ -3,7 +3,8 @@ import path from 'path';
 import { validateEnv } from '@/lib/utils/env';
 import { documentSetSchema } from '@/lib/schemas/document';
 import { readDirectory, exists, getFileSize } from '@/lib/utils/file-system';
-import { validateFilename } from '@/lib/utils/security';
+import { validateDocumentId } from '@/lib/utils/security';
+import { getPdfPageCount } from '@/lib/utils/pdf';
 import { ValidationError, FileSystemError, NotFoundError } from '@/lib/utils/errors';
 
 function escapeRegExp(value: string): string {
@@ -27,8 +28,20 @@ export async function GET(
     const env = validateEnv();
     const dataFolderPath = path.resolve(env.DATA_FOLDER_PATH);
 
-    // Validate document ID (FR-033b)
-    validateFilename(documentId);
+    // Validate document ID (FR-033b). The boolean form keeps this route's
+    // error code aligned with the pdf and markdown routes, which also answer
+    // INVALID_DOCUMENT_ID rather than the generic VALIDATION_ERROR that the
+    // throwing form would produce.
+    if (!validateDocumentId(documentId)) {
+      return NextResponse.json(
+        {
+          code: 'INVALID_DOCUMENT_ID',
+          message: 'Invalid document identifier',
+          details: {},
+        },
+        { status: 400 }
+      );
+    }
 
     // Check if PDF exists
     const pdfPath = path.join(dataFolderPath, `${documentId}.pdf`);
@@ -93,7 +106,8 @@ export async function GET(
 
         if (markdownFiles.length === 0) return null;
 
-        // Build page file details
+        // Build page file details. Files were just listed from disk, so they
+        // exist; sizeBytes is left unset to avoid a stat call per page.
         const pageFiles = markdownFiles.map((file: string) => {
           const pageMatch = file.match(/_page_(\d+)\.md$/);
           const pageNumber = pageMatch ? parseInt(pageMatch[1]) : 0;
@@ -102,6 +116,8 @@ export async function GET(
           return {
             pageNumber,
             filePath,
+            fileName: file,
+            exists: true,
           };
         });
 
@@ -122,21 +138,43 @@ export async function GET(
       throw new NotFoundError(`No valid language versions found for document: ${documentId}`);
     }
 
-    // Determine page count (from first language version)
-    const pageCount = languageVersions[0].pageFiles.length;
+    // The PDF is the source of truth for page count. If it cannot be parsed,
+    // fall back to the markdown files and report it rather than failing the
+    // whole request, so a bad PDF still yields usable metadata.
+    const validationErrors: string[] = [];
+    let pageCount: number;
 
-    // Create DocumentSet entry
+    try {
+      pageCount = await getPdfPageCount(pdfPath);
+    } catch {
+      pageCount = languageVersions[0].pageFiles.length;
+      validationErrors.push(
+        'Unable to read page count from the PDF; page counts are derived from the markdown files instead.'
+      );
+    }
+
+    // A version is complete when it has a markdown file for every page (FR-019)
+    const completeness = languageVersions.map((v) => {
+      const present = new Set(v.pageFiles.map((p) => p.pageNumber));
+      const missingPages = Array.from({ length: pageCount }, (_, i) => i + 1).filter(
+        (pageNumber) => !present.has(pageNumber)
+      );
+
+      return { ...v, isComplete: missingPages.length === 0, missingPages };
+    });
+
+    // Create DocumentSet entry. Paths stay relative to the data folder so the
+    // response never leaks the server's absolute filesystem layout (FR-033).
     const documentSet = {
       id: documentId,
       fileName: `${documentId}.pdf`,
       pdfPath: `${documentId}.pdf`,
-      availableLanguages: languageVersions.map((v) => ({
-        languageCode: v.languageCode,
-        isRaw: v.isRaw,
-        folderName: v.folderName,
-      })),
+      folderPath: documentId,
+      availableLanguages: completeness,
       pageCount,
-      sizeBytes: pdfSize,
+      pdfSizeBytes: pdfSize,
+      hasValidStructure: validationErrors.length === 0 && completeness.every((v) => v.isComplete),
+      validationErrors,
     };
 
     // Validate against schema

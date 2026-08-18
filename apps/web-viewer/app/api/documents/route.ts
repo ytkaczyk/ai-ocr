@@ -3,6 +3,7 @@ import path from 'path';
 import { validateEnv } from '@/lib/utils/env';
 import { readDirectory, exists, getFileSize } from '@/lib/utils/file-system';
 import { validateFilename } from '@/lib/utils/security';
+import { getPdfPageCount } from '@/lib/utils/pdf';
 import { ValidationError, FileSystemError } from '@/lib/utils/errors';
 
 function escapeRegExp(value: string): string {
@@ -114,8 +115,16 @@ export async function GET() {
             return null;
           }
 
-          // Determine page count (from first language version)
-          const pageCount = languageVersions[0].pageCount;
+          // The PDF is the source of truth for page count; fall back to the
+          // markdown files if it cannot be parsed, so one bad PDF does not
+          // drop the document from the listing. Kept consistent with the
+          // detail route, which reports the fallback in validationErrors.
+          let pageCount: number;
+          try {
+            pageCount = await getPdfPageCount(pdfPath);
+          } catch {
+            pageCount = languageVersions[0].pageCount;
+          }
 
           // Create simplified DocumentSet entry for API response
           return {

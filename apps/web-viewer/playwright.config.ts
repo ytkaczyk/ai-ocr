@@ -1,5 +1,24 @@
 import { defineConfig, devices } from '@playwright/test';
 
+// This devcontainer inherits DISPLAY=:0 from WSLg, but nothing answers on that
+// socket. Chromium still starts and renders, yet its compositor never issues a
+// BeginFrame, so requestAnimationFrame never fires. Playwright's actionability
+// check waits for an element's box to stay put across two consecutive animation
+// frames, so every click/hover/drag then hangs until actionTimeout while plain
+// assertions and keyboard input keep passing - which reads as a broken app
+// rather than a broken display. Clearing DISPLAY restores headless frame
+// production (measured: 0 frames/600ms before, 49 after).
+//
+// Kept for headed and UI runs, which need a real display, and a no-op in CI
+// where DISPLAY is not set at all.
+const wantsRealDisplay = process.argv.some(
+  (arg) => arg === '--headed' || arg === '--ui' || arg.startsWith('--ui-')
+);
+
+if (!wantsRealDisplay) {
+  delete process.env.DISPLAY;
+}
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,

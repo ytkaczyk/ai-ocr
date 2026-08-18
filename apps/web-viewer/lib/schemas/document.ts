@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { languageCodeSchema } from './common';
+import { pageFileSchema } from './page';
 
 /**
  * Zod schema for LanguageVersion entity
@@ -9,13 +10,7 @@ export const languageVersionSchema = z.object({
   languageCode: languageCodeSchema,
   isRaw: z.boolean().describe('Whether this is raw OCR output (true) or processed translation (false)'),
   folderName: z.string().describe('Folder name: <lang-COUNTRY> or raw.<lang-COUNTRY>'),
-  pageFiles: z.array(z.object({
-    pageNumber: z.number().int().positive(),
-    filePath: z.string(),
-    fileName: z.string(),
-    exists: z.boolean(),
-    sizeBytes: z.number().int().nonnegative().optional(),
-  })),
+  pageFiles: z.array(pageFileSchema).describe('Markdown files for each page'),
   isComplete: z.boolean().describe('Whether all pages are present'),
   missingPages: z.array(z.number().int().positive()).describe('List of missing page numbers'),
 });

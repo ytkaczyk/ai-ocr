@@ -96,7 +96,7 @@ describe('languageVersionSchema', () => {
   it('should reject pageFiles with invalid pageNumber', () => {
     const mock = createMockLanguageVersion({
       pageFiles: [
-        // @ts-expect-error - Testing invalid data
+        // Type-valid number, rejected at runtime by the schema's positive() check
         { ...createMockPageFile(), pageNumber: 0 },
       ],
     });
@@ -108,7 +108,7 @@ describe('languageVersionSchema', () => {
   it('should reject pageFiles with negative pageNumber', () => {
     const mock = createMockLanguageVersion({
       pageFiles: [
-        // @ts-expect-error - Testing invalid data
+        // Type-valid number, rejected at runtime by the schema's positive() check
         { ...createMockPageFile(), pageNumber: -1 },
       ],
     });
@@ -120,7 +120,7 @@ describe('languageVersionSchema', () => {
   it('should reject pageFiles with non-integer pageNumber', () => {
     const mock = createMockLanguageVersion({
       pageFiles: [
-        // @ts-expect-error - Testing invalid data
+        // Type-valid number, rejected at runtime by the schema's int() check
         { ...createMockPageFile(), pageNumber: 1.5 },
       ],
     });
@@ -144,7 +144,7 @@ describe('languageVersionSchema', () => {
   it('should reject pageFiles with negative sizeBytes', () => {
     const mock = createMockLanguageVersion({
       pageFiles: [
-        // @ts-expect-error - Testing invalid data
+        // Type-valid number, rejected at runtime by the schema's nonnegative() check
         { ...createMockPageFile(), sizeBytes: -100 },
       ],
     });

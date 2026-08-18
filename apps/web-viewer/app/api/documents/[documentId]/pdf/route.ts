@@ -76,10 +76,22 @@ export async function GET(
       );
     }
 
+    // Use a plain Uint8Array view of exactly this file's bytes. pdf-lib does an
+    // `instanceof Uint8Array` check that a Node Buffer fails when the active
+    // realm's Uint8Array is not Node's, and the explicit offset/length keeps
+    // the response correct even if readFile ever returns a pooled Buffer.
+    // The cast narrows ArrayBufferLike to ArrayBuffer: readFile never returns a
+    // SharedArrayBuffer-backed Buffer, and BodyInit does not accept one.
+    const pdfView = new Uint8Array(
+      pdfBytes.buffer as ArrayBuffer,
+      pdfBytes.byteOffset,
+      pdfBytes.byteLength
+    );
+
     // Validate PDF structure
     let pdfDoc: PDFDocument;
     try {
-      pdfDoc = await PDFDocument.load(pdfBytes);
+      pdfDoc = await PDFDocument.load(pdfView);
     } catch {
       return NextResponse.json(
         { code: 'PDF_PARSE_ERROR', message: 'Cannot render PDF (file may be corrupted)', details: 'Failed to parse PDF file' },
@@ -91,7 +103,7 @@ export async function GET(
 
     // Return the entire PDF for client-side page extraction
     // Caching strategy: aggressive caching since URL is stable across all page views
-    const response = new NextResponse(pdfBytes.buffer as ArrayBuffer, {
+    const response = new NextResponse(pdfView, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

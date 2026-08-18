@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { LanguageSelector } from '@/components/viewer/LanguageSelector';
 
@@ -23,7 +23,7 @@ vi.mock('lucide-react', () => ({
 }));
 
 describe('LanguageSelector', () => {
-  let mockOnLanguageChange: ReturnType<typeof vi.fn>;
+  let mockOnLanguageChange: Mock<(languageCode: string, isRaw: boolean) => void>;
 
   beforeEach(() => {
     mockOnLanguageChange = vi.fn();
