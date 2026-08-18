@@ -54,3 +54,23 @@ updates:
     commit-message:
       prefix: "ci"
       include: "scope"
+  # Keep dev container Features up to date. Dependabot discovers valid dev
+  # container locations itself, so directory is the repo root rather than
+  # .devcontainer/web-viewer. Version updates only - this ecosystem has no
+  # security-update support.
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 5
+    assignees:
+      - "ytkaczyk"
+    labels:
+      - "dependencies"
+      - "devcontainer"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
