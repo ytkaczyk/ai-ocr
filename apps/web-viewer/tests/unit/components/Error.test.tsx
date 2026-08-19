@@ -3,6 +3,14 @@ import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ErrorComponent from '@/app/error';
 
+const mockPush = vi.fn();
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
+
 describe('Error Component', () => {
   const mockReset = vi.fn();
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
@@ -11,9 +19,6 @@ describe('Error Component', () => {
     vi.clearAllMocks();
     // Mock console.error to avoid cluttering test output
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    // Mock window.location
-    delete (window as unknown as { location: unknown }).location;
-    (window as unknown as { location: { href: string } }).location = { href: '' };
   });
 
   afterEach(() => {
