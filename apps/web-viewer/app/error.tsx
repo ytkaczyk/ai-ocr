@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -17,6 +18,8 @@ interface ErrorProps {
 }
 
 export default function Error({ error, reset }: ErrorProps) {
+  const router = useRouter();
+
   useEffect(() => {
     // Log error to console for debugging (in development)
     // In production, this could be sent to an error tracking service
@@ -81,7 +84,7 @@ export default function Error({ error, reset }: ErrorProps) {
           </Button>
           
           <Button
-            onClick={() => window.location.href = '/'}
+            onClick={() => router.push('/')}
             variant="outline"
             aria-label="Go to home page"
           >
