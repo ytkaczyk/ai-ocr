@@ -75,6 +75,17 @@ describe('Error Component', () => {
 
       expect(mockReset).toHaveBeenCalledTimes(1);
     });
+
+    it('navigates to home when Go to home button is clicked', async () => {
+      const user = userEvent.setup();
+      const error = new Error('Test error');
+      render(<ErrorComponent error={error} reset={mockReset} />);
+
+      const button = screen.getByRole('button', { name: /go to home/i });
+      await user.click(button);
+
+      expect(mockPush).toHaveBeenCalledWith('/');
+    });
   });
 
   describe('Error Message Sanitization (FR-033e, Issue #6)', () => {
