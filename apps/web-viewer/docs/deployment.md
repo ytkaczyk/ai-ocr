@@ -19,7 +19,7 @@ This guide covers deploying the OCR Translation Comparison Viewer to various env
 
 Before deploying, ensure you have:
 
-- Node.js 20.x or later installed
+- Node.js 24.x or later installed
 - Access to deployment target (server, cloud platform, container registry)
 - Data folder with document sets prepared
 - Environment variables configured
@@ -276,8 +276,8 @@ docker-compose up -d
 # Update system
 sudo apt update && sudo apt upgrade -y
 
-# Install Node.js 20.x
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+# Install Node.js 24.x
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 sudo apt install -y nodejs
 
 # Install PM2 (process manager)
@@ -382,7 +382,7 @@ server {
 1. Install AWS CLI and EB CLI
 2. Initialize Elastic Beanstalk:
 ```bash
-eb init -p node.js-20 ocr-viewer
+eb init -p node.js-24 ocr-viewer
 ```
 
 3. Create environment:
