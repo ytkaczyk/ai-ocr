@@ -3,6 +3,14 @@ import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ErrorComponent from '@/app/error';
 
+const mockPush = vi.fn();
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
+
 describe('Error Component', () => {
   const mockReset = vi.fn();
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
@@ -11,9 +19,6 @@ describe('Error Component', () => {
     vi.clearAllMocks();
     // Mock console.error to avoid cluttering test output
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    // Mock window.location
-    delete (window as unknown as { location: unknown }).location;
-    (window as unknown as { location: { href: string } }).location = { href: '' };
   });
 
   afterEach(() => {
@@ -69,6 +74,17 @@ describe('Error Component', () => {
       await user.click(button);
 
       expect(mockReset).toHaveBeenCalledTimes(1);
+    });
+
+    it('navigates to home when Go to home button is clicked', async () => {
+      const user = userEvent.setup();
+      const error = new Error('Test error');
+      render(<ErrorComponent error={error} reset={mockReset} />);
+
+      const button = screen.getByRole('button', { name: /go to home/i });
+      await user.click(button);
+
+      expect(mockPush).toHaveBeenCalledWith('/');
     });
   });
 
