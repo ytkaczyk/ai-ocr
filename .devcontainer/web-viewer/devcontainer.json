@@ -55,7 +55,8 @@
         ],
         "typescript.tsdk": "node_modules/typescript/lib",
         "playwright.reuseBrowser": true,
-        "playwright.showTrace": true
+        "playwright.showTrace": true,
+        "debug.javascript.autoAttachFilter": "disabled"
       }
     }
   },
