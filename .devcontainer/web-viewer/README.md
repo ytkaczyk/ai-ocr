@@ -6,7 +6,7 @@ This dev container provides a fully configured, reproducible development environ
 
 The dev container uses:
 
-- **Base Image**: Microsoft's TypeScript-Node devcontainer (Node.js 22 LTS on Debian Bookworm)
+- **Base Image**: Microsoft's TypeScript-Node devcontainer (Node.js 24 LTS on Debian Bookworm)
 - **Container Runtime**: Docker with volume management
 - **Package Manager**: npm with automatic dependency installation
 - **Browser Testing**: Playwright with Chromium pre-installed
@@ -58,7 +58,7 @@ The dev container automatically configures VS Code with:
 
 ### Pre-installed Tools
 
-- **Node.js 22** - JavaScript runtime
+- **Node.js 24** - JavaScript runtime
 - **npm** - Package manager
 - **Git** - Version control
 - **GitHub CLI** (`gh`) - GitHub integration from terminal
@@ -214,10 +214,10 @@ You can also use the VS Code extensions:
 
 ### Dockerfile Details
 
-The container is based on `mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm`:
+The container is based on `mcr.microsoft.com/devcontainers/typescript-node:24-bookworm`:
 
 - Debian 12 (Bookworm) base OS
-- Node.js 22 LTS with npm
+- Node.js 24 LTS with npm
 - Playwright system dependencies pre-installed
 - Additional tools: git, curl, wget
 - Runs as non-root `node` user
@@ -265,9 +265,16 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 Edit `.devcontainer/Dockerfile`:
 
 ```dockerfile
-FROM mcr.microsoft.com/devcontainers/typescript-node:1-20-bookworm
-# Change 22 to your desired version (18, 20, etc.)
+FROM mcr.microsoft.com/devcontainers/typescript-node:24-bookworm
+# Change 24 to your desired Node major (22, 24, ...)
 ```
+
+Use the unprefixed `<major>-bookworm` tag. A leading number — as in
+`1-22-bookworm` — pins the *image definition* version, not Node, and those
+older families stop receiving Node patch releases: `1-22-bookworm` was frozen
+at Node 22.16.0 while `22-bookworm` moved on to 22.23.1.
+
+Keep this in sync with `apps/web-viewer/.nvmrc`, which is what CI reads.
 
 ### Adding Environment Variables
 

@@ -16,7 +16,7 @@ A Next.js web application for comparing original PDF documents with their OCR-ex
 
 ### Prerequisites
 
-- Node.js 20.x or later
+- Node.js 24.x or later
 - npm 10.x or later
 
 ### Installation
